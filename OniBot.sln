@@ -1,0 +1,53 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.26206.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OniBot", "OniBot\OniBot.csproj", "{ED22811A-4C5C-462B-A355-1E9AB863C8D8}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".nuget", ".nuget", "{DB4CB8A8-AC63-48DE-81C0-E4B772A99658}"
+	ProjectSection(SolutionItems) = preProject
+		.nuget\nuget.config = .nuget\nuget.config
+	EndProjectSection
+EndProject
+Project("{E53339B2-1760-4266-BCC7-CA923CBCF16C}") = "docker-compose", "docker-compose.dcproj", "{EA9B29D3-13F9-44E5-B525-CEDE3AA40CF9}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Debug|x64 = Debug|x64
+		Debug|x86 = Debug|x86
+		Release|Any CPU = Release|Any CPU
+		Release|x64 = Release|x64
+		Release|x86 = Release|x86
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{ED22811A-4C5C-462B-A355-1E9AB863C8D8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{ED22811A-4C5C-462B-A355-1E9AB863C8D8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{ED22811A-4C5C-462B-A355-1E9AB863C8D8}.Debug|x64.ActiveCfg = Debug|x64
+		{ED22811A-4C5C-462B-A355-1E9AB863C8D8}.Debug|x64.Build.0 = Debug|x64
+		{ED22811A-4C5C-462B-A355-1E9AB863C8D8}.Debug|x86.ActiveCfg = Debug|x86
+		{ED22811A-4C5C-462B-A355-1E9AB863C8D8}.Debug|x86.Build.0 = Debug|x86
+		{ED22811A-4C5C-462B-A355-1E9AB863C8D8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{ED22811A-4C5C-462B-A355-1E9AB863C8D8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{ED22811A-4C5C-462B-A355-1E9AB863C8D8}.Release|x64.ActiveCfg = Release|x64
+		{ED22811A-4C5C-462B-A355-1E9AB863C8D8}.Release|x64.Build.0 = Release|x64
+		{ED22811A-4C5C-462B-A355-1E9AB863C8D8}.Release|x86.ActiveCfg = Release|x86
+		{ED22811A-4C5C-462B-A355-1E9AB863C8D8}.Release|x86.Build.0 = Release|x86
+		{EA9B29D3-13F9-44E5-B525-CEDE3AA40CF9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EA9B29D3-13F9-44E5-B525-CEDE3AA40CF9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EA9B29D3-13F9-44E5-B525-CEDE3AA40CF9}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{EA9B29D3-13F9-44E5-B525-CEDE3AA40CF9}.Debug|x64.Build.0 = Debug|Any CPU
+		{EA9B29D3-13F9-44E5-B525-CEDE3AA40CF9}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{EA9B29D3-13F9-44E5-B525-CEDE3AA40CF9}.Debug|x86.Build.0 = Debug|Any CPU
+		{EA9B29D3-13F9-44E5-B525-CEDE3AA40CF9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EA9B29D3-13F9-44E5-B525-CEDE3AA40CF9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EA9B29D3-13F9-44E5-B525-CEDE3AA40CF9}.Release|x64.ActiveCfg = Release|Any CPU
+		{EA9B29D3-13F9-44E5-B525-CEDE3AA40CF9}.Release|x64.Build.0 = Release|Any CPU
+		{EA9B29D3-13F9-44E5-B525-CEDE3AA40CF9}.Release|x86.ActiveCfg = Release|Any CPU
+		{EA9B29D3-13F9-44E5-B525-CEDE3AA40CF9}.Release|x86.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
