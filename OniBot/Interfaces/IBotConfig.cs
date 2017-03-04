@@ -2,7 +2,7 @@
 
 namespace OniBot.Interfaces
 {
-    public interface IDiscordBotConfig
+    public interface IBotConfig
     {
         string[] Games { get; set; }
         LogSeverity LogLevel { get; set; }

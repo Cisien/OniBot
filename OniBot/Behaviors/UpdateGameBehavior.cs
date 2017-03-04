@@ -14,10 +14,10 @@ namespace OniBot.Behaviors
         public string Name => nameof(UpdateGameBehavior);
 
         private Timer _timer;
-        private readonly DiscordBotConfig _config;
+        private readonly BotConfig _config;
         private static Random _random;
 
-        public UpdateGameBehavior(IOptions<DiscordBotConfig> config)
+        public UpdateGameBehavior(IOptions<BotConfig> config)
         {
             _config = config.Value;
             _random = new Random();

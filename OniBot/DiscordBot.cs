@@ -20,10 +20,10 @@ namespace OniBot
         private static Random random = new Random();
         private Dictionary<string, IBotBehavior> _behaviors = new Dictionary<string, IBotBehavior>();
         public static string[] games;
-        private DiscordBotConfig _config;
-        private IOptions<DiscordBotConfig> _optionsConfig;
+        private BotConfig _config;
+        private IOptions<BotConfig> _optionsConfig;
 
-        public DiscordBot(IOptions<DiscordBotConfig> config, ICommandHandler commandHandler)
+        public DiscordBot(IOptions<BotConfig> config, ICommandHandler commandHandler)
         {
             _optionsConfig = config;
             _config = config.Value;

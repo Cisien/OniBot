@@ -14,9 +14,9 @@ namespace OniBot
         private IDependencyMap _map;
         private DiscordSocketClient _client;
         private CommandService _commands;
-        private DiscordBotConfig _config;
+        private BotConfig _config;
         
-        public CommandHandler(CommandService commandService, IOptions<DiscordBotConfig> config)
+        public CommandHandler(CommandService commandService, IOptions<BotConfig> config)
         {
             _commands = commandService;
             _config = config.Value;

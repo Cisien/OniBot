@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 
 namespace OniBot.Commands
 {
-    class EchoCommand : ModuleBase, IDiscordCommand
+    class EchoCommand : ModuleBase, IBotCommand
     {
         [Command("echo", RunMode = RunMode.Async)]
         [Summary("Repeats the text that follows")]

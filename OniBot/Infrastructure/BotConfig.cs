@@ -1,10 +1,8 @@
-﻿using System;
-using Discord;
-using OniBot.Interfaces;
+﻿using Discord;
 
-namespace OniBot
+namespace OniBot.Interfaces
 {
-    public class DiscordBotConfig : IDiscordBotConfig
+    public class BotConfig : IBotConfig
     {
         public string[] Games { get; set; } = new string[] { "OxygenNotIncluded" };
         public LogSeverity LogLevel { get; set; }

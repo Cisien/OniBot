@@ -4,7 +4,6 @@ using Microsoft.Extensions.DependencyInjection;
 using OniBot.Interfaces;
 using System;
 using System.Collections.Generic;
-using System.Text;
 
 namespace OniBot
 {
@@ -46,7 +45,7 @@ namespace OniBot
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddOptions();
-            services.Configure<DiscordBotConfig>(Configuration);
+            services.Configure<BotConfig>(Configuration);
             services.AddSingleton(a =>
             {
                 return new CommandService(new CommandServiceConfig
