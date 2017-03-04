@@ -4,5 +4,10 @@
   "AlwaysDownloadUsers": true,
   "MessageCacheSize": 1000,
   "Token": "Fill me in!",
-  "PrefixChar": "!"
+  "PrefixChar": "!",
+  "RandomMessages": [
+    "Look at me!",
+    "Suffocating!",
+    "Breaking your things!"
+  ]
 }

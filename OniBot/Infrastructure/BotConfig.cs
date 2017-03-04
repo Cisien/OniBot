@@ -10,5 +10,6 @@ namespace OniBot.Interfaces
         public int MessageCacheSize { get; set; }
         public string Token { get; set; }
         public char PrefixChar { get; set; }
+        public string[] RandomMessages { get; set; }
     }
 }

@@ -21,6 +21,7 @@ namespace OniBot
         private readonly IServiceCollection _serviceCollection;
         private IServiceProvider _serviceProvider;
         private bool _run = true;
+
         private async Task MainAsync(string[] args)
         {
             Console.CancelKeyPress += (s, e) =>
