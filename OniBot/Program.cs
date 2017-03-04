@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.Configuration;
 using OniBot.Infrastructure;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -20,8 +21,12 @@ namespace OniBot
         {
             try
             {
+                var switchMappings = new Dictionary<string, string>
+                {
+                    { "-environment", "environment" }
+                };
                 var commandLine = new ConfigurationBuilder();
-                commandLine.AddCommandLine(args);
+                commandLine.AddCommandLine(args, switchMappings);
                 var commandLineConfig = commandLine.Build();
 
                 var environment = commandLineConfig["environment"]?.ToLower() ?? "production";
