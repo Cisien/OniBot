@@ -9,7 +9,7 @@ using Microsoft.Extensions.Options;
 
 namespace OniBot.Behaviors
 {
-    class RandomlySendMessageBehavior : IBotBehavior
+    public class RandomlySendMessageBehavior : IBotBehavior
     {
         private static Random _random = new Random();
         private int _messagesSinceLastSend = 0;
