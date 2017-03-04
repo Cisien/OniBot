@@ -1,48 +1,56 @@
 ﻿using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
+using OniBot.Interfaces;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Options;
 
 namespace OniBot
 {
-    internal class CommandHandler
+    internal class CommandHandler : ICommandHandler
     {
         private IDependencyMap _map;
-        private DiscordSocketClient client;
-        private CommandService commands;
-
-        public async Task Install(IDependencyMap map)
+        private DiscordSocketClient _client;
+        private CommandService _commands;
+        private DiscordBotConfig _config;
+        
+        public CommandHandler(CommandService commandService, IOptions<DiscordBotConfig> config)
         {
-            _map = map;
-            client = _map.Get<DiscordSocketClient>();
-            commands = new CommandService();
-            map.Add(commands);
-
-            var modules = await commands.AddModulesAsync(Assembly.GetEntryAssembly());
-            foreach (var module in modules)
-            {
-                DiscordBot.Log($"{nameof(CommandHandler)}.{nameof(Install)}", LogSeverity.Info, $"Loaded command: {string.Join(", ", module.Commands.Select(a => a.Name))} from module {module.Name}");
-            }
-
-            client.MessageReceived += OnMessageReceived;
-            client.MessageUpdated += OnMessageUpdated;
+            _commands = commandService;
+            _config = config.Value;
         }
 
-        private async Task OnMessageUpdated(Cacheable<IMessage, ulong> message, SocketMessage socketMessage, ISocketMessageChannel channel)
+        public async Task InstallAsync(IDependencyMap map)
         {
-            if (message.Value.Content == socketMessage.Content)
+            _map = map;
+            _client = _map.Get<DiscordSocketClient>();
+            map.Add(_commands);
+
+            var modules = await _commands.AddModulesAsync(Assembly.GetEntryAssembly());
+            foreach (var module in modules)
+            {
+                DiscordBot.Log($"{nameof(CommandHandler)}.{nameof(InstallAsync)}", LogSeverity.Info, $"Loaded command: {string.Join(", ", module.Commands.Select(a => a.Name))} from module {module.Name}");
+            }
+
+            _client.MessageReceived += OnMessageReceivedAsync;
+            _client.MessageUpdated += OnMessageUpdatedAsync;
+        }
+
+        public async Task OnMessageUpdatedAsync(Cacheable<IMessage, ulong> existingMessage, SocketMessage newMessage, ISocketMessageChannel channel)
+        {
+            if (existingMessage.Value.Content == newMessage.Content)
             {
                 return;
             }
 
-            await OnMessageReceived(socketMessage);
+            await OnMessageReceivedAsync(newMessage);
         }
 
-        private async Task OnMessageReceived(SocketMessage arg)
+        public async Task OnMessageReceivedAsync(SocketMessage newMessage)
         {
-            var message = arg as SocketUserMessage;
+            var message = newMessage as SocketUserMessage;
             if (message == null)
             {
                 return;
@@ -54,16 +62,16 @@ namespace OniBot
             }
 
             int argPos = 0;
-            if (!(message.HasMentionPrefix(client.CurrentUser, ref argPos) || message.HasCharPrefix('.', ref argPos)))
+            if (!(message.HasMentionPrefix(_client.CurrentUser, ref argPos) || message.HasCharPrefix(_config.PrefixChar, ref argPos)))
             {
                 return;
             }
 
-            DiscordBot.Log(nameof(CommandHandler), LogSeverity.Info, $"Command received: {arg.Content}");
+            DiscordBot.Log(nameof(CommandHandler), LogSeverity.Info, $"Command received: {newMessage.Content}");
 
-            var context = new CommandContext(client, message);
+            var context = new CommandContext(_client, message);
 
-            var result = await commands.ExecuteAsync(context, argPos, _map);
+            var result = await _commands.ExecuteAsync(context, argPos, _map);
 
             if (!result.IsSuccess)
             {

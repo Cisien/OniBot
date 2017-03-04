@@ -1,5 +1,6 @@
 ﻿using System;
 using Discord;
+using OniBot.Interfaces;
 
 namespace OniBot
 {
@@ -10,5 +11,6 @@ namespace OniBot
         public bool AlwaysDownloadUsers { get; set; }
         public int MessageCacheSize { get; set; }
         public string Token { get; set; }
+        public char PrefixChar { get; set; }
     }
 }

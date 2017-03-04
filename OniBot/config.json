@@ -1,3 +1,8 @@
 ﻿{
-  "BotName": "foo",
+  "Games": [ "Massage Table", "Looking at Art", "Vomiting" ],
+  "LogLevel": "Debug",
+  "AlwaysDownloadUsers": true,
+  "MessageCacheSize": 1000,
+  "Token": "Fill me in!",
+  "PrefixChar": "!"
 }

@@ -32,7 +32,7 @@ namespace OniBot
             {
                 using (var bot = _serviceProvider.GetService<DiscordBot>())
                 {
-                    await bot.Run();
+                    await bot.RunBotAsync();
                 }
             }
             catch (Exception ex)

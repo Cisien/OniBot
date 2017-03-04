@@ -1,6 +1,6 @@
 ﻿using Discord;
 
-namespace OniBot
+namespace OniBot.Interfaces
 {
     public interface IDiscordBotConfig
     {

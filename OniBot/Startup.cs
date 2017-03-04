@@ -1,5 +1,7 @@
-﻿using Microsoft.Extensions.Configuration;
+﻿using Discord.Commands;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using OniBot.Interfaces;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -45,7 +47,17 @@ namespace OniBot
         {
             services.AddOptions();
             services.Configure<DiscordBotConfig>(Configuration);
-            services.AddSingleton<DiscordBot>();
+            services.AddSingleton(a =>
+            {
+                return new CommandService(new CommandServiceConfig
+                {
+                    CaseSensitiveCommands = false,
+                    DefaultRunMode = RunMode.Async,
+                    SeparatorChar = '|'
+                });
+            });
+            services.AddSingleton<ICommandHandler, CommandHandler>();
+            services.AddSingleton<IDiscordBot, DiscordBot>();
         }
     }
 }

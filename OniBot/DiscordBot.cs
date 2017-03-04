@@ -4,28 +4,35 @@ using Discord.Commands;
 using Discord.WebSocket;
 using Microsoft.Extensions.Options;
 using OniBot.Infrastructure;
+using OniBot.Interfaces;
 using System;
-using System.Threading;
+using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
 using System.Threading.Tasks;
 
 namespace OniBot
-{    class DiscordBot : IDisposable
+{
+    class DiscordBot : IDiscordBot
     {
         private DiscordSocketClient client;
-        private CommandHandler commandHandler;
+        private ICommandHandler _commandHandler;
         private static Random random = new Random();
-        private Timer timer;
+        private Dictionary<string, IBotBehavior> _behaviors = new Dictionary<string, IBotBehavior>();
         public static string[] games;
-        private IDiscordBotConfig _config;
+        private DiscordBotConfig _config;
+        private IOptions<DiscordBotConfig> _optionsConfig;
 
-        public DiscordBot(IOptions<DiscordBotConfig> config)
+        public DiscordBot(IOptions<DiscordBotConfig> config, ICommandHandler commandHandler)
         {
+            _optionsConfig = config;
             _config = config.Value;
-
             games = _config.Games;
+
+            _commandHandler = commandHandler;
         }
 
-        public async Task Run()
+        public async Task RunBotAsync()
         {
             client = new DiscordSocketClient(new DiscordSocketConfig
             {
@@ -39,20 +46,57 @@ namespace OniBot
             var map = new DependencyMap();
             map.Add(client);
 
-            commandHandler = new CommandHandler();
-            await commandHandler.Install(map);
+            await _commandHandler.InstallAsync(map);
 
             client.Log += OnLogAsync;
 
             try
             {
                 await DoConnect();
-                timer = new Timer(UpdateGame, client, TimeSpan.FromMilliseconds(0), TimeSpan.FromHours(1));
             }
             catch (Exception ex)
             {
                 Log(nameof(Exception), LogSeverity.Critical, $"{ex}");
                 throw;
+            }
+        }
+
+        public async Task RunBehaviorsAsync()
+        {
+            var assembly = Assembly.GetEntryAssembly();
+            var interfaceType = typeof(IBotBehavior);
+
+            var exportedTypes = assembly.ExportedTypes;
+
+            foreach (var type in exportedTypes)
+            {
+                try
+                {
+                    var typeInfo = type.GetTypeInfo();
+
+                    if (typeInfo.IsAssignableFrom(interfaceType) && !typeInfo.IsInterface && !typeInfo.IsAbstract)
+                    {
+                        var instance = (IBotBehavior)Activator.CreateInstance(type, new object[] { _optionsConfig });
+
+                        _behaviors.Add(instance.Name, instance);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Log(nameof(RunBehaviorsAsync), LogSeverity.Error, ex.ToString());
+                }
+            }
+
+            foreach (var behavior in _behaviors)
+            {
+                try
+                {
+                    await behavior.Value.RunAsync(client);
+                }
+                catch (Exception ex)
+                {
+                    Log(nameof(RunBehaviorsAsync), LogSeverity.Error, ex.ToString());
+                }
             }
         }
 
@@ -89,7 +133,7 @@ namespace OniBot
                 Log(msg.Source, msg.Severity, msg.Message);
             }
 
-            await Task.CompletedTask;
+            await Task.Yield();
         }
 
         public static void Log(string source, LogSeverity sev, string message)
@@ -118,19 +162,6 @@ namespace OniBot
             }
 
             Console.WriteLine($"{DateTime.Now.ToString("o")} {source}: {sev}: {message}");
-        }
-
-        internal void UpdateGame(object state)
-        {
-            var client = state as DiscordSocketClient;
-            try
-            {
-                client.SetGameAsync(games[random.Next(0, games.Length - 1)]).AsSync(false);
-            }
-            catch (Exception ex)
-            {
-                Log(nameof(UpdateGame), LogSeverity.Critical, ex.ToString());
-            }
         }
 
         public void Dispose()
