@@ -9,7 +9,7 @@ using OniBot.Infrastructure;
 
 namespace OniBot.Behaviors
 {
-    class UpdateGameBehavior : IBotBehavior, IDisposable
+    public class UpdateGameBehavior : IBotBehavior, IDisposable
     {
         public string Name => nameof(UpdateGameBehavior);
 
@@ -32,7 +32,7 @@ namespace OniBot.Behaviors
                 _timer = null;
             }
 
-            _timer = new Timer(UpdateGame, null, TimeSpan.FromSeconds(0), TimeSpan.FromMinutes(5));
+            _timer = new Timer(UpdateGame, botClient, TimeSpan.FromSeconds(0), TimeSpan.FromMinutes(5));
             await Task.Yield();
         }
 
@@ -41,21 +41,23 @@ namespace OniBot.Behaviors
             var client = state as DiscordSocketClient;
             if (client == null)
             {
-                Console.WriteLine($"client is a {state.GetType().Name}, and is not expected.");
+                DiscordBot.Log(nameof(UpdateGame), LogSeverity.Error, $"client is a {state.GetType().Name}, and is not expected.");
                 return;
             }
-
+            
             try
             {
                 var games = _config.Games;
-                client.SetGameAsync(games[_random.Next(0, games.Length - 1)]).AsSync(false);
+                var index = _random.Next(0, games.Length - 1);
+                var game = games[index];
+                client.SetGameAsync(game).AsSync(false);
             }
             catch (Exception ex)
             {
                 Console.WriteLine(ex);
 
                 //todo: log properly
-                //Log(nameof(UpdateGame), LogSeverity.Critical, ex.ToString());
+                DiscordBot.Log(nameof(UpdateGame), LogSeverity.Critical, ex.ToString());
             }
         }
 

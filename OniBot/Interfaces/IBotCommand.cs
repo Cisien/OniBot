@@ -4,7 +4,7 @@ using System.Text;
 
 namespace OniBot.Interfaces
 {
-    interface IBotCommand
+    public interface IBotCommand
     {
     }
 }

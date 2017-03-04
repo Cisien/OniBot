@@ -7,7 +7,6 @@ using OniBot.Infrastructure;
 using OniBot.Interfaces;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 
@@ -43,6 +42,8 @@ namespace OniBot
                 DefaultRetryMode = RetryMode.AlwaysRetry
             });
 
+            client.Connected += OnConnectedAsync;
+
             var map = new DependencyMap();
             map.Add(client);
 
@@ -52,7 +53,7 @@ namespace OniBot
 
             try
             {
-                await DoConnect();
+                await DoConnectAsync();
             }
             catch (Exception ex)
             {
@@ -62,6 +63,29 @@ namespace OniBot
         }
 
         public async Task RunBehaviorsAsync()
+        {
+            LoadBehaviors();
+            
+            foreach (var behavior in _behaviors)
+            {
+                try
+                {
+                    await behavior.Value.RunAsync(client);
+                    Log(nameof(RunBehaviorsAsync), LogSeverity.Info, $"Started behavior {behavior.Key}");
+                }
+                catch (Exception ex)
+                {
+                    Log(nameof(RunBehaviorsAsync), LogSeverity.Error, ex.ToString());
+                }
+            }
+        }
+
+        private async Task OnConnectedAsync()
+        {
+            await RunBehaviorsAsync();
+        }
+
+        private void LoadBehaviors()
         {
             var assembly = Assembly.GetEntryAssembly();
             var interfaceType = typeof(IBotBehavior);
@@ -74,33 +98,26 @@ namespace OniBot
                 {
                     var typeInfo = type.GetTypeInfo();
 
-                    if (typeInfo.IsAssignableFrom(interfaceType) && !typeInfo.IsInterface && !typeInfo.IsAbstract)
+                    if (interfaceType.IsAssignableFrom(type) && !typeInfo.IsInterface && !typeInfo.IsAbstract)
                     {
                         var instance = (IBotBehavior)Activator.CreateInstance(type, new object[] { _optionsConfig });
 
+                        if (instance == null)
+                        {
+                            Log(nameof(LoadBehaviors), LogSeverity.Error, $"Unable to create instance of behavior {type.FullName}");
+                        }
                         _behaviors.Add(instance.Name, instance);
+                        Log(nameof(LoadBehaviors), LogSeverity.Info, $"Loaded behavior {instance.Name}");
                     }
                 }
                 catch (Exception ex)
                 {
-                    Log(nameof(RunBehaviorsAsync), LogSeverity.Error, ex.ToString());
-                }
-            }
-
-            foreach (var behavior in _behaviors)
-            {
-                try
-                {
-                    await behavior.Value.RunAsync(client);
-                }
-                catch (Exception ex)
-                {
-                    Log(nameof(RunBehaviorsAsync), LogSeverity.Error, ex.ToString());
+                    Log(nameof(LoadBehaviors), LogSeverity.Error, ex.ToString());
                 }
             }
         }
 
-        private async Task DoConnect()
+        private async Task DoConnectAsync()
         {
             var maxAttempts = 10;
             var currentAttempt = 0;
@@ -115,7 +132,7 @@ namespace OniBot
                 }
                 catch (Exception ex)
                 {
-                    Log(nameof(DoConnect), LogSeverity.Warning, $"Fialed to connect: {ex.Message}");
+                    Log(nameof(DoConnectAsync), LogSeverity.Warning, $"Fialed to connect: {ex.Message}");
                     await Task.Delay(currentAttempt * 1000);
                 }
             }
@@ -166,7 +183,8 @@ namespace OniBot
 
         public void Dispose()
         {
-            client?.StopAsync().AsSync(false);
+            client?.LogoutAsync()?.AsSync(false);
+            client?.StopAsync()?.AsSync(false);
             client?.Dispose();
         }
     }

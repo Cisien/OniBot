@@ -27,7 +27,7 @@ namespace OniBot
             _map = map;
             _client = _map.Get<DiscordSocketClient>();
             map.Add(_commands);
-
+            
             var modules = await _commands.AddModulesAsync(Assembly.GetEntryAssembly());
             foreach (var module in modules)
             {

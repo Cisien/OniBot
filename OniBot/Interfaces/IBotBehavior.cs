@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 
 namespace OniBot.Interfaces
 {
-    interface IBotBehavior
+    public interface IBotBehavior
     {
         string Name { get; }
 
