@@ -1,9 +1,6 @@
-﻿using Microsoft.Extensions.Configuration;
+﻿using Microsoft.Extensions.DependencyInjection;
 using OniBot.Infrastructure;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
 
 namespace OniBot
@@ -12,68 +9,36 @@ namespace OniBot
     {
         static void Main(string[] args)
         {
-            var ctx = new SynchronizationContext();
-
-            AsyncPump.Run(a => MainAsync(args), args);
+            var program = new Program();
+            AsyncPump.Run(a => program.MainAsync(args), args);
             Console.ReadKey();
         }
 
-        private static readonly CancellationTokenSource cts = new CancellationTokenSource();
-
-        private static async Task MainAsync(string[] args)
+        private Program()
         {
-            Console.CancelKeyPress += (s, e) =>
-            {
-                cts.Cancel();
-            };
+            _serviceCollection = new ServiceCollection();
+        }
+
+        private readonly IServiceCollection _serviceCollection;
+        private IServiceProvider _serviceProvider;
+
+        private async Task MainAsync(string[] args)
+        {
+            var startup = new Startup(args);
+            startup.ConfigureServices(_serviceCollection);
+            _serviceProvider = _serviceCollection.BuildServiceProvider(true);
 
             try
             {
-                var commandLineConfig = ParseCommandline(args);
-                var config = BuildConfig(commandLineConfig);
-
-                await Task.Yield();
+                using (var bot = _serviceProvider.GetService<DiscordBot>())
+                {
+                    await bot.Run();
+                }
             }
             catch (Exception ex)
             {
-                Console.WriteLine(ex);
+                Console.Error.WriteLine(ex);
             }
-        }
-
-        private static IConfigurationRoot BuildConfig(IConfigurationRoot commandLineConfig)
-        {
-            var environment = commandLineConfig["environment"]?.ToLower() ?? "production";
-            var config = new ConfigurationBuilder();
-            config.AddJsonFile("config.json", false);
-            config.AddJsonFile($"config.{environment}.json", true);
-            config.AddEnvironmentVariables();
-            if (environment == "development")
-            {
-                config.AddUserSecrets();
-            }
-            config.AddInMemoryCollection(commandLineConfig.AsEnumerable());
-
-            var configuration = config.Build();
-
-#if DEBUG
-            foreach (var key in configuration.AsEnumerable())
-            {
-                Console.WriteLine($"{key.Key.PadRight(40)}: {key.Value}");
-            }
-#endif
-            return configuration;
-        }
-
-        private static IConfigurationRoot ParseCommandline(string[] args)
-        {
-            var switchMappings = new Dictionary<string, string>
-                {
-                    { "-environment", "environment" }
-                };
-            var commandLine = new ConfigurationBuilder();
-            commandLine.AddCommandLine(args, switchMappings);
-            var commandLineConfig = commandLine.Build();
-            return commandLineConfig;
         }
     }
 }
