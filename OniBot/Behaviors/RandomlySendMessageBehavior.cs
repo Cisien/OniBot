@@ -54,6 +54,7 @@ namespace OniBot.Behaviors
             var message = messages[index];
             await arg.Channel.SendMessageAsync(message);
 
+            _messageToSendOn = _random.Next(50, 101);
         }
     }
 }
