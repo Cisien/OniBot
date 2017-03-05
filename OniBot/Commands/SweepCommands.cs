@@ -7,15 +7,15 @@ using System.Threading.Tasks;
 
 namespace OniBot.Commands
 {
-    public class AttackCommands : ModuleBase, IBotCommand
+    public class SweepCommands : ModuleBase, IBotCommand
     {
         private static Dictionary<string, string> equiped = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
         private static Dictionary<string, int> modifier = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
         private static readonly Random random = new Random();
 
-        [Command("attack", RunMode = RunMode.Async)]
-        [Alias("at")]
-        [Summary("Attacks someone")]
+        [Command("sweep", RunMode = RunMode.Async)]
+        [Alias("sw")]
+        [Summary("Cleans up the mess in the room")]
         public async Task Attack([Remainder] string target)
         {
             var user = Context.User as SocketGuildUser;
@@ -26,15 +26,15 @@ namespace OniBot.Commands
 
             var username = string.IsNullOrWhiteSpace(user.Nickname) ? user.Username : user.Nickname;
             var hasEquiped = equiped.ContainsKey(username);
-            var weapon = hasEquiped ? $"with {equiped[username]} " : string.Empty;
+            var weapon = hasEquiped ? $" with a {equiped[username]}" : string.Empty;
             int dmgModifier = hasEquiped ? modifier[username] : 50;
             string damage = random.Next(0, dmgModifier).ToString("N0");
-            await ReplyAsync($"_{username} attacks {target} {weapon}for {damage} damage._");
+            await ReplyAsync($"_{username} sweeps up {target}{weapon}._");
         }
 
         [Command("equip", RunMode = RunMode.Async)]
         [Alias("eq")]
-        [Summary("Equips a weapon to use for attacking")]
+        [Summary("Equips a broom to use for sweeping")]
         public async Task Equip([Remainder] string weapon)
         {
             var user = Context.User as SocketGuildUser;
@@ -46,12 +46,12 @@ namespace OniBot.Commands
 
             equiped[username] = weapon;
             modifier[username] = random.Next(50, int.MaxValue);
-            await ReplyAsync($"_{username} equips {weapon}_");
+            await ReplyAsync($"_{username} equips a {weapon}_");
         }
 
         [Command("unequip", RunMode = RunMode.Async)]
         [Alias("ueq")]
-        [Summary("Sheathes equiped weapon")]
+        [Summary("Sheathes equiped broom")]
         public async Task Unequip()
         {
             var user = Context.User as SocketGuildUser;
@@ -63,7 +63,7 @@ namespace OniBot.Commands
 
             equiped.Remove(username);
             modifier.Remove(username);
-            await ReplyAsync($"_{username} puts away their weapon_");
+            await ReplyAsync($"_{username} puts away their cleaning device._");
         }
     }
 }
