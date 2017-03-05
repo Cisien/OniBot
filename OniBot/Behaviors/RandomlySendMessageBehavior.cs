@@ -52,7 +52,8 @@ namespace OniBot.Behaviors
             
             var index = _random.Next(0, messages.Length - 1);
             var message = messages[index];
-            await arg.Channel.SendMessageAsync(message);
+            //await arg.Channel.SendFileAsync("c:\\something.jpg", "Look at my something!");
+            await arg.Channel.SendMessageAsync(message, false);
 
             _messageToSendOn = _random.Next(50, 101);
             _messagesSinceLastSend = 0;
