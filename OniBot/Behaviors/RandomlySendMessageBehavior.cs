@@ -67,8 +67,14 @@ namespace OniBot.Behaviors
 
                 var temp = $"{Guid.NewGuid()}.{message.Image.Split('.').LastOrDefault()}";
                 File.WriteAllBytes(temp, image);
-
-                await arg.Channel.SendFileAsync(temp, message.Message);
+                try
+                {
+                    await arg.Channel.SendFileAsync(temp, message.Message);
+                }
+                finally
+                {
+                    File.Delete(temp);
+                }
             }
             _messageToSendOn = _random.Next(_config.MinMessages, _config.MaxMessages);
             _messagesSinceLastSend = 0;
