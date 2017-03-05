@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace OniBot
+namespace OniBot.CommandConfigs
 {
     public class CustomCommandsConfig
     {

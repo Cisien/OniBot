@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Options;
 using System;
 using System.Text;
+using OniBot.Infrastructure;
 
 namespace OniBot
 {
@@ -48,24 +49,54 @@ namespace OniBot
             await LoadAllModules();
         }
 
-        public async Task<string> PrintCommands(ICommandContext context)
+        public async Task<string> PrintCommands(ICommandContext context, string command)
         {
             var sb = new StringBuilder();
-            sb.AppendLine($"{"Command".PadRight(20)}{"Parameters".PadRight(20)}Summary");
-            foreach (var command in _commands.Modules.SelectMany(a => a.Commands))
+            if (string.IsNullOrWhiteSpace(command))
             {
-                var permission = await command.CheckPreconditionsAsync(context, _map);
-                if (permission.IsSuccess)
+
+                sb.AppendLine($"{"Command".PadRight(20)}{"Parameters".PadRight(20)}Summary");
+                foreach (var cmd in _commands.Modules.SelectMany(a => a.Commands))
                 {
-                    foreach (var alias in command.Aliases)
+                    var permission = await cmd.CheckPreconditionsAsync(context, _map);
+                    if (permission.IsSuccess)
                     {
-                        sb.AppendLine($"{alias.PadRight(20)}{string.Join(", ", command.Parameters.Select(a => a.Name)).PadRight(20)}{command.Summary}");
+                        foreach (var alias in cmd.Aliases)
+                        {
+                            sb.AppendLine($"!{alias.PadRight(19)}{string.Join(", ", cmd.Parameters.Select(a => a.Name)).PadRight(20)}{cmd.Summary}");
+                        }
                     }
                 }
+            }
+            else
+            {
+                if (command.StartsWith("!"))
+                {
+                    command = command.Substring(1);
+                }
+
+                var cmd = _commands.Modules.SelectMany(a => a.Commands).SingleOrDefault(a => a.Name == command && HasPermission(a, context));
+
+                if (cmd != null)
+                {
+                    sb.AppendLine(cmd.Name);
+                    sb.AppendLine(cmd.Summary);
+                    sb.AppendLine($"{"Parameter".PadRight(20)}Summary");
+                    foreach (var param in cmd.Parameters)
+                    {
+                        sb.AppendLine($"{param.Name.PadRight(20)}{param.Summary}");
+                    }
+                }
+
             }
 
             await Task.Yield();
             return sb.ToString();
+        }
+
+        private bool HasPermission(CommandInfo a, ICommandContext context)
+        {
+            return a.CheckPreconditionsAsync(context, _map).AsSync(false).IsSuccess;
         }
 
         private async Task LoadAllModules()

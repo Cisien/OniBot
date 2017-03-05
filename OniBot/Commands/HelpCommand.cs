@@ -17,9 +17,10 @@ namespace OniBot.Commands
         [Command("help")]
         [Summary("Prints the command's help message")]
         [RequireUserPermission(GuildPermission.SendMessages)]
-        public async Task Help()
+        public async Task Help(
+            [Summary("[Optional] The name of the command to view the help of.")]string command = null)
         {
-            var helpText = await _commandHandler.PrintCommands(Context);
+            var helpText = await _commandHandler.PrintCommands(Context, command);
             var dmChannel = await Context.User.CreateDMChannelAsync();
             await dmChannel.SendMessageAsync($"```{helpText}```");
         }

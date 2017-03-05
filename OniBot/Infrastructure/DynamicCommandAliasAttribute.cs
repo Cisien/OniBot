@@ -1,4 +1,5 @@
 ﻿using Discord.Commands;
+using OniBot.CommandConfigs;
 using System.Linq;
 
 namespace OniBot.Infrastructure

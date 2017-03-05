@@ -8,6 +8,6 @@ namespace OniBot.Interfaces
     {
         Task InstallAsync(IDependencyMap map);
         Task ReloadCommands();
-        Task<string> PrintCommands(ICommandContext context);
+        Task<string> PrintCommands(ICommandContext context, string command);
     }
 }

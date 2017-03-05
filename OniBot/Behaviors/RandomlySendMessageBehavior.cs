@@ -9,6 +9,7 @@ using System.Linq;
 using System.IO;
 using OniBot.Infrastructure;
 using System.Collections.Generic;
+using OniBot.CommandConfigs;
 
 namespace OniBot.Behaviors
 {

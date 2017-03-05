@@ -17,10 +17,11 @@ namespace OniBot.Commands
         private static HttpClient client = new HttpClient();
 
         [Command("randommeme")]
-        [Summary("Get dank, son!")]
+        [Summary("Searches Imgur and provides a random image from the results.")]
         [RequireUserPermission(GuildPermission.Administrator)]
         [RequireOwner]
-        public async Task Meme([Remainder] string search)
+        public async Task Meme(
+            [Summary("The search term to submit to Imgur.")][Remainder] string search)
         {
             var img = await FindImage($"meme+{search}");
             if (img == null)

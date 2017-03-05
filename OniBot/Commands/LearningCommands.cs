@@ -1,6 +1,7 @@
 ﻿using Discord;
 using Discord.Commands;
 using Newtonsoft.Json;
+using OniBot.CommandConfigs;
 using OniBot.Infrastructure;
 using OniBot.Interfaces;
 using System.Threading.Tasks;
@@ -18,7 +19,9 @@ namespace OniBot.Commands
         [Command("learn")]
         [Summary("Teaches the bot a command.")]
         [RequireUserPermission(GuildPermission.ManageEmojis)]
-        public async Task Learn(string command, [Remainder]string response)
+        public async Task Learn(
+            [Summary("The name of the command to add")]string command, 
+            [Summary("The value to send as the response whenever this command is used.")][Remainder]string response)
         {
             var customCommands = Configuration.Get<CustomCommandsConfig>("customcommands");
             command = command.ToLower();
@@ -37,7 +40,8 @@ namespace OniBot.Commands
         [Command("forget")]
         [Summary("Instructs the bot to forget a command.")]
         [RequireUserPermission(GuildPermission.ManageEmojis)]
-        public async Task Forget(string command)
+        public async Task Forget(
+            [Summary("The name of the command to forget.")]string command)
         {
             var customCommands = Configuration.Get<CustomCommandsConfig>("customcommands");
             command = command.ToLower();
@@ -56,7 +60,8 @@ namespace OniBot.Commands
         [Command("showcustomcommands")]
         [Summary("Shows the current list of custom commands")]
         [RequireUserPermission(GuildPermission.ManageEmojis)]
-        public async Task Show(string command = null)
+        public async Task Show(
+        [Summary("[Optional] The name of the command to show. If ommited, all commands will be shown.")]string command = null)
         {
             var customCommands = Configuration.Get<CustomCommandsConfig>("customcommands");
             var dmChannel = await Context.User.CreateDMChannelAsync();

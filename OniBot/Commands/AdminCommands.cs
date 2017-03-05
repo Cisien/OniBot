@@ -6,7 +6,7 @@ using OniBot.Interfaces;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using System;
+using OniBot.CommandConfigs;
 
 namespace OniBot.Commands
 {
@@ -15,8 +15,9 @@ namespace OniBot.Commands
         [Command("randomly")]
         [Summary("Configures the random message behavior")]
         [RequireUserPermission(GuildPermission.Administrator)]
-        [RequireOwner]
-        public async Task Randomly(string command, [Remainder]string message = null)
+        public async Task Randomly(
+            [Summary("The command to execute: add|remove|min|max|show")]string command, 
+            [Summary("add: a message, with an optional link a the end, or a message as a file attachment. remove is just the message portion.")][Remainder]string message = null)
         {
             command = command.ToLower();
 

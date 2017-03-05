@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace OniBot
+namespace OniBot.CommandConfigs
 {
     public class RandomlyConfig
     {
