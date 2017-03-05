@@ -19,14 +19,15 @@ namespace OniBot
         private static Random random = new Random();
         private Dictionary<string, IBotBehavior> _behaviors = new Dictionary<string, IBotBehavior>();
         public static string[] games;
-        private BotConfig _config;
         private IOptions<BotConfig> _optionsConfig;
+        
+        public static BotConfig Configuration { get; set; }
 
         public DiscordBot(IOptions<BotConfig> config, ICommandHandler commandHandler)
         {
             _optionsConfig = config;
-            _config = config.Value;
-            games = _config.Games;
+            Configuration = config.Value;
+            games = Configuration.Games;
 
             _commandHandler = commandHandler;
         }
@@ -35,9 +36,9 @@ namespace OniBot
         {
             client = new DiscordSocketClient(new DiscordSocketConfig
             {
-                LogLevel = _config.LogLevel,
-                AlwaysDownloadUsers = _config.AlwaysDownloadUsers,
-                MessageCacheSize = _config.MessageCacheSize,
+                LogLevel = Configuration.LogLevel,
+                AlwaysDownloadUsers = Configuration.AlwaysDownloadUsers,
+                MessageCacheSize = Configuration.MessageCacheSize,
                 AudioMode = AudioMode.Outgoing,
                 DefaultRetryMode = RetryMode.AlwaysRetry
             });
@@ -126,7 +127,7 @@ namespace OniBot
                 currentAttempt++;
                 try
                 {
-                    await client.LoginAsync(TokenType.Bot, _config.Token);
+                    await client.LoginAsync(TokenType.Bot, Configuration.Token);
                     await client.StartAsync();
                     break;
                 }

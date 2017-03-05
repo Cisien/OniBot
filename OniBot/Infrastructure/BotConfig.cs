@@ -11,5 +11,8 @@ namespace OniBot.Interfaces
         public string Token { get; set; }
         public char PrefixChar { get; set; }
         public string[] RandomMessages { get; set; }
+        public string ImgurClientId { get; set; }
+        public string ImgurClientSecret { get; set; }
+
     }
 }

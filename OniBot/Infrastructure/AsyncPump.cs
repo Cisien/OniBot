@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Runtime.ExceptionServices;
 using System.Text;
 using System.Threading;
@@ -8,6 +9,7 @@ using System.Threading.Tasks;
 
 namespace OniBot.Infrastructure
 {
+    [DebuggerStepThrough]
     public class AsyncPump
     {
         public delegate Task SingleArgumentDelegate(object args);

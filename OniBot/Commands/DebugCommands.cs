@@ -1,7 +1,7 @@
-﻿using Discord.Commands;
+﻿using Discord;
+using Discord.Commands;
 using OniBot.Interfaces;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Text;
@@ -13,7 +13,7 @@ namespace OniBot.Commands
     {
         [Command("dumpbot", RunMode = RunMode.Async)]
         [Summary("Gets the current run state of the bot")]
-        [RequireUserPermission(Discord.GuildPermission.Administrator)]
+        [RequireUserPermission(GuildPermission.Administrator)]
         public async Task DumpMyself()
         {
             var props = DumpProps(Context.Client.CurrentUser);
@@ -22,7 +22,7 @@ namespace OniBot.Commands
 
         [Command("dumpuser")]
         [Summary("Gets the current run state of a user")]
-        [RequireUserPermission(Discord.GuildPermission.Administrator)]
+        [RequireUserPermission(GuildPermission.Administrator)]
         public async Task DumpUser([Remainder] string user)
         {
             var users = await Context.Guild.GetUsersAsync();
@@ -38,7 +38,7 @@ namespace OniBot.Commands
 
         [Command("dumpchat")]
         [Summary("Gets the current run state of a user")]
-        [RequireUserPermission(Discord.GuildPermission.Administrator)]
+        [RequireUserPermission(GuildPermission.Administrator)]
         public async Task DumpChat([Remainder] string count)
         {
             var amount = int.Parse(count);
@@ -52,6 +52,7 @@ namespace OniBot.Commands
                     var props = DumpProps(message);
 
                     await userDmChannel.SendMessageAsync(props);
+                    await Task.Delay(TimeSpan.FromSeconds(2));
                 }
             }
         }

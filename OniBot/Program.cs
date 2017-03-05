@@ -49,6 +49,7 @@ namespace OniBot
             {
                 Console.Error.WriteLine(ex);
             }
+            Console.ReadKey();
         }
     }
 }
