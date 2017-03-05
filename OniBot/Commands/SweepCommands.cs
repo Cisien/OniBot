@@ -1,5 +1,7 @@
-﻿using Discord.Commands;
+﻿using Discord;
+using Discord.Commands;
 using Discord.WebSocket;
+using OniBot.Infrastructure;
 using OniBot.Interfaces;
 using System;
 using System.Collections.Generic;
@@ -12,9 +14,10 @@ namespace OniBot.Commands
         private static Dictionary<string, string> equiped = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
         private static readonly Random random = new Random();
 
-        [Command("sweep", RunMode = RunMode.Async)]
+        [Command("sweep")]
         [Alias("sw")]
         [Summary("Cleans up the mess in the room")]
+        [RequireUserPermission(ChannelPermission.SendMessages)]
         public async Task Attack([Remainder] string target)
         {
             var user = Context.User as SocketGuildUser;
@@ -23,15 +26,16 @@ namespace OniBot.Commands
                 return;
             }
 
-            var username = string.IsNullOrWhiteSpace(user.Nickname) ? user.Username : user.Nickname;
+            var username = await user.GetUserName();
             var hasEquiped = equiped.ContainsKey(username);
             var weapon = hasEquiped ? $" with a {equiped[username]}" : string.Empty;
             await ReplyAsync($"_{username} sweeps up {target}{weapon}._");
         }
 
-        [Command("equip", RunMode = RunMode.Async)]
+        [Command("equip")]
         [Alias("eq")]
         [Summary("Equips a broom to use for sweeping")]
+        [RequireUserPermission(ChannelPermission.SendMessages)]
         public async Task Equip([Remainder] string weapon)
         {
             var user = Context.User as SocketGuildUser;
@@ -39,15 +43,16 @@ namespace OniBot.Commands
             {
                 return;
             }
-            var username = string.IsNullOrWhiteSpace(user.Nickname) ? user.Username : user.Nickname;
+            var username = await user.GetUserName();
 
             equiped[username] = weapon;
             await ReplyAsync($"_{username} equips a {weapon}_");
         }
 
-        [Command("unequip", RunMode = RunMode.Async)]
+        [Command("unequip")]
         [Alias("ueq")]
         [Summary("Sheathes equiped broom")]
+        [RequireUserPermission(ChannelPermission.SendMessages)]
         public async Task Unequip()
         {
             var user = Context.User as SocketGuildUser;
@@ -55,7 +60,7 @@ namespace OniBot.Commands
             {
                 return;
             }
-            var username = string.IsNullOrWhiteSpace(user.Nickname) ? user.Username : user.Nickname;
+            var username = await user.GetUserName();
 
             equiped.Remove(username);
             await ReplyAsync($"_{username} puts away their cleaning device._");

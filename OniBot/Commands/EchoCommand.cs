@@ -6,7 +6,7 @@ namespace OniBot.Commands
 {
     public class EchoCommand : ModuleBase, IBotCommand
     {
-        [Command("echo", RunMode = RunMode.Async)]
+        [Command("echo")]
         [Summary("Repeats the text that follows")]
         [RequireOwner]
         public async Task Echo([Remainder]string message)

@@ -11,7 +11,7 @@ namespace OniBot.Commands
 {
     public class DebugCommands : ModuleBase, IBotCommand
     {
-        [Command("dumpbot", RunMode = RunMode.Async)]
+        [Command("dumpbot")]
         [Summary("Gets the current run state of the bot")]
         [RequireOwner]
         public async Task DumpMyself()

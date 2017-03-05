@@ -1,4 +1,5 @@
-﻿using Discord.Commands;
+﻿using Discord;
+using Discord.Commands;
 using Discord.WebSocket;
 using OniBot.Interfaces;
 using System.Threading.Tasks;
@@ -7,8 +8,9 @@ namespace OniBot.Commands
 {
     public class BlameCommand : ModuleBase, IBotCommand
     {
-        [Command("blame", RunMode = RunMode.Async)]
+        [Command("blame")]
         [Summary("Blames someone or something")]
+        [RequireUserPermission(ChannelPermission.SendMessages)]
         public async Task Blame(string toBlame, [Remainder] string because = null)
         {
             var user = Context.User as SocketGuildUser;

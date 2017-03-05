@@ -15,12 +15,12 @@ namespace OniBot
     class DiscordBot : IDiscordBot
     {
         private DiscordSocketClient client;
-        private ICommandHandler _commandHandler;
+        private static ICommandHandler _commandHandler;
         private static Random random = new Random();
         private Dictionary<string, IBotBehavior> _behaviors = new Dictionary<string, IBotBehavior>();
         public static string[] games;
         private IOptions<BotConfig> _optionsConfig;
-        
+
         public static BotConfig Configuration { get; set; }
 
         public DiscordBot(IOptions<BotConfig> config, ICommandHandler commandHandler)
@@ -31,6 +31,8 @@ namespace OniBot
 
             _commandHandler = commandHandler;
         }
+
+        public static ICommandHandler CommandHandler { get; private set; }
 
         public async Task RunBotAsync()
         {
@@ -66,7 +68,7 @@ namespace OniBot
         public async Task RunBehaviorsAsync()
         {
             LoadBehaviors();
-            
+
             foreach (var behavior in _behaviors)
             {
                 try

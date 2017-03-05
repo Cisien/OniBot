@@ -3,7 +3,6 @@ using OniBot.Interfaces;
 using System;
 using System.Threading.Tasks;
 using Discord;
-using System.Linq;
 using System.Net.Http;
 using System.Text.RegularExpressions;
 using System.IO;
@@ -17,7 +16,7 @@ namespace OniBot.Commands
         private static readonly Regex imageRegex = new Regex(@"//i.imgur.com(?<img>/\w+).(?<ext>png|jpg|gif)"".+alt=""(?<desc>.+)"" \w", RegexOptions.Compiled);
         private static HttpClient client = new HttpClient();
 
-        [Command("randommeme", RunMode = RunMode.Async)]
+        [Command("randommeme")]
         [Summary("Get dank, son!")]
         [RequireUserPermission(GuildPermission.Administrator)]
         [RequireOwner]

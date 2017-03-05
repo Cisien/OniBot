@@ -51,7 +51,7 @@ namespace OniBot
                 return new CommandService(new CommandServiceConfig
                 {
                     CaseSensitiveCommands = false,
-                    DefaultRunMode = RunMode.Async,
+                    DefaultRunMode = RunMode.Sync,
                     SeparatorChar = '|'
                 });
             });

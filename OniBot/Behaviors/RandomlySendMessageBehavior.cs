@@ -8,14 +8,15 @@ using System.Net.Http;
 using System.Linq;
 using System.IO;
 using OniBot.Infrastructure;
+using System.Collections.Generic;
 
 namespace OniBot.Behaviors
 {
     public class RandomlySendMessageBehavior : IBotBehavior
     {
         private static Random _random = new Random();
-        private int _messagesSinceLastSend = 0;
-        private int _messageToSendOn;
+        private Dictionary<ulong, int> _messagesSinceLastSend = new Dictionary<ulong, int>();
+        private Dictionary<ulong, int> _messageToSendOn = new Dictionary<ulong, int>();
         private RandomlyConfig _config;
         private DiscordSocketClient _client;
         private BotConfig _globalConfig;
@@ -40,7 +41,6 @@ namespace OniBot.Behaviors
             _config = Configuration.Get<RandomlyConfig>("randomly");
             _client = discordClient;
 
-            _messageToSendOn = _random.Next(_config.MinMessages, _config.MaxMessages);
             discordClient.MessageReceived += OnMessageReceived;
             await Task.Yield();
         }
@@ -55,9 +55,18 @@ namespace OniBot.Behaviors
                 return;
             }
 
-            _messagesSinceLastSend++;
+            var channelId = arg.Channel.Id;
+            if (!_messagesSinceLastSend.ContainsKey(channelId))  {
+                _messagesSinceLastSend.Add(channelId, 0);
+            }
 
-            if (_messagesSinceLastSend < _messageToSendOn)
+            if(!_messageToSendOn.ContainsKey(channelId)){
+                _messageToSendOn.Add(channelId, _random.Next(_config.MinMessages, _config.MaxMessages));
+            }
+
+            _messagesSinceLastSend[channelId]++;
+
+            if (_messagesSinceLastSend[channelId] < _messageToSendOn[channelId])
             {
                 return;
             }
@@ -87,8 +96,8 @@ namespace OniBot.Behaviors
                     File.Delete(temp);
                 }
             }
-            _messageToSendOn = _random.Next(_config.MinMessages, _config.MaxMessages);
-            _messagesSinceLastSend = 0;
+            _messageToSendOn[channelId] = _random.Next(_config.MinMessages, _config.MaxMessages);
+            _messagesSinceLastSend[channelId] = 0;
             _config = Configuration.Get<RandomlyConfig>("randomly");
         }
     }
