@@ -6,6 +6,8 @@ using System.Threading;
 using Discord.WebSocket;
 using Microsoft.Extensions.Options;
 using OniBot.Infrastructure;
+using OniBot.CommandConfigs;
+using System.Collections.Generic;
 
 namespace OniBot.Behaviors
 {
@@ -14,13 +16,11 @@ namespace OniBot.Behaviors
         public string Name => nameof(UpdateGameBehavior);
 
         private Timer _timer;
-        private readonly BotConfig _config;
-        private static Random _random;
+        private readonly BotConfig _globalConfig;
+        private static Random _random = new Random();
 
         public UpdateGameBehavior(IOptions<BotConfig> config)
         {
-            _config = config.Value;
-            _random = new Random();
         }
 
         public async Task RunAsync(IDiscordClient botClient)
@@ -44,19 +44,24 @@ namespace OniBot.Behaviors
                 DiscordBot.Log(nameof(UpdateGame), LogSeverity.Error, $"client is a {state.GetType().Name}, and is not expected.");
                 return;
             }
-            
+
+            var config = Configuration.Get<GamesConfig>("updategame");
+            if (config?.Games == null || config.Games.Count == 0)
+            {
+                config.Games = new List<string>() { "OxygenNotIncluded" };
+            }
+
             try
             {
-                var games = _config.Games;
-                var index = _random.Next(0, games.Length - 1);
+                var games = config.Games;
+                var index = _random.Next(0, games.Count - 1);
                 var game = games[index];
                 client.SetGameAsync(game).AsSync(false);
             }
             catch (Exception ex)
             {
                 Console.WriteLine(ex);
-
-                //todo: log properly
+                
                 DiscordBot.Log(nameof(UpdateGame), LogSeverity.Critical, ex.ToString());
             }
         }
