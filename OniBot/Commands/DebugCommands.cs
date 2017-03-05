@@ -13,19 +13,22 @@ namespace OniBot.Commands
     {
         [Command("dumpbot", RunMode = RunMode.Async)]
         [Summary("Gets the current run state of the bot")]
-        [RequireUserPermission(GuildPermission.Administrator)]
+        [RequireOwner]
         public async Task DumpMyself()
         {
+
+            var userDmChannel = await Context.User.CreateDMChannelAsync();
             var props = DumpProps(Context.Client.CurrentUser);
-            await ReplyAsync(props);
+            await userDmChannel.SendMessageAsync(props);
         }
 
         [Command("dumpuser")]
         [Summary("Gets the current run state of a user")]
-        [RequireUserPermission(GuildPermission.Administrator)]
+        [RequireOwner]
         public async Task DumpUser([Remainder] string user)
         {
             var users = await Context.Guild.GetUsersAsync();
+            var userDmChannel = await Context.User.CreateDMChannelAsync();
             var selectedUser = users.SingleOrDefault(a => a.Mention == user || a.Mention == user.Replace("<@", "<@!"));
             if (selectedUser == null)
             {
@@ -33,17 +36,17 @@ namespace OniBot.Commands
             }
 
             var props = DumpProps(selectedUser);
-            await ReplyAsync(props);
+            await userDmChannel.SendMessageAsync(props);
         }
 
         [Command("dumpchat")]
         [Summary("Gets the current run state of a user")]
-        [RequireUserPermission(GuildPermission.Administrator)]
+        [RequireOwner]
         public async Task DumpChat([Remainder] string count)
         {
             var amount = int.Parse(count);
 
-            var messages = await Context.Channel.GetMessagesAsync(limit: amount, fromMessageId: Context.Message.Id, dir: Discord.Direction.Before).ToList();
+            var messages = await Context.Channel.GetMessagesAsync(limit: amount, fromMessageId: Context.Message.Id, dir: Direction.Before).ToList();
             var userDmChannel = await Context.User.CreateDMChannelAsync();
             foreach (var messageContainer in messages)
             {

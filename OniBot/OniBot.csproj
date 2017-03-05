@@ -29,6 +29,9 @@
     <None Update="config.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <None Update="Dockerfile">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Update="Imgur.API.dll">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>

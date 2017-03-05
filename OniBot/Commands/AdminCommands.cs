@@ -3,12 +3,10 @@ using Discord.Commands;
 using Newtonsoft.Json;
 using OniBot.Infrastructure;
 using OniBot.Interfaces;
-using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
+using System;
 
 namespace OniBot.Commands
 {
@@ -57,15 +55,14 @@ namespace OniBot.Commands
         private async Task DoDefault()
         {
             var dmChannel = await Context.User.CreateDMChannelAsync();
-            await dmChannel.SendMessageAsync("Usage: add|remove|min|max message");
+            await dmChannel.SendMessageAsync("Usage: add message [image url]|remove message|min number|max number|show");
         }
 
         private async Task DoShow(RandomlyConfig config)
         {
             var configTxt = JsonConvert.SerializeObject(config, Formatting.Indented);
             var dmChannel = await Context.User.CreateDMChannelAsync();
-            await dmChannel.SendMessageAsync(configTxt);
-
+            await dmChannel.SendMessageAsync($"```{configTxt}```");
         }
 
         private async Task DoMin(string message, RandomlyConfig config)

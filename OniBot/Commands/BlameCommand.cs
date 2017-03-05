@@ -8,8 +8,8 @@ namespace OniBot.Commands
     public class BlameCommand : ModuleBase, IBotCommand
     {
         [Command("blame", RunMode = RunMode.Async)]
-        [Summary("Blames someone")]
-        public async Task Blame(string toBlame, [Remainder] string because)
+        [Summary("Blames someone or something")]
+        public async Task Blame(string toBlame, [Remainder] string because = null)
         {
             var user = Context.User as SocketGuildUser;
 

@@ -8,6 +8,7 @@ namespace OniBot.Commands
     {
         [Command("echo", RunMode = RunMode.Async)]
         [Summary("Repeats the text that follows")]
+        [RequireOwner]
         public async Task Echo([Remainder]string message)
         {
             await ReplyAsync(message);
