@@ -1,4 +1,5 @@
-﻿using Discord;
+﻿using System;
+using Discord;
 
 namespace OniBot.Interfaces
 {
@@ -10,9 +11,13 @@ namespace OniBot.Interfaces
         public int MessageCacheSize { get; set; }
         public string Token { get; set; }
         public char PrefixChar { get; set; }
-        public string[] RandomMessages { get; set; }
-        public string ImgurClientId { get; set; }
-        public string ImgurClientSecret { get; set; }
+        public ImageMessage[] RandomMessages { get; set; }
+        public int MinMessages { get; set; }
+        public int MaxMessages { get; set; }
+    }
 
+    public class ImageMessage {
+    public string Message { get; set; }
+    public string Image{ get; set; }
     }
 }

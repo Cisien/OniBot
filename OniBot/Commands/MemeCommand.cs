@@ -20,6 +20,7 @@ namespace OniBot.Commands
         [Command("randommeme", RunMode = RunMode.Async)]
         [Summary("Get dank, son!")]
         [RequireUserPermission(GuildPermission.Administrator)]
+        [RequireOwner]
         public async Task Meme([Remainder] string search)
         {
             var img = await FindImage($"meme+{search}");

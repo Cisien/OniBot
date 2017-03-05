@@ -8,8 +8,14 @@
   "Token": "Fill me in!",
   "PrefixChar": "!",
   "RandomMessages": [
-    "Look at me!",
-    "Suffocating!",
-    "Breaking your things!"
-  ]
+    {
+      "Message": "Breaking your things!",
+      "Image": "https://cdn.discordapp.com/attachments/287583710751096832/287648013420068884/2017-03-04.png"
+    },
+    { "Message": "Look at me!" },
+    { "Message": "Suffocating!" },
+    { "Message": "Breaking your things!" }
+  ],
+  "MinMessages": 50,
+  "MaxMessages": 100
 }

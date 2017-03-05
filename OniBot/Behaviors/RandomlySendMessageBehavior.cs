@@ -1,11 +1,12 @@
 ﻿using OniBot.Interfaces;
 using System;
-using System.Collections.Generic;
-using System.Text;
 using Discord;
 using System.Threading.Tasks;
 using Discord.WebSocket;
 using Microsoft.Extensions.Options;
+using System.Net.Http;
+using System.Linq;
+using System.IO;
 
 namespace OniBot.Behaviors
 {
@@ -16,8 +17,10 @@ namespace OniBot.Behaviors
         private int _messageToSendOn;
         private BotConfig _config;
         private DiscordSocketClient _client;
-        
-        public RandomlySendMessageBehavior(IOptions<BotConfig> config) {
+        private static readonly HttpClient client = new HttpClient();
+
+        public RandomlySendMessageBehavior(IOptions<BotConfig> config)
+        {
             _config = config.Value;
         }
 
@@ -34,7 +37,7 @@ namespace OniBot.Behaviors
             }
             _client = discordClient;
 
-            _messageToSendOn = _random.Next(50, 101);
+            _messageToSendOn = _random.Next(_config.MinMessages, _config.MaxMessages);
             discordClient.MessageReceived += OnMessageReceived;
             await Task.Yield();
         }
@@ -49,13 +52,25 @@ namespace OniBot.Behaviors
             }
 
             var messages = _config.RandomMessages;
-            
+
             var index = _random.Next(0, messages.Length - 1);
             var message = messages[index];
-            //await arg.Channel.SendFileAsync("c:\\something.jpg", "Look at my something!");
-            await arg.Channel.SendMessageAsync(message, false);
 
-            _messageToSendOn = _random.Next(50, 101);
+            if (message.Image == null)
+            {
+
+                await arg.Channel.SendMessageAsync(message.Message, false);
+            }
+            else
+            {
+                var image = await client.GetByteArrayAsync(message.Image);
+
+                var temp = $"{Guid.NewGuid()}.{message.Image.Split('.').LastOrDefault()}";
+                File.WriteAllBytes(temp, image);
+
+                await arg.Channel.SendFileAsync(temp, message.Message);
+            }
+            _messageToSendOn = _random.Next(_config.MinMessages, _config.MaxMessages);
             _messagesSinceLastSend = 0;
         }
     }
