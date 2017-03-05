@@ -1,10 +1,6 @@
 ﻿{
-  "ImgurClientId": "737d1f465cb50ab",
-  "ImgurClientSecret": "Not Here!",
-  "Games": [ "Massage Table", "Looking at Art", "Vomiting" ],
   "LogLevel": "Debug",
   "AlwaysDownloadUsers": true,
   "MessageCacheSize": 1000,
-  "Token": "Fill me in!",
   "PrefixChar": "!"
 }

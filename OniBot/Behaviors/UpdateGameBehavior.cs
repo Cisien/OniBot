@@ -16,7 +16,6 @@ namespace OniBot.Behaviors
         public string Name => nameof(UpdateGameBehavior);
 
         private Timer _timer;
-        private readonly BotConfig _globalConfig;
         private static Random _random = new Random();
 
         public UpdateGameBehavior(IOptions<BotConfig> config)

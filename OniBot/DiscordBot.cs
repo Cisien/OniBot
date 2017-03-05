@@ -18,7 +18,6 @@ namespace OniBot
         private static ICommandHandler _commandHandler;
         private static Random random = new Random();
         private Dictionary<string, IBotBehavior> _behaviors = new Dictionary<string, IBotBehavior>();
-        public static string[] games;
         private IOptions<BotConfig> _optionsConfig;
 
         public static BotConfig Configuration { get; set; }
@@ -27,7 +26,6 @@ namespace OniBot
         {
             _optionsConfig = config;
             Configuration = config.Value;
-            games = Configuration.Games;
 
             _commandHandler = commandHandler;
         }
