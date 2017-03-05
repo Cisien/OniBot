@@ -7,6 +7,7 @@ using Microsoft.Extensions.Options;
 using System.Net.Http;
 using System.Linq;
 using System.IO;
+using OniBot.Infrastructure;
 
 namespace OniBot.Behaviors
 {
@@ -15,13 +16,14 @@ namespace OniBot.Behaviors
         private static Random _random = new Random();
         private int _messagesSinceLastSend = 0;
         private int _messageToSendOn;
-        private BotConfig _config;
+        private RandomlyConfig _config;
         private DiscordSocketClient _client;
+        private BotConfig _globalConfig;
         private static readonly HttpClient client = new HttpClient();
 
         public RandomlySendMessageBehavior(IOptions<BotConfig> config)
         {
-            _config = config.Value;
+            _globalConfig = config.Value;
         }
 
         public string Name => nameof(RandomlySendMessageBehavior);
@@ -35,6 +37,7 @@ namespace OniBot.Behaviors
                 DiscordBot.Log(nameof(RunAsync), LogSeverity.Error, $"Discord client is invalid");
                 return;
             }
+            _config = Configuration.Get<RandomlyConfig>("randomly");
             _client = discordClient;
 
             _messageToSendOn = _random.Next(_config.MinMessages, _config.MaxMessages);
@@ -44,6 +47,14 @@ namespace OniBot.Behaviors
 
         private async Task OnMessageReceived(SocketMessage arg)
         {
+            if(arg.Content.StartsWith(_globalConfig.PrefixChar.ToString())) {
+                return;
+            }
+
+            if(arg.Author.IsBot) {
+                return;
+            }
+
             _messagesSinceLastSend++;
 
             if (_messagesSinceLastSend < _messageToSendOn)
@@ -53,7 +64,7 @@ namespace OniBot.Behaviors
 
             var messages = _config.RandomMessages;
 
-            var index = _random.Next(0, messages.Length - 1);
+            var index = _random.Next(0, messages.Count - 1);
             var message = messages[index];
 
             if (message.Image == null)
@@ -78,6 +89,7 @@ namespace OniBot.Behaviors
             }
             _messageToSendOn = _random.Next(_config.MinMessages, _config.MaxMessages);
             _messagesSinceLastSend = 0;
+            _config = Configuration.Get<RandomlyConfig>("randomly");
         }
     }
 }

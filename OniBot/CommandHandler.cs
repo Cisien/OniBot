@@ -15,7 +15,7 @@ namespace OniBot
         private DiscordSocketClient _client;
         private CommandService _commands;
         private BotConfig _config;
-        
+
         public CommandHandler(CommandService commandService, IOptions<BotConfig> config)
         {
             _commands = commandService;
@@ -27,7 +27,8 @@ namespace OniBot
             _map = map;
             _client = _map.Get<DiscordSocketClient>();
             map.Add(_commands);
-            
+            map.Add(_config);
+
             var modules = await _commands.AddModulesAsync(Assembly.GetEntryAssembly());
             foreach (var module in modules)
             {
@@ -72,11 +73,12 @@ namespace OniBot
             var context = new CommandContext(_client, message);
 
             var result = await _commands.ExecuteAsync(context, argPos, _map);
-
+#if DEBUG
             if (!result.IsSuccess)
             {
                 await message.Channel.SendMessageAsync($"Error: {result.ErrorReason}");
             }
+#endif
         }
     }
 }
