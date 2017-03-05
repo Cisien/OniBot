@@ -10,7 +10,6 @@ namespace OniBot.Commands
     public class SweepCommands : ModuleBase, IBotCommand
     {
         private static Dictionary<string, string> equiped = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-        private static Dictionary<string, int> modifier = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
         private static readonly Random random = new Random();
 
         [Command("sweep", RunMode = RunMode.Async)]
@@ -27,8 +26,6 @@ namespace OniBot.Commands
             var username = string.IsNullOrWhiteSpace(user.Nickname) ? user.Username : user.Nickname;
             var hasEquiped = equiped.ContainsKey(username);
             var weapon = hasEquiped ? $" with a {equiped[username]}" : string.Empty;
-            int dmgModifier = hasEquiped ? modifier[username] : 50;
-            string damage = random.Next(0, dmgModifier).ToString("N0");
             await ReplyAsync($"_{username} sweeps up {target}{weapon}._");
         }
 
@@ -45,7 +42,6 @@ namespace OniBot.Commands
             var username = string.IsNullOrWhiteSpace(user.Nickname) ? user.Username : user.Nickname;
 
             equiped[username] = weapon;
-            modifier[username] = random.Next(50, int.MaxValue);
             await ReplyAsync($"_{username} equips a {weapon}_");
         }
 
@@ -62,7 +58,6 @@ namespace OniBot.Commands
             var username = string.IsNullOrWhiteSpace(user.Nickname) ? user.Username : user.Nickname;
 
             equiped.Remove(username);
-            modifier.Remove(username);
             await ReplyAsync($"_{username} puts away their cleaning device._");
         }
     }
