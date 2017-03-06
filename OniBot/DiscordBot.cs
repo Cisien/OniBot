@@ -30,8 +30,6 @@ namespace OniBot
             _commandHandler = commandHandler;
         }
 
-        public static ICommandHandler CommandHandler { get; private set; }
-
         public async Task RunBotAsync()
         {
             client = new DiscordSocketClient(new DiscordSocketConfig
