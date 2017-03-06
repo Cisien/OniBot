@@ -2,6 +2,7 @@
 using Discord.Commands;
 using OniBot.Interfaces;
 using System;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
@@ -11,6 +12,32 @@ namespace OniBot.Commands
 {
     public class DebugCommands : ModuleBase, IBotCommand
     {
+        [Command("dumpconfig")]
+        [Summary("Sends the currently running config")]
+        [RequireUserPermission(GuildPermission.Administrator)]
+        public async Task DumpConfig(
+        [Summary("[Optional] If supplied, uploads just the single config to Discord")]string config = null)
+        {
+            var files = Directory.GetFiles("./config/", "*.json");
+
+            var dmChannel = await Context.User.GetDMChannelAsync();
+
+            if (string.IsNullOrWhiteSpace(config))
+            {
+                foreach (var file in files)
+                {
+                    var fullpath = Path.GetFullPath(file);
+                    await dmChannel.SendFileAsync(fullpath, Path.GetFileName(file));
+                    await Task.Delay(TimeSpan.FromSeconds(1));
+                }
+            }
+            else
+            {
+                var file = files.SingleOrDefault(a => a.Contains(config));
+                await dmChannel.SendFileAsync(file, Path.GetFileName(config));
+            }
+        }
+
         [Command("dumpbot")]
         [Summary("Gets the current run state of the bot")]
         [RequireOwner]
