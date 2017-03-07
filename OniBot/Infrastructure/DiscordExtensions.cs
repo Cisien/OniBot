@@ -1,5 +1,6 @@
 ﻿using Discord;
 using Discord.Commands;
+using Discord.WebSocket;
 using System.IO;
 using System.Threading.Tasks;
 
@@ -7,7 +8,7 @@ namespace OniBot.Infrastructure
 {
     public static class DiscordExtensions
     {
-        public static Task<string> GetUserName(this Discord.WebSocket.SocketGuildUser user)
+        public static Task<string> GetUserName(this SocketGuildUser user)
         {
             var userName = string.IsNullOrWhiteSpace(user.Nickname) ? user.Username : user.Nickname;
 
@@ -37,6 +38,13 @@ namespace OniBot.Infrastructure
                 ms.Position = 0;
                 return await dmChannel.SendFileAsync(ms, message);
             }
+        }
+
+        public static async Task<IUserMessage> SendEmbedAsync(this IUser user, Embed embed, string message = null)
+        {
+            var dmChannel = await user.CreateDMChannelAsync();
+
+            return await dmChannel.SendMessageAsync(message, embed: embed);
         }
     }
 }
