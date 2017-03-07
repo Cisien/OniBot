@@ -38,7 +38,7 @@ namespace OniBot.Infrastructure
             {
                 var configFile = $"./config/{key}.json";
 
-                var config = JsonConvert.SerializeObject(data);
+                var config = JsonConvert.SerializeObject(data, Formatting.Indented);
                 File.WriteAllText(configFile, config);
             }
         }

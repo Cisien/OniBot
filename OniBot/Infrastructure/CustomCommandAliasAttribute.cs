@@ -3,9 +3,9 @@ using OniBot.CommandConfigs;
 using System.Linq;
 
 namespace OniBot.Infrastructure
-{    public class DynamcCommandAliasAttribute : AliasAttribute
+{    public class CustomCommandAliasAttribute : AliasAttribute
     {
-        public DynamcCommandAliasAttribute(params string[] aliases) : base(GetDynamicCommands(aliases[0]))
+        public CustomCommandAliasAttribute(params string[] aliases) : base(GetDynamicCommands(aliases[0]))
         {
         }
 

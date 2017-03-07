@@ -1,5 +1,4 @@
-﻿using Discord;
-using Discord.Commands;
+﻿using Discord.Commands;
 using Newtonsoft.Json;
 using OniBot.Infrastructure;
 using OniBot.Interfaces;
@@ -17,7 +16,7 @@ namespace OniBot.Commands
 
         [Command("show")]
         [Summary("Sends the current running randomly config in a DM")]
-        [RequireUserPermission(GuildPermission.Administrator)]
+        [RequireRole(CompareMode.Or, Roles.BotSmith, Roles.MasterArchitects)]
         public async Task Show()
         {
             var config = Configuration.Get<RandomlyConfig>(_configKey);
@@ -27,7 +26,7 @@ namespace OniBot.Commands
 
         [Command("min")]
         [Summary("Sets the current minimum range for random messages to appear in.")]
-        [RequireUserPermission(GuildPermission.Administrator)]
+        [RequireRole(CompareMode.Or, Roles.BotSmith, Roles.MasterArchitects)]
         public async Task Min(
             [Summary("The minimum number of messages to constrain on.")]int min)
         {
@@ -41,7 +40,7 @@ namespace OniBot.Commands
 
         [Command("max")]
         [Summary("Sets the current minimum range for random messages to appear in.")]
-        [RequireUserPermission(GuildPermission.Administrator)]
+        [RequireRole(CompareMode.Or, Roles.BotSmith, Roles.MasterArchitects)]
         public async Task Max(
             [Summary("The maximum number of messages to constrain on.")]int max)
         {
@@ -55,7 +54,7 @@ namespace OniBot.Commands
 
         [Command("add")]
         [Summary("Adds a message to display randomly. Can be used in a file upload or with an image URL")]
-        [RequireUserPermission(GuildPermission.Administrator)]
+        [RequireRole(CompareMode.Or, Roles.BotSmith, Roles.MasterArchitects)]
         public async Task Add(
             [Summary("The message to add. If including a URL to an image, it needs to be the last thing in the message.")]string message)
         {
@@ -87,7 +86,7 @@ namespace OniBot.Commands
 
         [Command("remove")]
         [Summary("Removes a message from the list of random messages.")]
-        [RequireUserPermission(GuildPermission.Administrator)]
+        [RequireRole(CompareMode.Or, Roles.BotSmith, Roles.MasterArchitects)]
         public async Task Remove(
             [Summary("The full message to remove without the image link.")]string message)
         {

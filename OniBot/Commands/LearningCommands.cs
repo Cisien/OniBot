@@ -92,7 +92,7 @@ namespace OniBot.Commands
         }
 
         [Command("[hidden]customcommands")]
-        [DynamcCommandAlias("customcommands")]
+        [CustomCommandAlias("customcommands")]
         [Summary("Displays any content associated with the command")]
         [RequireUserPermission(GuildPermission.SendMessages)]
         public async Task CustomCommand()
