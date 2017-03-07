@@ -7,6 +7,7 @@ using System;
 using System.Threading.Tasks;
 using OniBot.CommandConfigs;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace OniBot.Commands
 {
@@ -25,7 +26,7 @@ namespace OniBot.Commands
             {
                 return;
             }
-
+            
             var config = Configuration.Get<SweepConfig>("sweep");
             if (config.Equiped == null) config.Equiped = new Dictionary<ulong, string>();
 

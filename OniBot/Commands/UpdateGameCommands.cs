@@ -4,71 +4,56 @@ using OniBot.CommandConfigs;
 using OniBot.Infrastructure;
 using OniBot.Interfaces;
 using System.Threading.Tasks;
-using System;
 using Newtonsoft.Json;
 
 namespace OniBot.Commands
 {
+    [Group("game")]
+    [Summary("A set of commands for managing the list of games the bot is currently playing.")]
     public class UpdateGameCommands : ModuleBase, IBotCommand
     {
-        [Command("updategame")]
-        [Summary("Modifies the game list for the bot.")]
-        [RequireUserPermission(GuildPermission.ManageChannels)]
-        public async Task UpdateGame(
-            [Summary("The command to run. One of add|remove|show")]string command,
-            [Summary("The game to add or remove")][Remainder]string game = null)
-        {
-            var config = Configuration.Get<GamesConfig>("updategame");
-            command = command.ToLower();
-            switch(command) {
-                case "add":
-                    await DoAdd(game, config);
-                    break;
-                case "remove":
-                    await DoRemove(game, config);
-                    break;
-                case "show":
-                    await DoShow(config);
-                    break;
-                default:
-                    await DeDefault(config);
-                    break;
-            }
-            Configuration.Write(config, "updategame");
-        }
+        private const string _configKey = "updategame";
 
-        private async Task DoShow(GamesConfig config)
+        [Command("show")]
+        [Summary("Sends you the currently running Game Config")]
+        [RequireUserPermission(GuildPermission.ManageChannels)]
+        public async Task Show()
         {
+            var config = Configuration.Get<GamesConfig>(_configKey);
             var cfg = JsonConvert.SerializeObject(config, Formatting.Indented);
 
-            var dmChannel = await Context.User.CreateDMChannelAsync();
-            await dmChannel.SendMessageAsync($"```{cfg}```");
+            await Context.User.SendMessageAsync($"```{cfg}```");
         }
 
-        private async Task DeDefault(GamesConfig config)
+        [Command("remove")]
+        [Summary("Removes the game from the bot's list.")]
+        [RequireUserPermission(GuildPermission.ManageChannels)]
+        private async Task Remove(
+            [Summary("The game to remove from the bot's list.")]string game)
         {
-            var dmChannel = await Context.User.CreateDMChannelAsync();
-            await dmChannel.SendMessageAsync("Unknown Command. See !help updategames");
+            await Configuration.Modify<GamesConfig>(_configKey, a =>
+            {
+                if (a.Games.Contains(game))
+                {
+                    a.Games.Remove(game);
+                }
+            });
+
+            await Context.User.SendMessageAsync($"{game} removed.");
         }
 
-        private async Task DoRemove(string game, GamesConfig config)
+        private async Task Add(
+        [Summary("The game to add to the bot's list.")]string game)
         {
-            if(config.Games.Contains(game)) {
-                config.Games.Remove(game);
-            }
+            await Configuration.Modify<GamesConfig>(_configKey, a =>
+            {
+                if (!a.Games.Contains(game))
+                {
+                    a.Games.Add(game);
+                }
+            });
 
-            var dmChannel = await Context.User.CreateDMChannelAsync();
-            await dmChannel.SendMessageAsync($"{game} removed.");
-        }
-
-        private async Task DoAdd(string game, GamesConfig config)
-        {
-            if (!config.Games.Contains(game)) {
-                config.Games.Add(game);
-            }
-
-            var dmChannel = await Context.User.CreateDMChannelAsync();
-            await dmChannel.SendMessageAsync($"{game} added.");
+            await Context.User.SendMessageAsync($"{game} added.");
         }
     }
 }

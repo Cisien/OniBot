@@ -1,5 +1,6 @@
 ﻿using Discord;
 using Discord.Commands;
+using OniBot.Infrastructure;
 using OniBot.Interfaces;
 using System;
 using System.IO;
@@ -10,35 +11,36 @@ using System.Threading.Tasks;
 
 namespace OniBot.Commands
 {
+    [Group("Debug")]
+    [RequireOwner]
     public class DebugCommands : ModuleBase, IBotCommand
     {
-        [Command("dumpconfig")]
+        [Command("config")]
         [Summary("Sends the currently running config")]
         [RequireUserPermission(GuildPermission.Administrator)]
         public async Task DumpConfig(
         [Summary("[Optional] If supplied, uploads just the single config to Discord")]string config = null)
         {
             var files = Directory.GetFiles("./config/", "*.json");
-
-            var dmChannel = await Context.User.GetDMChannelAsync();
-
+            
             if (string.IsNullOrWhiteSpace(config))
             {
                 foreach (var file in files)
                 {
-                    var fullpath = Path.GetFullPath(file);
-                    await dmChannel.SendFileAsync(fullpath, Path.GetFileName(file));
+                    var contents = File.ReadAllBytes(file);
+                    await Context.User.SendFileAsync(contents, Path.GetFileName(file));
                     await Task.Delay(TimeSpan.FromSeconds(1));
                 }
             }
             else
             {
                 var file = files.SingleOrDefault(a => a.Contains(config));
-                await dmChannel.SendFileAsync(file, Path.GetFileName(config));
+                var contents = File.ReadAllBytes(file);
+                await Context.User.SendFileAsync(contents, Path.GetFileName(file));
             }
         }
 
-        [Command("dumpbot")]
+        [Command("bot")]
         [Summary("Gets the current run state of the bot")]
         [RequireOwner]
         public async Task DumpMyself()
@@ -49,7 +51,7 @@ namespace OniBot.Commands
             await userDmChannel.SendMessageAsync(props);
         }
 
-        [Command("dumpuser")]
+        [Command("user")]
         [Summary("Gets the current run state of a user")]
         [RequireOwner]
         public async Task DumpUser([Remainder] string user)
@@ -66,7 +68,7 @@ namespace OniBot.Commands
             await userDmChannel.SendMessageAsync(props);
         }
 
-        [Command("dumpchat")]
+        [Command("chat")]
         [Summary("Gets the current run state of a user")]
         [RequireOwner]
         public async Task DumpChat([Remainder] string count)

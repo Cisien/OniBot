@@ -48,20 +48,24 @@ namespace OniBot.Behaviors
 
         private async Task OnMessageReceived(SocketMessage arg)
         {
-            if(arg.Content.StartsWith(_globalConfig.PrefixChar.ToString())) {
+            if (arg.Content.StartsWith(_globalConfig.PrefixChar.ToString()))
+            {
                 return;
             }
 
-            if(arg.Author.IsBot) {
+            if (arg.Author.IsBot)
+            {
                 return;
             }
 
             var channelId = arg.Channel.Id;
-            if (!_messagesSinceLastSend.ContainsKey(channelId))  {
+            if (!_messagesSinceLastSend.ContainsKey(channelId))
+            {
                 _messagesSinceLastSend.Add(channelId, 0);
             }
 
-            if(!_messageToSendOn.ContainsKey(channelId)){
+            if (!_messageToSendOn.ContainsKey(channelId))
+            {
                 _messageToSendOn.Add(channelId, _random.Next(_config.MinMessages, _config.MaxMessages));
             }
 
@@ -80,21 +84,17 @@ namespace OniBot.Behaviors
             if (message.Image == null)
             {
 
-                await arg.Channel.SendMessageAsync(message.Message, false);
+                await arg.Channel.SendMessageAsync(message.Message);
             }
             else
             {
                 var image = await client.GetByteArrayAsync(message.Image);
 
-                var temp = $"{Guid.NewGuid()}.{message.Image.Split('.').LastOrDefault()}";
-                File.WriteAllBytes(temp, image);
-                try
+                var temp = $"{Guid.NewGuid()}{Path.GetExtension(message.Image)}";
+
+                using (var ms = new MemoryStream(image))
                 {
-                    await arg.Channel.SendFileAsync(temp, message.Message);
-                }
-                finally
-                {
-                    File.Delete(temp);
+                    await arg.Channel.SendFileAsync(ms, temp, message.Message);
                 }
             }
             _messageToSendOn[channelId] = _random.Next(_config.MinMessages, _config.MaxMessages);

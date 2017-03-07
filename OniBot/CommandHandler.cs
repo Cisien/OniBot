@@ -6,7 +6,6 @@ using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Options;
-using System;
 using System.Text;
 using OniBot.Infrastructure;
 
@@ -54,8 +53,8 @@ namespace OniBot
             var sb = new StringBuilder();
             if (string.IsNullOrWhiteSpace(command))
             {
-
                 sb.AppendLine($"{"Command".PadRight(20)}{"Parameters".PadRight(20)}Summary");
+
                 foreach (var cmd in _commands.Modules.SelectMany(a => a.Commands))
                 {
                     var permission = await cmd.CheckPreconditionsAsync(context, _map);
@@ -63,7 +62,13 @@ namespace OniBot
                     {
                         foreach (var alias in cmd.Aliases)
                         {
-                            sb.AppendLine($"!{alias.PadRight(19)}{string.Join(", ", cmd.Parameters.Select(a => a.Name)).PadRight(20)}{cmd.Summary}");
+                            if (alias.StartsWith("[hidden]"))
+                            {
+                                continue;
+                            }
+                            var commandName = $"{_config.PrefixChar}{alias}";
+
+                            sb.AppendLine($"{commandName.PadRight(19)}{string.Join(", ", cmd.Parameters.Select(a => a.Name)).PadRight(20)}{cmd.Summary}");
                         }
                     }
                 }
@@ -142,6 +147,12 @@ namespace OniBot
             var context = new CommandContext(_client, message);
 
             var result = await _commands.ExecuteAsync(context, argPos, _map, MultiMatchHandling.Best);
+
+            if (result is ExecuteResult)
+            {
+                DiscordBot.Log($"{nameof(CommandHandler)}.{nameof(OnMessageReceivedAsync)}", LogSeverity.Error, ((ExecuteResult)result).Exception.ToString());
+            }
+
 #if DEBUG
             if (!result.IsSuccess)
             {

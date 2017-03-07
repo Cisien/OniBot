@@ -10,9 +10,11 @@ namespace OniBot.Commands
 {
     public class LearningCommands : ModuleBase, IBotCommand
     {
-        ICommandHandler _commandHandler;
+        private ICommandHandler _commandHandler;
+        private string _storageKey = "customcommands";
 
-        public LearningCommands(ICommandHandler commandHandler) {
+        public LearningCommands(ICommandHandler commandHandler)
+        {
             _commandHandler = commandHandler;
         }
 
@@ -20,19 +22,20 @@ namespace OniBot.Commands
         [Summary("Teaches the bot a command.")]
         [RequireUserPermission(GuildPermission.ManageEmojis)]
         public async Task Learn(
-            [Summary("The name of the command to add")]string command, 
+            [Summary("The name of the command to add")]string command,
             [Summary("The value to send as the response whenever this command is used.")][Remainder]string response)
         {
-            var customCommands = Configuration.Get<CustomCommandsConfig>("customcommands");
-            command = command.ToLower();
-            if (customCommands.Commands.ContainsKey(command))
+            await Configuration.Modify<CustomCommandsConfig>(_storageKey, async a =>
             {
-                await ReplyAsync($"Command '{command}' is already known");
-                return;
-            }
+                if (a.Commands.ContainsKey(command))
+                {
+                    await ReplyAsync($"Command '{command}' is already known");
+                    return;
+                }
 
-            customCommands.Commands.Add(command, response);
-            Configuration.Write(customCommands, "customcommands");
+                a.Commands.Add(command, response);
+            });
+
             await _commandHandler.ReloadCommands();
             await ReplyAsync($"I'll remember that {command} is {response}");
         }
@@ -43,16 +46,18 @@ namespace OniBot.Commands
         public async Task Forget(
             [Summary("The name of the command to forget.")]string command)
         {
-            var customCommands = Configuration.Get<CustomCommandsConfig>("customcommands");
             command = command.ToLower();
-            if (!customCommands.Commands.ContainsKey(command))
+            await Configuration.Modify<CustomCommandsConfig>(_storageKey, async a =>
             {
-                await ReplyAsync($"I don't know '{command}'.");
-                return;
-            }
+                if (!a.Commands.ContainsKey(command))
+                {
+                    await ReplyAsync($"I don't know '{command}'.");
+                    return;
+                }
 
-            customCommands.Commands.Remove(customCommands.Commands[command]);
-            Configuration.Write(customCommands, "customcommands");
+                a.Commands.Remove(command);
+            });
+
             await _commandHandler.ReloadCommands();
             await ReplyAsync($"I seem to have forgotten what {command} does!??");
         }
@@ -63,8 +68,8 @@ namespace OniBot.Commands
         public async Task Show(
         [Summary("[Optional] The name of the command to show. If ommited, all commands will be shown.")]string command = null)
         {
-            var customCommands = Configuration.Get<CustomCommandsConfig>("customcommands");
-            var dmChannel = await Context.User.CreateDMChannelAsync();
+            command = command?.ToLower();
+            var customCommands = Configuration.Get<CustomCommandsConfig>(_storageKey);
 
             string response = string.Empty;
             if (string.IsNullOrWhiteSpace(command))
@@ -83,19 +88,20 @@ namespace OniBot.Commands
                 }
             }
             response = $"```{response}```";
-            await dmChannel.SendMessageAsync(response);
+            await Context.User.SendMessageAsync(response);
         }
 
-        [Command("customcommands")]
+        [Command("[hidden]customcommands")]
         [DynamcCommandAlias("customcommands")]
         [Summary("Displays any content associated with the command")]
         [RequireUserPermission(GuildPermission.SendMessages)]
         public async Task CustomCommand()
         {
             var command = Context.Message.Content.Substring(1).ToLower();
-        
+
             var customCommands = Configuration.Get<CustomCommandsConfig>("customcommands");
-            if(!customCommands.Commands.ContainsKey(command)) {
+            if (!customCommands.Commands.ContainsKey(command))
+            {
                 await ReplyAsync("I'm a little teapot!");
             }
 

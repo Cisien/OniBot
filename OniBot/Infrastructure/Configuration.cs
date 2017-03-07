@@ -1,5 +1,7 @@
 ﻿using Newtonsoft.Json;
+using System;
 using System.IO;
+using System.Threading.Tasks;
 
 namespace OniBot.Infrastructure
 {
@@ -7,7 +9,7 @@ namespace OniBot.Infrastructure
     {
         private static readonly object _fileReadWriteLock = new object();
 
-        public static T Get<T>(string key) where T : class
+        public static T Get<T>(string key) where T : class, new()
         {
             lock (_fileReadWriteLock)
             {
@@ -17,12 +19,14 @@ namespace OniBot.Infrastructure
                 }
 
                 var configFile = $"./config/{key}.json";
-                if (!File.Exists(Path.Combine(configFile)))
+                if (!File.Exists(configFile))
                 {
                     File.WriteAllText(configFile, $"{{\r\n}}");
                 }
+
                 var configContents = File.ReadAllText(configFile);
-                var config = JsonConvert.DeserializeObject<T>(configContents);
+                var config = new T();
+                JsonConvert.PopulateObject(configContents, config, new JsonSerializerSettings { NullValueHandling = NullValueHandling.Ignore });
 
                 return config;
             }
@@ -37,6 +41,21 @@ namespace OniBot.Infrastructure
                 var config = JsonConvert.SerializeObject(data);
                 File.WriteAllText(configFile, config);
             }
+        }
+
+        public static async Task Modify<T>(string key, Func<T, Task> action) where T : class, new()
+        {
+            var config = Get<T>(key);
+            await action(config);
+            Write(config, key);
+        }
+
+        public static Task Modify<T>(string key, Action<T> action) where T : class, new()
+        {
+            var config = Get<T>(key);
+            action(config);
+            Write(config, key);
+            return Task.CompletedTask;
         }
     }
 }

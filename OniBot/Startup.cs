@@ -52,7 +52,7 @@ namespace OniBot
                 {
                     CaseSensitiveCommands = false,
                     DefaultRunMode = RunMode.Sync,
-                    SeparatorChar = '|'
+                    SeparatorChar = ' '
                 });
             });
             services.AddSingleton<ICommandHandler, CommandHandler>();

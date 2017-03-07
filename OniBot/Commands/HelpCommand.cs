@@ -2,6 +2,7 @@
 using Discord.Commands;
 using Discord;
 using System.Threading.Tasks;
+using OniBot.Infrastructure;
 
 namespace OniBot.Commands
 {
@@ -21,8 +22,7 @@ namespace OniBot.Commands
             [Summary("[Optional] The name of the command to view the help of.")]string command = null)
         {
             var helpText = await _commandHandler.PrintCommands(Context, command);
-            var dmChannel = await Context.User.CreateDMChannelAsync();
-            await dmChannel.SendMessageAsync($"```{helpText}```");
+            await Context.User.SendMessageAsync($"```{helpText}```");
         }
     }
 }
