@@ -17,7 +17,7 @@ namespace OniBot.Behaviors
 
         public string Name => nameof(RssWatcherBehavior);
 
-        public async Task RunAsync(IDiscordClient client)
+        public async Task RunAsync()
         {
             var config = Configuration.Get<RssWatcherConfig>("rsswatcher");
             //_timer = new Timer(UpdateFeeds, client, TimeSpan.FromMinutes(config.CheckFrequencyMinutes), TimeSpan.FromMinutes(config.CheckFrequencyMinutes));

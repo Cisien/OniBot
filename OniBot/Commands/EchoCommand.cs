@@ -4,10 +4,11 @@ using System.Threading.Tasks;
 
 namespace OniBot.Commands
 {
+    [Group("echo")]
+    [Summary("Repeats the text that follows")]
     public class EchoCommand : ModuleBase, IBotCommand
     {
-        [Command("echo")]
-        [Summary("Repeats the text that follows")]
+        [Command]
         [RequireOwner]
         public async Task Echo([Remainder]string message)
         {

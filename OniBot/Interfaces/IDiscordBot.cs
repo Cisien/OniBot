@@ -6,6 +6,5 @@ namespace OniBot
     internal interface IDiscordBot : IDisposable
     {
         Task RunBotAsync();
-        Task RunBehaviorsAsync();
     }
 }

@@ -16,7 +16,7 @@ namespace OniBot.Commands
         private const string _configKey = "avatar";
  
         [Command("show")]
-        [Summary("Sends you the current running Avatar config")]
+        [Summary("Sends you the current running Avatar config.")]
         [RequireUserPermission(GuildPermission.Administrator)]
         public async Task Show()
         {
@@ -27,7 +27,7 @@ namespace OniBot.Commands
         }
 
         [Command("remove")]
-        [Summary("Sends you the current running Avatar config")]
+        [Summary("Removes the avatar from the list.")]
         [RequireUserPermission(GuildPermission.Administrator)]
         public async Task Remove([Summary("The name of the avatar to remove.")]string name)
         {
@@ -42,6 +42,9 @@ namespace OniBot.Commands
             await Context.User.SendMessageAsync($"{name} removed.");
         }
 
+        [Command("add")]
+        [Summary("Adds the supplied avatar to the list.")]
+        [RequireUserPermission(GuildPermission.Administrator)]
         public async Task Add(
         [Summary("The name of the avatar to add.")]string name,
         [Summary("The URL of the avatar image.")]string url)

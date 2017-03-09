@@ -7,7 +7,6 @@ using OniBot.Infrastructure;
 using OniBot.Interfaces;
 using System;
 using System.Collections.Generic;
-using System.Reflection;
 using System.Threading.Tasks;
 
 namespace OniBot
@@ -19,15 +18,19 @@ namespace OniBot
         private static Random random = new Random();
         private Dictionary<string, IBotBehavior> _behaviors = new Dictionary<string, IBotBehavior>();
         private IOptions<BotConfig> _optionsConfig;
+        private IDependencyMap _depMap;
+        private BehaviorService _behaviorService;
 
         public static BotConfig Configuration { get; set; }
 
-        public DiscordBot(IOptions<BotConfig> config, ICommandHandler commandHandler)
+        public DiscordBot(IOptions<BotConfig> config, ICommandHandler commandHandler, IDependencyMap depMap, BehaviorService behaviorService)
         {
             _optionsConfig = config;
             Configuration = config.Value;
-
+            _depMap = depMap;
+            _depMap.Add(config);
             _commandHandler = commandHandler;
+            _behaviorService = behaviorService;
         }
 
         public async Task RunBotAsync()
@@ -40,16 +43,16 @@ namespace OniBot
                 AudioMode = AudioMode.Outgoing,
                 DefaultRetryMode = RetryMode.AlwaysRetry
             });
+            _depMap.Add(_behaviorService);
+            _depMap.Add<IDiscordClient>(client);
+            _depMap.Add(client);
 
             client.Connected += OnConnectedAsync;
-
-            var map = new DependencyMap();
-            map.Add(client);
-
-            await _commandHandler.InstallAsync(map);
-
             client.Log += OnLogAsync;
 
+            await _commandHandler.InstallAsync(_depMap);
+            await _behaviorService.InstallAsync();
+            
             try
             {
                 await DoConnectAsync();
@@ -60,62 +63,12 @@ namespace OniBot
                 throw;
             }
         }
-
-        public async Task RunBehaviorsAsync()
-        {
-            LoadBehaviors();
-
-            foreach (var behavior in _behaviors)
-            {
-                try
-                {
-                    await behavior.Value.RunAsync(client);
-                    Log(nameof(RunBehaviorsAsync), LogSeverity.Info, $"Started behavior {behavior.Key}");
-                }
-                catch (Exception ex)
-                {
-                    Log(nameof(RunBehaviorsAsync), LogSeverity.Error, ex.ToString());
-                }
-            }
-        }
-
+        
         private async Task OnConnectedAsync()
         {
-            await RunBehaviorsAsync();
+            await _behaviorService.RunAsync();
         }
-
-        private void LoadBehaviors()
-        {
-            var assembly = Assembly.GetEntryAssembly();
-            var interfaceType = typeof(IBotBehavior);
-
-            var exportedTypes = assembly.ExportedTypes;
-
-            foreach (var type in exportedTypes)
-            {
-                try
-                {
-                    var typeInfo = type.GetTypeInfo();
-
-                    if (interfaceType.IsAssignableFrom(type) && !typeInfo.IsInterface && !typeInfo.IsAbstract)
-                    {
-                        var instance = (IBotBehavior)Activator.CreateInstance(type, new object[] { _optionsConfig });
-
-                        if (instance == null)
-                        {
-                            Log(nameof(LoadBehaviors), LogSeverity.Error, $"Unable to create instance of behavior {type.FullName}");
-                        }
-                        _behaviors.Add(instance.Name, instance);
-                        Log(nameof(LoadBehaviors), LogSeverity.Info, $"Loaded behavior {instance.Name}");
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Log(nameof(LoadBehaviors), LogSeverity.Error, ex.ToString());
-                }
-            }
-        }
-
+        
         private async Task DoConnectAsync()
         {
             var maxAttempts = 10;
@@ -184,7 +137,6 @@ namespace OniBot
         {
             client?.LogoutAsync()?.AsSync(false);
             client?.StopAsync()?.AsSync(false);
-            client?.Dispose();
         }
     }
 }

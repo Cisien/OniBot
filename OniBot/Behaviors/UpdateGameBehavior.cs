@@ -4,25 +4,28 @@ using Discord;
 using System.Threading.Tasks;
 using System.Threading;
 using Discord.WebSocket;
-using Microsoft.Extensions.Options;
 using OniBot.Infrastructure;
 using OniBot.CommandConfigs;
 using System.Collections.Generic;
 
 namespace OniBot.Behaviors
 {
-    public class UpdateGameBehavior : IBotBehavior, IDisposable
+    public class UpdateGameBehavior : IBotBehavior
     {
         public string Name => nameof(UpdateGameBehavior);
 
         private Timer _timer;
         private static Random _random = new Random();
+        private DiscordSocketClient _client;
 
-        public UpdateGameBehavior(IOptions<BotConfig> config)
+        private const string _configKey = "updategame";
+
+        public UpdateGameBehavior(IDiscordClient client)
         {
+            _client = client as DiscordSocketClient;
         }
 
-        public async Task RunAsync(IDiscordClient botClient)
+        public async Task RunAsync()
         {
             if (_timer != null)
             {
@@ -31,7 +34,7 @@ namespace OniBot.Behaviors
                 _timer = null;
             }
 
-            _timer = new Timer(UpdateGame, botClient, TimeSpan.FromSeconds(0), TimeSpan.FromMinutes(5));
+            _timer = new Timer(UpdateGame, _client, TimeSpan.FromSeconds(0), TimeSpan.FromMinutes(5));
             await Task.Yield();
         }
 
@@ -40,11 +43,11 @@ namespace OniBot.Behaviors
             var client = state as DiscordSocketClient;
             if (client == null)
             {
-                DiscordBot.Log(nameof(UpdateGame), LogSeverity.Error, $"client is a {state.GetType().Name}, and is not expected.");
+                DiscordBot.Log(nameof(UpdateGame), LogSeverity.Error, $"client is a {state?.GetType()?.Name ?? "null"}, and is not expected.");
                 return;
             }
 
-            var config = Configuration.Get<GamesConfig>("updategame");
+            var config = Configuration.Get<GamesConfig>(_configKey);
             if (config?.Games == null || config.Games.Count == 0)
             {
                 config.Games = new List<string>() { "OxygenNotIncluded" };
@@ -62,16 +65,6 @@ namespace OniBot.Behaviors
                 Console.WriteLine(ex);
                 
                 DiscordBot.Log(nameof(UpdateGame), LogSeverity.Critical, ex.ToString());
-            }
-        }
-
-        public void Dispose()
-        {
-            if (_timer != null)
-            {
-                _timer.Change(Timeout.Infinite, Timeout.Infinite);
-                _timer.Dispose();
-                _timer = null;
             }
         }
     }

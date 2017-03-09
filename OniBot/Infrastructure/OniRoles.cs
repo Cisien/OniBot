@@ -1,6 +1,6 @@
 ﻿namespace OniBot.Infrastructure
 {
-    public class Roles
+    public class OniRoles
     {
         public const string Bots = "Bots";
         public const string BotSmith = "Bot Smith";

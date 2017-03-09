@@ -7,6 +7,6 @@ namespace OniBot.Interfaces
     {
         string Name { get; }
 
-        Task RunAsync(IDiscordClient client);
+        Task RunAsync();
     }
 }

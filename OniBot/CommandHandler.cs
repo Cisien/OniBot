@@ -8,6 +8,9 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Options;
 using System.Text;
 using OniBot.Infrastructure;
+using System.Collections.Generic;
+using OniBot.Infrastructure.Help;
+using Module = OniBot.Infrastructure.Help.Module;
 
 namespace OniBot
 {
@@ -48,55 +51,70 @@ namespace OniBot
             await LoadAllModules();
         }
 
-        public async Task<string> PrintCommands(ICommandContext context, string command)
+        public async Task<List<Help>> BuildHelp(ICommandContext context)
         {
+            var helpList = new List<Help>();
+
             var sb = new StringBuilder();
-            if (string.IsNullOrWhiteSpace(command))
+            sb.AppendLine($"{"Command".PadRight(20)}{"Parameters".PadRight(20)}Summary");
+
+            foreach (var command in _commands.Modules.SelectMany(a => a.Commands))
             {
-                sb.AppendLine($"{"Command".PadRight(20)}{"Parameters".PadRight(20)}Summary");
+                var help = new Help();
 
-                foreach (var cmd in _commands.Modules.SelectMany(a => a.Commands))
+                var permission = await command.CheckPreconditionsAsync(context, _map);
+                if (!permission.IsSuccess)
                 {
-                    var permission = await cmd.CheckPreconditionsAsync(context, _map);
-                    if (permission.IsSuccess)
-                    {
-                        foreach (var alias in cmd.Aliases)
-                        {
-                            if (alias.StartsWith("[hidden]"))
-                            {
-                                continue;
-                            }
-                            var commandName = $"{_config.PrefixChar}{alias}";
+                    continue;
+                }
 
-                            sb.AppendLine($"{commandName.PadRight(19)}{string.Join(", ", cmd.Parameters.Select(a => a.Name)).PadRight(20)}{cmd.Summary}");
+                helpList.Add(help);
+
+
+                if (command.Aliases.Count == 1)
+                {
+                    if (command.Name.StartsWith("[hidden]"))
+                    {
+                        continue;
+                    }
+
+                    var cmd = new Command();
+                    help.Commands.Add(cmd);
+                    cmd.Alias = command.Aliases.FirstOrDefault();
+                    cmd.Summary = string.IsNullOrWhiteSpace(command.Summary) ? command.Module.Summary : command.Summary;
+                    foreach (var parameter in command.Parameters)
+                    {
+                        var param = new Parameter();
+                        cmd.Parameters.Add(param);
+                        param.Name = parameter.Name;
+                        param.Summary = parameter.Summary;
+                    }
+                }
+                else
+                {
+                    foreach (var alias in command.Aliases)
+                    {
+                        if (alias.StartsWith("[hidden]"))
+                        {
+                            continue;
+                        }
+                        var cmd = new Command();
+                        help.Commands.Add(cmd);
+                        cmd.Alias = alias;
+                        cmd.Summary = string.IsNullOrWhiteSpace(command.Summary) ? command.Module.Summary : command.Summary;
+                        foreach (var parameter in command.Parameters)
+                        {
+                            var param = new Parameter();
+                            cmd.Parameters.Add(param);
+                            param.Name = parameter.Name;
+                            param.Summary = parameter.Summary;
                         }
                     }
                 }
             }
-            else
-            {
-                if (command.StartsWith("!"))
-                {
-                    command = command.Substring(1);
-                }
-
-                var cmd = _commands.Modules.SelectMany(a => a.Commands).SingleOrDefault(a => a.Name == command && HasPermission(a, context));
-
-                if (cmd != null)
-                {
-                    sb.AppendLine(cmd.Name);
-                    sb.AppendLine(cmd.Summary);
-                    sb.AppendLine($"{"Parameter".PadRight(20)}Summary");
-                    foreach (var param in cmd.Parameters)
-                    {
-                        sb.AppendLine($"{param.Name.PadRight(20)}{param.Summary}");
-                    }
-                }
-
-            }
 
             await Task.Yield();
-            return sb.ToString();
+            return helpList;
         }
 
         private bool HasPermission(CommandInfo a, ICommandContext context)
@@ -160,5 +178,6 @@ namespace OniBot
             }
 #endif
         }
+
     }
 }

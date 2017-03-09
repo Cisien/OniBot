@@ -45,6 +45,7 @@ namespace OniBot
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddOptions();
+            services.AddSingleton<IDependencyMap, DependencyMap>();
             services.Configure<BotConfig>(Configuration);
             services.AddSingleton(a =>
             {
@@ -55,6 +56,8 @@ namespace OniBot
                     SeparatorChar = ' '
                 });
             });
+
+            services.AddSingleton<BehaviorService>();
             services.AddSingleton<ICommandHandler, CommandHandler>();
             services.AddSingleton<IDiscordBot, DiscordBot>();
         }

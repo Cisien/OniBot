@@ -9,7 +9,6 @@ using OniBot.CommandConfigs;
 using System.Net.Http;
 using System.IO;
 using System.Linq;
-using Microsoft.Extensions.Options;
 
 namespace OniBot.Behaviors
 {
@@ -19,13 +18,17 @@ namespace OniBot.Behaviors
 
         private static Timer _timer;
         private static readonly Random _random = new Random();
+        private DiscordSocketClient _client;
 
-        public AvatarRotatorBehavior(IOptions<BotConfig> config) { }
+        private const string _configKey = "avatar";
 
-        public async Task RunAsync(IDiscordClient client)
+        public AvatarRotatorBehavior(IDiscordClient client) {
+            _client = client as DiscordSocketClient;
+        }
+
+        public async Task RunAsync()
         {
-            var discClient = client as DiscordSocketClient;
-            _timer = new Timer(UpdateAvatar, client, TimeSpan.FromSeconds(0), TimeSpan.FromHours(24));
+            _timer = new Timer(UpdateAvatar, _client, TimeSpan.FromSeconds(0), TimeSpan.FromHours(24));
             await Task.Yield();
         }
 
@@ -38,7 +41,7 @@ namespace OniBot.Behaviors
                 return;
             }
 
-            var config = Configuration.Get<AvatarConfig>("avatar");
+            var config = Configuration.Get<AvatarConfig>(_configKey);
 
             if (config.Avatars == null || config.Avatars.Count == 0)
             {

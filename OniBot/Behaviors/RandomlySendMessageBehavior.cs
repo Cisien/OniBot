@@ -5,7 +5,6 @@ using System.Threading.Tasks;
 using Discord.WebSocket;
 using Microsoft.Extensions.Options;
 using System.Net.Http;
-using System.Linq;
 using System.IO;
 using OniBot.Infrastructure;
 using System.Collections.Generic;
@@ -19,30 +18,29 @@ namespace OniBot.Behaviors
         private Dictionary<ulong, int> _messagesSinceLastSend = new Dictionary<ulong, int>();
         private Dictionary<ulong, int> _messageToSendOn = new Dictionary<ulong, int>();
         private RandomlyConfig _config;
-        private DiscordSocketClient _client;
-        private BotConfig _globalConfig;
         private static readonly HttpClient client = new HttpClient();
+        private BotConfig _globalConfig;
+        private DiscordSocketClient _client;
+        private const string _configKey = "randomly";
 
-        public RandomlySendMessageBehavior(IOptions<BotConfig> config)
+        public RandomlySendMessageBehavior(IOptions<BotConfig> config, IDiscordClient client)
         {
             _globalConfig = config.Value;
+            _client = client as DiscordSocketClient;
         }
 
         public string Name => nameof(RandomlySendMessageBehavior);
 
-        public async Task RunAsync(IDiscordClient client)
+        public async Task RunAsync()
         {
-            var discordClient = client as DiscordSocketClient;
-
             if (client == null)
             {
                 DiscordBot.Log(nameof(RunAsync), LogSeverity.Error, $"Discord client is invalid");
                 return;
             }
-            _config = Configuration.Get<RandomlyConfig>("randomly");
-            _client = discordClient;
-
-            discordClient.MessageReceived += OnMessageReceived;
+            _config = Configuration.Get<RandomlyConfig>(_configKey);
+            
+            _client.MessageReceived += OnMessageReceived;
             await Task.Yield();
         }
 

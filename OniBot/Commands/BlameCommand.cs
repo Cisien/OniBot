@@ -6,10 +6,11 @@ using System.Threading.Tasks;
 
 namespace OniBot.Commands
 {
+    [Group("blame")]
+    [Summary("Blames someone or something")]
     public class BlameCommand : ModuleBase, IBotCommand
     {
-        [Command("blame")]
-        [Summary("Blames someone or something")]
+        [Command]
         [RequireUserPermission(ChannelPermission.SendMessages)]
         public async Task Blame(
             [Summary("The user or random thing to blame")]string toBlame, 
