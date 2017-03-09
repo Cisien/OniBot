@@ -30,7 +30,7 @@ namespace OniBot.Commands
             var resultMax = (_pageSize - help.Count % _pageSize) + help.Count;
             var pages = resultMax / _pageSize;
 
-            if (page < 1 && page > pages)
+            if (page < 1 || page > pages)
             {
                 page = 1;
             }

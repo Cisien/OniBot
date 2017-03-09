@@ -60,54 +60,31 @@ namespace OniBot
 
             foreach (var command in _commands.Modules.SelectMany(a => a.Commands))
             {
-                var help = new Help();
-
                 var permission = await command.CheckPreconditionsAsync(context, _map);
                 if (!permission.IsSuccess)
                 {
                     continue;
                 }
 
+                var help = new Help();
                 helpList.Add(help);
-
 
                 if (command.Aliases.Count == 1)
                 {
-                    if (command.Name.StartsWith("[hidden]"))
+                    var cmd = BuildCommand(command, command.Aliases.FirstOrDefault());
+                    if (cmd != null)
                     {
-                        continue;
-                    }
-
-                    var cmd = new Command();
-                    help.Commands.Add(cmd);
-                    cmd.Alias = command.Aliases.FirstOrDefault();
-                    cmd.Summary = string.IsNullOrWhiteSpace(command.Summary) ? command.Module.Summary : command.Summary;
-                    foreach (var parameter in command.Parameters)
-                    {
-                        var param = new Parameter();
-                        cmd.Parameters.Add(param);
-                        param.Name = parameter.Name;
-                        param.Summary = parameter.Summary;
+                        help.Commands.Add(cmd);
                     }
                 }
                 else
                 {
                     foreach (var alias in command.Aliases)
                     {
-                        if (alias.StartsWith("[hidden]"))
+                        var cmd = BuildCommand(command, alias);
+                        if (cmd != null)
                         {
-                            continue;
-                        }
-                        var cmd = new Command();
-                        help.Commands.Add(cmd);
-                        cmd.Alias = alias;
-                        cmd.Summary = string.IsNullOrWhiteSpace(command.Summary) ? command.Module.Summary : command.Summary;
-                        foreach (var parameter in command.Parameters)
-                        {
-                            var param = new Parameter();
-                            cmd.Parameters.Add(param);
-                            param.Name = parameter.Name;
-                            param.Summary = parameter.Summary;
+                            help.Commands.Add(cmd);
                         }
                     }
                 }
@@ -115,6 +92,30 @@ namespace OniBot
 
             await Task.Yield();
             return helpList;
+        }
+
+        private static Command BuildCommand(CommandInfo command, string alias)
+        {
+            if (alias.StartsWith("[hidden]"))
+            {
+                return null;
+            }
+
+            var cmd = new Command()
+            {
+                Alias = alias,
+                Summary = string.IsNullOrWhiteSpace(command.Summary) ? command.Module.Summary : command.Summary
+            };
+
+            foreach (var parameter in command.Parameters)
+            {
+                var param = new Parameter();
+                cmd.Parameters.Add(param);
+                param.Name = parameter.Name;
+                param.Summary = parameter.Summary;
+            }
+
+            return cmd;
         }
 
         private bool HasPermission(CommandInfo a, ICommandContext context)

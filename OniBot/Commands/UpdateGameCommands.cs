@@ -42,6 +42,9 @@ namespace OniBot.Commands
             await Context.User.SendMessageAsync($"{game} removed.");
         }
 
+        [Command("add")]
+        [Summary("Adds a game to the list the bot will randomly pick from.")]
+        [RequireUserPermission(GuildPermission.ManageChannels)]
         private async Task Add(
         [Summary("The game to add to the bot's list.")]string game)
         {

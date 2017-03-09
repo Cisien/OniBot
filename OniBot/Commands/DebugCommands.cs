@@ -53,10 +53,10 @@ namespace OniBot.Commands
             await Context.User.SendMessageAsync(props);
 
             var cPerms = GetChannelPerms(Context.Client.CurrentUser as IGuildUser);
-            await Context.User.SendMessageAsync($"{"Channel Permissions".PadRight(20)}{string.Join(", ", cPerms)}");
+            await Context.User.SendMessageAsync($"```{"Channel Permissions".PadRight(20)}{string.Join(", ", cPerms)}```");
 
             var gPerms = GetGuildPerms(Context.Client.CurrentUser as IGuildUser);
-            await Context.User.SendMessageAsync($"{"Guild Permissions".PadRight(20)}{string.Join(", ", gPerms)}");
+            await Context.User.SendMessageAsync($"```{"Guild Permissions".PadRight(20)}{string.Join(", ", gPerms)}```");
         }
 
         [Command("user")]
@@ -75,10 +75,10 @@ namespace OniBot.Commands
             await Context.User.SendMessageAsync(props);
 
             var cPerms = GetChannelPerms(selectedUser);
-            await Context.User.SendMessageAsync($"{"Channel Permissions".PadRight(20)}{string.Join(", ", cPerms)}");
+            await Context.User.SendMessageAsync($"```{"Channel Permissions".PadRight(20)}{string.Join(", ", cPerms)}```");
 
             var gPerms = GetGuildPerms(selectedUser);
-            await Context.User.SendMessageAsync($"{"Guild Permissions".PadRight(20)}{string.Join(", ", gPerms)}");
+            await Context.User.SendMessageAsync($"```{"Guild Permissions".PadRight(20)}{string.Join(", ", gPerms)}```");
         }
 
         [Command("chat")]
