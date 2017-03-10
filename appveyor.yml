@@ -11,7 +11,7 @@ notifications:
   method: POST
   body: >-
     {
-    "content": "A build did a thing! Build {{status}}: {{projectName}} {{buildVersion}}",
+    "content": "Build **{{status}}**: {{projectName}} {{buildVersion}}",
     "username": "AppVeyor",
     "avatar_url": "https://pbs.twimg.com/profile_images/2269442372/5s66pnbt5v8tw6most5e.png",
     "tts": false
