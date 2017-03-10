@@ -97,7 +97,7 @@ namespace OniBot.Behaviors
             }
             _messageToSendOn[channelId] = _random.Next(_config.MinMessages, _config.MaxMessages);
             _messagesSinceLastSend[channelId] = 0;
-            _config = Configuration.Get<RandomlyConfig>("randomly");
+            _config = Configuration.Get<RandomlyConfig>(_configKey);
         }
     }
 }

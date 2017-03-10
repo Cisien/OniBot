@@ -7,8 +7,8 @@ namespace OniBot.CommandConfigs
     public class RandomlyConfig
     {
         public List<ImageMessage> RandomMessages { get; set; } = new List<ImageMessage>();
-        public int MinMessages { get; set; } = 50;
-        public int MaxMessages { get; set; } = 100;
+        public int MinMessages { get; set; }
+        public int MaxMessages { get; set; }
     }
     public class ImageMessage
     {
