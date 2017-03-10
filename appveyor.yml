@@ -3,3 +3,17 @@ image: Visual Studio 2017
 build:
   project: OniBot.sln
   verbosity: minimal
+notifications:
+- provider: Webhook
+  url: https://discordapp.com/api/webhooks/289629464235737089/W2YIcUm6hdKgGNRnHCMOpctdG5WQAuq9k-pLysF6Bcv151ZGs4CkZVwu0qdVIJNivDnJ
+  method: POST
+  body: >-
+    {
+    "content": "A build did a thing! Build {{status}}: {{projectName}} {{buildVersion}}",
+    "username": "AppVeyor",
+    "avatar_url": "https://pbs.twimg.com/profile_images/2269442372/5s66pnbt5v8tw6most5e.png",
+    "tts": false
+    }
+  on_build_success: true
+  on_build_failure: true
+  on_build_status_changed: true
