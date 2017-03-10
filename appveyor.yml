@@ -1,5 +1,7 @@
 version: 1.0.{build}
 image: Visual Studio 2017
+install:
+- ps: (New-Object Net.WebClient).DownloadFile('https://github.com/docker/compose/releases/download/1.11.2/docker-compose-Windows-x86_64.exe', "C:\Program Files\docker\docker-compose.exe")
 before_build:
 - nuget restore OniBot.sln
 build:
