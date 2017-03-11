@@ -7,3 +7,13 @@ before_build:
 build:
   project: OniBot.sln
   verbosity: minimal
+test: off  
+artifacts:  
+- path: bin\$(configuration)\netcoreapp1.1\*.*
+  name: Release
+  type: zip
+  deploy:
+- provider: GitHub
+  auth_token:
+    secure: LpWUNFuHR3+5I1gSO10HZta7xDC3oY/WKzSTSFdc8y3axHbmy2Q92EWCssT7tgd/
+  artifact: release.zip

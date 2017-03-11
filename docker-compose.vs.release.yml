@@ -9,4 +9,4 @@ services:
       - ~/clrdbg:/clrdbg:ro
     entrypoint: tail -f /dev/null
     labels:
-      - "com.microsoft.visualstudio.targetoperatingsystem=linux"
+      - "com.microsoft.visualstudio.targetoperatingsystem=windows"
