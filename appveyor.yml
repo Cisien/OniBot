@@ -1,19 +1,34 @@
 version: 1.0.{build}
 image: Visual Studio 2017
+
 install:
 - ps: (New-Object Net.WebClient).DownloadFile('https://github.com/docker/compose/releases/download/1.11.2/docker-compose-Windows-x86_64.exe', "C:\Program Files\docker\docker-compose.exe")
+- docker version
+
 before_build:
 - nuget restore OniBot.sln
+
 build:
   project: OniBot.sln
   verbosity: minimal
+
 test: off  
+
 artifacts:  
 - path: bin\$(configuration)\netcoreapp1.1\*.*
   name: Release
   type: zip
+
 deploy:
 - provider: GitHub
   auth_token:
     secure: LpWUNFuHR3+5I1gSO10HZta7xDC3oY/WKzSTSFdc8y3axHbmy2Q92EWCssT7tgd/
-  artifact: release.zip
+
+environment:
+  DOCKER_USER:
+    secure: ry9x9cQ9gzMNaPOd45RSHQ==
+  DOCKER_PASS:
+    secure: AXXeju7g+0ZE1ZMW2TKcXfW6+CMT70ZDh5iWYE5Bg80=
+
+deploy_script:
+ - ps: .\deploy.ps1
