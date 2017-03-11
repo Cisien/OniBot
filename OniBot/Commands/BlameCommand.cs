@@ -8,7 +8,7 @@ namespace OniBot.Commands
 {
     [Group("blame")]
     [Summary("Blames someone or something")]
-    public class BlameCommand : ModuleBase, IBotCommand
+    public class BlameCommand : ModuleBase<SocketCommandContext>, IBotCommand
     {
         [Command]
         [RequireUserPermission(ChannelPermission.SendMessages)]

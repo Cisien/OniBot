@@ -2,7 +2,7 @@
 using System.Runtime.ExceptionServices;
 using System.Threading.Tasks;
 
-namespace OniBot.Infrastructure
+namespace OniBot
 {
     public static class TaskExtensions
     {

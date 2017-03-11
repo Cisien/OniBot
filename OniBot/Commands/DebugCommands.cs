@@ -17,7 +17,7 @@ namespace OniBot.Commands
 {
     [Group("debug")]
     [RequireOwner]
-    public class DebugCommands : ModuleBase, IBotCommand
+    public class DebugCommands : ModuleBase<SocketCommandContext>, IBotCommand
     {
         [Command("config")]
         [Summary("Sends the currently running config")]
@@ -64,7 +64,7 @@ namespace OniBot.Commands
         [RequireOwner]
         public async Task DumpUser([Remainder] string user)
         {
-            var users = await Context.Guild.GetUsersAsync();
+            var users = Context.Guild.Users;
             var selectedUser = users.SingleOrDefault(a => a.Mention == user || a.Mention == user.Replace("<@", "<@!"));
             if (selectedUser == null)
             {

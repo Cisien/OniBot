@@ -9,7 +9,12 @@ namespace OniBot.Infrastructure
     {
         private static readonly object _fileReadWriteLock = new object();
 
-        public static T Get<T>(string key) where T : class, new()
+        public static T Get<T>(string key) where T : class
+        {
+            return (T)Get(typeof(T), key);
+        }
+
+        public static object Get(Type type, string key)
         {
             lock (_fileReadWriteLock)
             {
@@ -25,11 +30,17 @@ namespace OniBot.Infrastructure
                 }
 
                 var configContents = File.ReadAllText(configFile);
-                var config = new T();
+                var config = Activator.CreateInstance(type);
                 JsonConvert.PopulateObject(configContents, config, new JsonSerializerSettings { NullValueHandling = NullValueHandling.Ignore });
 
                 return config;
             }
+        }
+
+        public static string GetJson<T>(string key) where T : class
+        {
+            var config = Get(typeof(T), key);
+            return JsonConvert.SerializeObject(config, Formatting.Indented);
         }
 
         public static void Write<T>(T data, string key) where T : class
@@ -43,14 +54,14 @@ namespace OniBot.Infrastructure
             }
         }
 
-        public static async Task Modify<T>(string key, Func<T, Task> action) where T : class, new()
+        public static async Task Modify<T>(string key, Func<T, Task> action) where T : class
         {
             var config = Get<T>(key);
             await action(config);
             Write(config, key);
         }
 
-        public static Task Modify<T>(string key, Action<T> action) where T : class, new()
+        public static Task Modify<T>(string key, Action<T> action) where T : class
         {
             var config = Get<T>(key);
             action(config);

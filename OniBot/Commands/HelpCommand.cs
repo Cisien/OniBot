@@ -8,7 +8,7 @@ using System.Text;
 
 namespace OniBot.Commands
 {
-    public class HelpCommand : ModuleBase, IBotCommand
+    public class HelpCommand : ModuleBase<SocketCommandContext>, IBotCommand
     {
         private ICommandHandler _commandHandler;
         private const int _pageSize = 10;

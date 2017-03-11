@@ -1,11 +1,14 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using OniBot.Interfaces;
 using System.Collections.Generic;
-using System.Text;
 
 namespace OniBot.CommandConfigs
 {
-    public class GamesConfig
+    public class GamesConfig : CommandConfig
     {
         public List<string> Games { get; set; } = new List<string>();
+
+        [JsonIgnore]
+        public override string ConfigKey => "updategame";
     }
 }

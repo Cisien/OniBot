@@ -5,12 +5,10 @@ using OniBot.Interfaces;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Options;
 using System.Text;
-using OniBot.Infrastructure;
 using System.Collections.Generic;
 using OniBot.Infrastructure.Help;
-using Module = OniBot.Infrastructure.Help.Module;
+using Microsoft.Extensions.Logging;
 
 namespace OniBot
 {
@@ -20,20 +18,19 @@ namespace OniBot
         private DiscordSocketClient _client;
         private CommandService _commands;
         private BotConfig _config;
+        private ILogger _logger;
 
-        public CommandHandler(CommandService commandService, IOptions<BotConfig> config)
+        public CommandHandler(CommandService commandService, BotConfig config, ILogger logger)
         {
             _commands = commandService;
-            _config = config.Value;
+            _config = config;
+            _logger = logger;
         }
 
         public async Task InstallAsync(IDependencyMap map)
         {
             _map = map;
             _client = _map.Get<DiscordSocketClient>();
-            map.Add<ICommandHandler>(this);
-            map.Add(_commands);
-            map.Add(_config);
 
             await LoadAllModules();
 
@@ -128,7 +125,7 @@ namespace OniBot
             var modules = await _commands.AddModulesAsync(Assembly.GetEntryAssembly());
             foreach (var module in modules)
             {
-                DiscordBot.Log($"{nameof(CommandHandler)}.{nameof(InstallAsync)}", LogSeverity.Info, $"Loaded command: {string.Join(", ", module.Commands.Select(a => a.Name))} from module {module.Name}");
+                _logger.LogInformation($"Loaded command: {string.Join(", ", module.Commands.Select(a => a.Name))} from module {module.Name}");
             }
         }
 
@@ -161,15 +158,15 @@ namespace OniBot
                 return;
             }
 
-            DiscordBot.Log(nameof(CommandHandler), LogSeverity.Info, $"Command received: {newMessage.Content}");
+            _logger.LogInformation($"Command received: {newMessage.Content}");
 
-            var context = new CommandContext(_client, message);
-
+            var context = new SocketCommandContext(_client, message);
+            
             var result = await _commands.ExecuteAsync(context, argPos, _map, MultiMatchHandling.Best);
 
             if (result is ExecuteResult)
             {
-                DiscordBot.Log($"{nameof(CommandHandler)}.{nameof(OnMessageReceivedAsync)}", LogSeverity.Error, ((ExecuteResult)result).Exception.ToString());
+                _logger.LogError(((ExecuteResult)result).Exception);
             }
 
 #if DEBUG

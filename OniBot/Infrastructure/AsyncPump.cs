@@ -3,7 +3,6 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Runtime.ExceptionServices;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -12,8 +11,8 @@ namespace OniBot.Infrastructure
     [DebuggerStepThrough]
     public class AsyncPump
     {
-        public delegate Task SingleArgumentDelegate(object args);
-        public static void Run(SingleArgumentDelegate func, object args)
+        public delegate Task ArgsDelegate(string[] args);
+        public static void Run(ArgsDelegate func, string[] args)
         {
             if (func == null) throw new ArgumentNullException(nameof(func));
 

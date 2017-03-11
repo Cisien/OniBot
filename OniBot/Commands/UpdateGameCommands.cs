@@ -4,13 +4,12 @@ using OniBot.CommandConfigs;
 using OniBot.Infrastructure;
 using OniBot.Interfaces;
 using System.Threading.Tasks;
-using Newtonsoft.Json;
 
 namespace OniBot.Commands
 {
     [Group("game")]
     [Summary("A set of commands for managing the list of games the bot is currently playing.")]
-    public class UpdateGameCommands : ModuleBase, IBotCommand
+    public class UpdateGameCommands : ModuleBase<SocketCommandContext>, IBotCommand
     {
         private const string _configKey = "updategame";
 
@@ -19,9 +18,7 @@ namespace OniBot.Commands
         [RequireUserPermission(GuildPermission.ManageChannels)]
         public async Task Show()
         {
-            var config = Configuration.Get<GamesConfig>(_configKey);
-            var cfg = JsonConvert.SerializeObject(config, Formatting.Indented);
-
+            var cfg = Configuration.GetJson<GamesConfig>(_configKey);
             await Context.User.SendMessageAsync($"```{cfg}```");
         }
 

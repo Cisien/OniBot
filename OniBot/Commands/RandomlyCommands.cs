@@ -1,5 +1,4 @@
 ﻿using Discord.Commands;
-using Newtonsoft.Json;
 using OniBot.Infrastructure;
 using OniBot.Interfaces;
 using System.Linq;
@@ -10,7 +9,7 @@ namespace OniBot.Commands
 { 
     [Group("randomly")]
     [Summary("A group of commands used for modifying the random channel messages")]
-    public class RandomlyCommands : ModuleBase, IBotCommand
+    public class RandomlyCommands : ModuleBase<SocketCommandContext>, IBotCommand
     {
         private const string _configKey = "randomly";
 
@@ -19,8 +18,7 @@ namespace OniBot.Commands
         [RequireRole(CompareMode.Or, OniRoles.BotSmith, OniRoles.MasterArchitects)]
         public async Task Show()
         {
-            var config = Configuration.Get<RandomlyConfig>(_configKey);
-            var configTxt = JsonConvert.SerializeObject(config, Formatting.Indented);
+            var configTxt = Configuration.GetJson<RandomlyConfig>(_configKey);
             await Context.User.SendMessageAsync($"```{configTxt}```");            
         }
 

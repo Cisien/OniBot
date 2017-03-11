@@ -2,5 +2,11 @@
   "LogLevel": "Debug",
   "AlwaysDownloadUsers": true,
   "MessageCacheSize": 1000,
-  "PrefixChar": "!"
+  "PrefixChar": "!",
+  "Logging": {
+    "IncludeScopes": true,
+    "LogLevel": {
+      "Default": "Debug"
+    }
+  }
 }

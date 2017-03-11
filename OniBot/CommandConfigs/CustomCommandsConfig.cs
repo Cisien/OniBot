@@ -1,10 +1,16 @@
-﻿using System.Collections.Generic;
+﻿using OniBot.Interfaces;
+using System.Collections.Generic;
+using Newtonsoft.Json;
 
 namespace OniBot.CommandConfigs
 {
-    public class CustomCommandsConfig
+    public class CustomCommandsConfig : CommandConfig
     {
         //<string, string> = <command, response>
         public Dictionary<string, string> Commands { get; set; } = new Dictionary<string, string>();
+
+        [JsonIgnore]
+        public override string ConfigKey => "customcommands";
+        
     }
 }

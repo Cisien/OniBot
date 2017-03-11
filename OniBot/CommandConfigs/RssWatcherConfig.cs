@@ -1,13 +1,18 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using OniBot.Interfaces;
+using System;
 using System.Collections.Generic;
-using System.Text;
 
 namespace OniBot.CommandConfigs
 {
-    class RssWatcherConfig
+    class RssWatcherConfig : CommandConfig
     {
         public List<RssTracker> RssTracker = new List<RssTracker>();
         public int CheckFrequencyMinutes { get; set; } = 15;
+
+        [JsonIgnore]
+        public override string ConfigKey => "rsswatcher";
+
     }
 
     public class RssTracker

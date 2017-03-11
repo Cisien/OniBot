@@ -11,7 +11,7 @@ namespace OniBot.Commands
 {
     [Group("avatar")]
     [Summary("A group of commands related to bot avatar management")]
-    public class AvatarCommand : ModuleBase, IBotCommand
+    public class AvatarCommand : ModuleBase<SocketCommandContext>, IBotCommand
     {
         private const string _configKey = "avatar";
  
@@ -20,9 +20,7 @@ namespace OniBot.Commands
         [RequireUserPermission(GuildPermission.Administrator)]
         public async Task Show()
         {
-            var config = Configuration.Get<AvatarConfig>(_configKey);
-            var cfg = JsonConvert.SerializeObject(config, Formatting.Indented);
-
+            var cfg = Configuration.GetJson<AvatarConfig>(_configKey);
             await Context.User.SendMessageAsync($"```{cfg}```");
         }
 

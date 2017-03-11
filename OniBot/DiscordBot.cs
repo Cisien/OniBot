@@ -2,7 +2,7 @@
 using Discord.Audio;
 using Discord.Commands;
 using Discord.WebSocket;
-using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Logging;
 using OniBot.Infrastructure;
 using OniBot.Interfaces;
 using System;
@@ -17,20 +17,19 @@ namespace OniBot
         private static ICommandHandler _commandHandler;
         private static Random random = new Random();
         private Dictionary<string, IBotBehavior> _behaviors = new Dictionary<string, IBotBehavior>();
-        private IOptions<BotConfig> _optionsConfig;
         private IDependencyMap _depMap;
         private BehaviorService _behaviorService;
+        private ILogger _logger;
 
         public static BotConfig Configuration { get; set; }
 
-        public DiscordBot(IOptions<BotConfig> config, ICommandHandler commandHandler, IDependencyMap depMap, BehaviorService behaviorService)
+        public DiscordBot(BotConfig config, ICommandHandler commandHandler, IDependencyMap depMap, BehaviorService behaviorService, ILogger logger)
         {
-            _optionsConfig = config;
-            Configuration = config.Value;
+            Configuration = config;
             _depMap = depMap;
-            _depMap.Add(config);
             _commandHandler = commandHandler;
             _behaviorService = behaviorService;
+            _logger = logger;
         }
 
         public async Task RunBotAsync()
@@ -43,7 +42,7 @@ namespace OniBot
                 AudioMode = AudioMode.Outgoing,
                 DefaultRetryMode = RetryMode.AlwaysRetry
             });
-            _depMap.Add(_behaviorService);
+
             _depMap.Add<IDiscordClient>(client);
             _depMap.Add(client);
 
@@ -52,23 +51,23 @@ namespace OniBot
 
             await _commandHandler.InstallAsync(_depMap);
             await _behaviorService.InstallAsync();
-            
+
             try
             {
                 await DoConnectAsync();
             }
             catch (Exception ex)
             {
-                Log(nameof(Exception), LogSeverity.Critical, $"{ex}");
+                _logger.LogError(ex);
                 throw;
             }
         }
-        
+
         private async Task OnConnectedAsync()
         {
             await _behaviorService.RunAsync();
         }
-        
+
         private async Task DoConnectAsync()
         {
             var maxAttempts = 10;
@@ -84,7 +83,8 @@ namespace OniBot
                 }
                 catch (Exception ex)
                 {
-                    Log(nameof(DoConnectAsync), LogSeverity.Warning, $"Fialed to connect: {ex.Message}");
+                
+                    _logger.LogError($"Fialed to connect: {ex.Message}");
                     await Task.Delay(currentAttempt * 1000);
                 }
             }
@@ -93,44 +93,46 @@ namespace OniBot
 
         private async Task OnLogAsync(LogMessage msg)
         {
-            if (msg.Exception != null)
-            {
-                Log(msg.Source, msg.Severity, msg.Exception.ToString());
-            }
-            else
-            {
-                Log(msg.Source, msg.Severity, msg.Message);
-            }
-
-            await Task.Yield();
-        }
-
-        public static void Log(string source, LogSeverity sev, string message)
-        {
-            if (source == "Gateway" && !message.Contains("Received Dispatch"))
+            if (msg.Source == "Gateway" && !msg.Message.Contains("Received Dispatch"))
             {
                 return;
             }
 
-            switch (sev)
+            var message = $"{msg.Source}: {msg.Message}";
+
+            switch (msg.Severity)
             {
                 case LogSeverity.Info:
-                    Console.ForegroundColor = ConsoleColor.Gray;
+                    _logger.LogInformation(message);
                     break;
                 case LogSeverity.Warning:
-                    Console.ForegroundColor = ConsoleColor.Yellow;
+                    _logger.LogWarning(message);
                     break;
                 case LogSeverity.Error:
                 case LogSeverity.Critical:
-                    Console.ForegroundColor = ConsoleColor.Red;
+                    if (msg.Exception != null)
+                    {
+                        _logger.LogError(msg.Exception);
+                    }
+                    else
+                    {
+                        _logger.LogError(message);
+                    }
                     break;
                 case LogSeverity.Verbose:
                 case LogSeverity.Debug:
-                    Console.ForegroundColor = ConsoleColor.White;
+                    if (msg.Exception != null)
+                    {
+                        _logger.LogDebug(msg.Exception);
+                    }
+                    else
+                    {
+                        _logger.LogDebug(message);
+                    }
                     break;
             }
 
-            Console.WriteLine($"{DateTime.Now.ToString("o")} {source}: {sev}: {message}");
+            await Task.Yield();
         }
 
         public void Dispose()

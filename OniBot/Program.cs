@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using Discord.Commands;
 using OniBot.Infrastructure;
 using System;
 using System.Threading.Tasks;
@@ -10,17 +10,16 @@ namespace OniBot
         static void Main(string[] args)
         {
             var program = new Program();
-            AsyncPump.Run(a => program.MainAsync(args), args);
+            AsyncPump.Run(program.MainAsync, args);
         }
+
+        private readonly IDependencyMap _depMap;
+        private bool _run = true;
 
         private Program()
         {
-            _serviceCollection = new ServiceCollection();
+            _depMap = new ServiceProviderDependencyMap();
         }
-
-        private readonly IServiceCollection _serviceCollection;
-        private IServiceProvider _serviceProvider;
-        private bool _run = true;
 
         private async Task MainAsync(string[] args)
         {
@@ -30,12 +29,11 @@ namespace OniBot
             };
 
             var startup = new Startup(args);
-            startup.ConfigureServices(_serviceCollection);
-            _serviceProvider = _serviceCollection.BuildServiceProvider(true);
-
+            startup.ConfigureServices(_depMap);
+           
             try
             {
-                using (var bot = _serviceProvider.GetService<IDiscordBot>())
+                using (var bot = _depMap.Get<IDiscordBot>())
                 {
                     await bot.RunBotAsync();
 

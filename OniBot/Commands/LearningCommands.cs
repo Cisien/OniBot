@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace OniBot.Commands
 {
-    public class LearningCommands : ModuleBase, IBotCommand
+    public class LearningCommands : ModuleBase<SocketCommandContext>, IBotCommand
     {
         private ICommandHandler _commandHandler;
         private string _storageKey = "customcommands";

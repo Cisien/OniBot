@@ -4,7 +4,7 @@ using Discord.WebSocket;
 using System.IO;
 using System.Threading.Tasks;
 
-namespace OniBot.Infrastructure
+namespace OniBot
 {
     public static class DiscordExtensions
     {
@@ -19,32 +19,40 @@ namespace OniBot.Infrastructure
         {
             //todo: get mentions in message, use mention to find user, replace mention with user
 
-            var response = await context.Channel.SendMessageAsync(message);
+            var response = await context.Channel.SendMessageAsync(message).ConfigureAwait(false);
             return response;
         }
 
         public static async Task<IUserMessage> SendMessageAsync(this IUser user, string message)
         {
-            var dmChannel = await user.CreateDMChannelAsync();
-            return await dmChannel.SendMessageAsync(message);
+            var dmChannel = await user.CreateDMChannelAsync().ConfigureAwait(false);
+            return await dmChannel.SendMessageAsync(message).ConfigureAwait(false);
         }
 
         public static async Task<IUserMessage> SendFileAsync(this IUser user, byte[] file, string message = null)
         {
-            var dmChannel = await user.CreateDMChannelAsync();
+            var dmChannel = await user.CreateDMChannelAsync().ConfigureAwait(false);
 
             using (var ms = new MemoryStream(file))
             {
                 ms.Position = 0;
-                return await dmChannel.SendFileAsync(ms, message);
+                return await dmChannel.SendFileAsync(ms, message).ConfigureAwait(false);
             }
         }
 
         public static async Task<IUserMessage> SendEmbedAsync(this IUser user, Embed embed, string message = null)
         {
-            var dmChannel = await user.CreateDMChannelAsync();
+            var dmChannel = await user.CreateDMChannelAsync().ConfigureAwait(false);
 
-            return await dmChannel.SendMessageAsync(message, embed: embed);
+            return await dmChannel.SendMessageAsync(message, embed: embed).ConfigureAwait(false);
+        }
+
+        public static async Task<IUserMessage> SendFileAsync(this IMessageChannel channel, byte[] data, string filename, string message = null)
+        {
+            using (var ms = new MemoryStream(data))
+            {
+                return await channel.SendFileAsync(ms, filename, message);
+            }
         }
     }
 }

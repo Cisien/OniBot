@@ -1,5 +1,6 @@
 ﻿using Discord;
 using Discord.Commands;
+using Microsoft.Extensions.Logging;
 using OniBot.Interfaces;
 using System;
 using System.Collections.Generic;
@@ -12,10 +13,12 @@ namespace OniBot
     {
         private IDependencyMap _map;
         private Dictionary<string, IBotBehavior> _behaviors = new Dictionary<string, IBotBehavior>();
+        private ILogger _logger;
 
-        public BehaviorService(IDependencyMap map)
+        public BehaviorService(IDependencyMap map, ILogger logger)
         {
             _map = map;
+            _logger = logger;
         }
 
         public async Task InstallAsync()
@@ -35,11 +38,11 @@ namespace OniBot
                 try
                 {
                     await behavior.Value.RunAsync();
-                    DiscordBot.Log(nameof(RunAsync), LogSeverity.Info, $"Started behavior {behavior.Key}");
+                    _logger.LogInformation($"Started behavior {behavior.Key}");
                 }
                 catch (Exception ex)
                 {
-                    DiscordBot.Log(nameof(RunAsync), LogSeverity.Error, ex.ToString());
+                    _logger.LogError(new EventId(), ex, ex.Message);
                 }
             }
         }
@@ -84,16 +87,16 @@ namespace OniBot
 
                     if (instance == null)
                     {
-                        DiscordBot.Log(nameof(LoadBehaviors), LogSeverity.Error, $"Unable to create instance of behavior {type.FullName}");
+                        _logger.LogError($"Unable to create instance of behavior {type.FullName}");
                     }
 
                     _behaviors.Add(instance.Name, instance);
-                    DiscordBot.Log(nameof(LoadBehaviors), LogSeverity.Info, $"Loaded behavior {instance.Name}");
+                    _logger.LogInformation($"Loaded behavior {instance.Name}");
 
                 }
                 catch (Exception ex)
                 {
-                    DiscordBot.Log(nameof(LoadBehaviors), LogSeverity.Error, ex.ToString());
+                    _logger.LogError(ex);
                 }
             }
         }

@@ -6,15 +6,21 @@ using Discord;
 using System.Net.Http;
 using System.Text.RegularExpressions;
 using System.IO;
+using Microsoft.Extensions.Logging;
 
 namespace OniBot.Commands
 {
-    public class MemeCommand : ModuleBase, IBotCommand
+    public class MemeCommand : ModuleBase<SocketCommandContext>, IBotCommand
     {
         private static Random _random = new Random();
         private static readonly Regex galleryRegex = new Regex(@"(/gallery/\w+)", RegexOptions.Compiled);
         private static readonly Regex imageRegex = new Regex(@"//i.imgur.com(?<img>/\w+).(?<ext>png|jpg|gif)"".+alt=""(?<desc>.+)"" \w", RegexOptions.Compiled);
         private static HttpClient client = new HttpClient();
+        private ILogger _logger;
+
+        public MemeCommand(ILogger logger) {
+            _logger = logger;
+        }
 
         [Command("randommeme")]
         [Summary("Searches Imgur and provides a random image from the results.")]
@@ -85,7 +91,7 @@ namespace OniBot.Commands
             }
             catch (Exception e)
             {
-                DiscordBot.Log(nameof(FindImage), LogSeverity.Error, e.ToString());
+                _logger.LogError(e);
                 return null;
             }
         }

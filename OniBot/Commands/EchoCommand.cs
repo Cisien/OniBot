@@ -6,7 +6,7 @@ namespace OniBot.Commands
 {
     [Group("echo")]
     [Summary("Repeats the text that follows")]
-    public class EchoCommand : ModuleBase, IBotCommand
+    public class EchoCommand : ModuleBase<SocketCommandContext>, IBotCommand
     {
         [Command]
         [RequireOwner]

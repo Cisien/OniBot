@@ -5,10 +5,11 @@ using System.Threading.Tasks;
 using Discord.WebSocket;
 using System.Threading;
 using OniBot.Infrastructure;
-using OniBot.CommandConfigs;
 using System.Net.Http;
 using System.IO;
 using System.Linq;
+using OniBot.CommandConfigs;
+using Microsoft.Extensions.Logging;
 
 namespace OniBot.Behaviors
 {
@@ -19,11 +20,15 @@ namespace OniBot.Behaviors
         private static Timer _timer;
         private static readonly Random _random = new Random();
         private DiscordSocketClient _client;
+        
+        private AvatarConfig _config;
+        private ILogger _logger;
 
-        private const string _configKey = "avatar";
-
-        public AvatarRotatorBehavior(IDiscordClient client) {
+        public AvatarRotatorBehavior(IDiscordClient client, AvatarConfig config, ILogger logger)
+        {
             _client = client as DiscordSocketClient;
+            _config = config;
+            _logger = logger;
         }
 
         public async Task RunAsync()
@@ -34,22 +39,23 @@ namespace OniBot.Behaviors
 
         private void UpdateAvatar(object state)
         {
+            _logger.LogDebug("Update Avatar beginning");
             var client = state as DiscordSocketClient;
 
             if (client == null)
             {
                 return;
             }
-
-            var config = Configuration.Get<AvatarConfig>(_configKey);
-
-            if (config.Avatars == null || config.Avatars.Count == 0)
+            _config.Reload();
+            
+            if (_config.Avatars == null || _config.Avatars.Count == 0)
             {
+                _logger.LogWarning("No avatars found.");
                 return;
             }
 
-            var index = _random.Next(0, config.Avatars.Count);
-            var avatar = config.Avatars.ElementAtOrDefault(index);
+            var index = _random.Next(0, _config.Avatars.Count);
+            var avatar = _config.Avatars.ElementAtOrDefault(index);
 
             using (var httpClient = new HttpClient())
             {
@@ -61,8 +67,11 @@ namespace OniBot.Behaviors
                     {
                         a.Avatar = new Image(ms);
                     }).AsSync(false);
+
+                    _logger.LogInformation($"Avatar image set to {avatar.Key}:{avatar.Value}");
                 }
             }
+            _logger.LogDebug("Update Avatar done");
         }
     }
 }

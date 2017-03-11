@@ -11,7 +11,7 @@ using System.Linq;
 
 namespace OniBot.Commands
 {
-    public class SweepCommands : ModuleBase, IBotCommand
+    public class SweepCommands : ModuleBase<SocketCommandContext>, IBotCommand
     {
         private static readonly Random random = new Random();
 

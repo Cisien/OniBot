@@ -3,12 +3,12 @@ using System;
 using Discord;
 using System.Threading.Tasks;
 using Discord.WebSocket;
-using Microsoft.Extensions.Options;
 using System.Net.Http;
 using System.IO;
 using OniBot.Infrastructure;
 using System.Collections.Generic;
 using OniBot.CommandConfigs;
+using Microsoft.Extensions.Logging;
 
 namespace OniBot.Behaviors
 {
@@ -22,11 +22,13 @@ namespace OniBot.Behaviors
         private BotConfig _globalConfig;
         private DiscordSocketClient _client;
         private const string _configKey = "randomly";
+        private ILogger _logger;
 
-        public RandomlySendMessageBehavior(IOptions<BotConfig> config, IDiscordClient client)
+        public RandomlySendMessageBehavior(BotConfig config, IDiscordClient client, ILogger logger)
         {
-            _globalConfig = config.Value;
+            _globalConfig = config;
             _client = client as DiscordSocketClient;
+            _logger = logger;
         }
 
         public string Name => nameof(RandomlySendMessageBehavior);
@@ -35,11 +37,11 @@ namespace OniBot.Behaviors
         {
             if (client == null)
             {
-                DiscordBot.Log(nameof(RunAsync), LogSeverity.Error, $"Discord client is invalid");
+                _logger.LogError($"Discord client is invalid");
                 return;
             }
             _config = Configuration.Get<RandomlyConfig>(_configKey);
-            
+
             _client.MessageReceived += OnMessageReceived;
             await Task.Yield();
         }
@@ -57,15 +59,18 @@ namespace OniBot.Behaviors
             }
 
             var channelId = arg.Channel.Id;
+            _logger.LogDebug($"channel: {channelId}");
             if (!_messagesSinceLastSend.ContainsKey(channelId))
             {
                 _messagesSinceLastSend.Add(channelId, 0);
             }
+            _logger.LogDebug($"current: {_messagesSinceLastSend[channelId]}");
 
             if (!_messageToSendOn.ContainsKey(channelId))
             {
                 _messageToSendOn.Add(channelId, _random.Next(_config.MinMessages, _config.MaxMessages));
             }
+            _logger.LogDebug($"target: {_messagesSinceLastSend[channelId]}");
 
             _messagesSinceLastSend[channelId]++;
 
@@ -74,28 +79,24 @@ namespace OniBot.Behaviors
                 return;
             }
 
-            var messages = _config.RandomMessages;
-
-            var index = _random.Next(0, messages.Count - 1);
-            var message = messages[index];
+            var message = _config.RandomMessages.Random();
 
             if (message.Image == null)
             {
-
+                _logger.LogDebug("Sending message without attachment");
                 await arg.Channel.SendMessageAsync(message.Message);
             }
             else
             {
+                _logger.LogDebug("Sending message with attachment");
                 var image = await client.GetByteArrayAsync(message.Image);
+                var temp = Path.GetExtension(message.Image);
 
-                var temp = $"{Guid.NewGuid()}{Path.GetExtension(message.Image)}";
-
-                using (var ms = new MemoryStream(image))
-                {
-                    await arg.Channel.SendFileAsync(ms, temp, message.Message);
-                }
+                await arg.Channel.SendFileAsync(image, temp, message.Message);
             }
+
             _messageToSendOn[channelId] = _random.Next(_config.MinMessages, _config.MaxMessages);
+            _logger.LogDebug($"Selected a new random message to send on: {_messageToSendOn[channelId]}");
             _messagesSinceLastSend[channelId] = 0;
             _config = Configuration.Get<RandomlyConfig>(_configKey);
         }

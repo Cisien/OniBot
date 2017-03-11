@@ -1,9 +1,12 @@
 ﻿using Discord.Commands;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Console;
+using OniBot.Infrastructure;
 using OniBot.Interfaces;
 using System;
 using System.Collections.Generic;
+using System.Reflection;
 
 namespace OniBot
 {
@@ -28,7 +31,7 @@ namespace OniBot
             config.AddEnvironmentVariables();
             if (environment == "development")
             {
-                config.AddUserSecrets();
+                config.AddUserSecrets("OniBot");
             }
             config.AddInMemoryCollection(commandLineConfig.AsEnumerable());
 
@@ -42,24 +45,73 @@ namespace OniBot
             Configuration = configuration;
         }
 
-        public void ConfigureServices(IServiceCollection services)
+        public void ConfigureServices(IDependencyMap services)
         {
-            services.AddOptions();
-            services.AddSingleton<IDependencyMap, DependencyMap>();
-            services.Configure<BotConfig>(Configuration);
-            services.AddSingleton(a =>
+            var config = new BotConfig();
+            ConfigurationBinder.Bind(Configuration, config);
+
+            var provider = new LoggerFactory();
+            provider.AddConsole(LogLevel.Information);
+            if (Configuration["environment"] == "development")
             {
-                return new CommandService(new CommandServiceConfig
-                {
-                    CaseSensitiveCommands = false,
-                    DefaultRunMode = RunMode.Sync,
-                    SeparatorChar = ' '
-                });
+                provider.AddDebug(LogLevel.Trace);
+            }
+
+            var logger = provider.CreateLogger("Common");
+            services.Add(logger);
+            RegisterConfigInstances(services);
+
+            var commandService = new CommandService(new CommandServiceConfig
+            {
+                CaseSensitiveCommands = false,
+                DefaultRunMode = RunMode.Sync,
+                SeparatorChar = ' '
             });
 
-            services.AddSingleton<BehaviorService>();
-            services.AddSingleton<ICommandHandler, CommandHandler>();
-            services.AddSingleton<IDiscordBot, DiscordBot>();
+            var behaviorService = new BehaviorService(services, logger);
+            var commandHanlder = new CommandHandler(commandService, config, logger);
+            var bot = new DiscordBot(config, commandHanlder, services, behaviorService, logger);
+
+            services.Add(services);
+            services.Add(config);
+            services.Add(commandService);
+            services.Add(behaviorService);
+            services.Add<ICommandHandler>(commandHanlder);
+            services.Add<IDiscordBot>(bot);
         }
+
+        private void RegisterConfigInstances(IDependencyMap map)
+        {
+            var spMap = map as ServiceProviderDependencyMap;
+            var logger = spMap.Get<ILogger>();
+            var assembly = Assembly.GetEntryAssembly();
+            var interfaceType = typeof(CommandConfig);
+
+            var exportedTypes = assembly.ExportedTypes;
+
+            foreach (var type in exportedTypes)
+            {
+                try
+                {
+                    var typeInfo = type.GetTypeInfo();
+
+                    if (!interfaceType.IsAssignableFrom(type) || typeInfo.IsInterface || typeInfo.IsAbstract)
+                    {
+                        continue;
+                    }
+
+                    var instance = Activator.CreateInstance(type) as CommandConfig;
+                    instance.Reload();
+
+                    spMap.Add(type, instance);
+                }
+                catch (Exception ex)
+                {
+                    logger.LogError(ex);
+                    throw;
+                }
+            }
+        }
+
     }
 }

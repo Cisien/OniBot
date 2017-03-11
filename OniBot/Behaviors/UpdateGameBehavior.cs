@@ -4,9 +4,8 @@ using Discord;
 using System.Threading.Tasks;
 using System.Threading;
 using Discord.WebSocket;
-using OniBot.Infrastructure;
 using OniBot.CommandConfigs;
-using System.Collections.Generic;
+using Microsoft.Extensions.Logging;
 
 namespace OniBot.Behaviors
 {
@@ -17,12 +16,15 @@ namespace OniBot.Behaviors
         private Timer _timer;
         private static Random _random = new Random();
         private DiscordSocketClient _client;
+        
+        private ILogger _logger;
+        private GamesConfig _config;
 
-        private const string _configKey = "updategame";
-
-        public UpdateGameBehavior(IDiscordClient client)
+        public UpdateGameBehavior(IDiscordClient client, ILogger logger, GamesConfig config)
         {
             _client = client as DiscordSocketClient;
+            _logger = logger;
+            _config = config;
         }
 
         public async Task RunAsync()
@@ -43,28 +45,24 @@ namespace OniBot.Behaviors
             var client = state as DiscordSocketClient;
             if (client == null)
             {
-                DiscordBot.Log(nameof(UpdateGame), LogSeverity.Error, $"client is a {state?.GetType()?.Name ?? "null"}, and is not expected.");
+                _logger.LogError($"client is {state?.GetType()?.Name ?? "null"}");
                 return;
             }
 
-            var config = Configuration.Get<GamesConfig>(_configKey);
-            if (config?.Games == null || config.Games.Count == 0)
+            _config.Reload();
+            if (_config.Games.Count == 0)
             {
-                config.Games = new List<string>() { "OxygenNotIncluded" };
+                _config.Games.Add("OxygenNotIncluded");
             }
 
             try
             {
-                var games = config.Games;
-                var index = _random.Next(0, games.Count - 1);
-                var game = games[index];
+                var game = _config.Games.Random();
                 client.SetGameAsync(game).AsSync(false);
             }
             catch (Exception ex)
             {
-                Console.WriteLine(ex);
-                
-                DiscordBot.Log(nameof(UpdateGame), LogSeverity.Critical, ex.ToString());
+                _logger.LogError(ex.ToString());
             }
         }
     }

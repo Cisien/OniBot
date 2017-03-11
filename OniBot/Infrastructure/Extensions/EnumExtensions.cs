@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace OniBot.Infrastructure
+namespace OniBot
 {
     public static class EnumExtensions
     {
