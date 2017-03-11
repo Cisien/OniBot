@@ -34,3 +34,19 @@ environment:
 
 deploy_script:
  - ps: .\deploy.ps1
+
+notifications:
+- provider: Webhook
+  url: 
+    secure:fELG/oUdNsV+J65yan2ZYCLGHnWdx2x5KzKIwtdLaEwsJ2d5D579NqW12ro/wMT8tGEDOvNaiy9OtSPwPIzzA81YLLD5tFgg3dwapDBdndRAYGkrSnRDht5wwiMqJ03qlIjeB2S3LM3jA8HjjRdooEc3tmnkKdC7SWXwrbE758Y=
+  method: POST
+  body: >-
+    {
+        "content": "Build **{{status}}**: {{projectName}} {{buildVersion}}\n{{commitMessage}}\n{{commitId}}",
+        "username": "AppVeyor",
+        "avatar_url": "https://pbs.twimg.com/profile_images/2269442372/5s66pnbt5v8tw6most5e.png",
+        "tts": false
+    }
+  on_build_success: true
+  on_build_failure: true
+  on_build_status_changed: true
