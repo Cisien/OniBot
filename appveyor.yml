@@ -3,7 +3,7 @@ image: Visual Studio 2017
 
 install:
 - ps: (New-Object Net.WebClient).DownloadFile('https://github.com/docker/compose/releases/download/1.11.2/docker-compose-Windows-x86_64.exe', "C:\Program Files\docker\docker-compose.exe")
-- docker version
+- cmd: docker version
 
 before_build:
 - nuget restore OniBot.sln
@@ -12,12 +12,14 @@ build:
   project: OniBot.sln
   verbosity: minimal
 
+platform: Any CPU
+configuration: Release
+
 test: off  
 
 artifacts:  
-- path: bin\$(configuration)\netcoreapp1.1\*.*
+- path: bin\$(configuration)\netcoreapp1.1
   name: Release
-  type: zip
 
 deploy:
 - provider: GitHub

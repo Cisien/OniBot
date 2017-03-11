@@ -2,7 +2,7 @@ version: '2.1'
 
 services:
   onibot:
-    image: cisien/onibot
+    image: onibot
     build:
       context: ./OniBot
       dockerfile: Dockerfile
