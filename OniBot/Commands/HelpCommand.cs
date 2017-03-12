@@ -54,7 +54,7 @@ namespace OniBot.Commands
         [Command("help"), Priority(100)]
         [Summary("Prints the help of a specific command")]
         [RequireUserPermission(GuildPermission.SendMessages)]
-        public async Task Help([Summary("[Optional] The name of the command to view the help of.")][Remainder]string command)
+        public async Task Help([Summary("[Optional] The name of the command to view the help of."), Remainder]string command)
         {
             if (command.StartsWith(_config.PrefixChar.ToString()))
             {

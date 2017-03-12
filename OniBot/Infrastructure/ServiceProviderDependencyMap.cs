@@ -40,7 +40,7 @@ namespace OniBot.Infrastructure
         /// <inheritdoc />
         public bool TryAdd<T>(T obj) where T : class
         {
-            return TryAddFactory<T>(() => obj);
+            return TryAddFactory(() => obj);
         }
         /// <inheritdoc />
         public void AddTransient<T>() where T : class, new()
@@ -53,6 +53,16 @@ namespace OniBot.Infrastructure
             _services.AddTransient<T>();
             return true;
         }
+        public void AddTransient(Type type)
+        {
+            _services.AddTransient(type);
+        }
+
+        public void AddTransientFactory(Type type, Func<object> factory)
+        {
+            _services.AddTransient(type, (sp) => factory());
+        }
+
         /// <inheritdoc />
         public void AddTransient<TKey, TImpl>() where TKey : class where TImpl : class, TKey, new()
         {

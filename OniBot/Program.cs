@@ -33,7 +33,14 @@ namespace OniBot
                 .UseStartup<Startup>()
                 .UseBot<DiscordBot>();
 
-            await host.RunAsync(cts.Token);
+            try
+            {
+                await host.RunAsync(cts.Token);
+            }
+            catch(Exception ex) {
+                Console.WriteLine(ex);
+                Console.ReadKey();
+            }
         }
     }
 }

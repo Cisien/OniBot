@@ -11,11 +11,12 @@ namespace OniBot.Commands
     public class LearningCommands : ModuleBase<SocketCommandContext>, IBotCommand
     {
         private ICommandHandler _commandHandler;
-        private string _storageKey = "customcommands";
+        private CustomCommandsConfig _config;
 
-        public LearningCommands(ICommandHandler commandHandler)
+        public LearningCommands(ICommandHandler commandHandler, CustomCommandsConfig config)
         {
             _commandHandler = commandHandler;
+            _config = config;
         }
 
         [Command("learn")]
@@ -23,9 +24,9 @@ namespace OniBot.Commands
         [RequireUserPermission(GuildPermission.ManageEmojis)]
         public async Task Learn(
             [Summary("The name of the command to add")]string command,
-            [Summary("The value to send as the response whenever this command is used.")][Remainder]string response)
+            [Summary("The value to send as the response whenever this command is used."), Remainder]string response)
         {
-            await Configuration.Modify<CustomCommandsConfig>(_storageKey, async a =>
+            await Configuration.Modify<CustomCommandsConfig>(_config.ConfigKey, async a =>
             {
                 if (a.Commands.ContainsKey(command))
                 {
@@ -47,7 +48,7 @@ namespace OniBot.Commands
             [Summary("The name of the command to forget.")]string command)
         {
             command = command.ToLower();
-            await Configuration.Modify<CustomCommandsConfig>(_storageKey, async a =>
+            await Configuration.Modify<CustomCommandsConfig>(_config.ConfigKey, async a =>
             {
                 if (!a.Commands.ContainsKey(command))
                 {
@@ -69,18 +70,17 @@ namespace OniBot.Commands
         [Summary("[Optional] The name of the command to show. If ommited, all commands will be shown.")]string command = null)
         {
             command = command?.ToLower();
-            var customCommands = Configuration.Get<CustomCommandsConfig>(_storageKey);
 
             string response = string.Empty;
             if (string.IsNullOrWhiteSpace(command))
             {
-                response = JsonConvert.SerializeObject(customCommands, Formatting.Indented);
+                response = JsonConvert.SerializeObject(_config, Formatting.Indented);
             }
             else
             {
-                if (customCommands.Commands.ContainsKey(command))
+                if (_config.Commands.ContainsKey(command))
                 {
-                    response = JsonConvert.SerializeObject(customCommands.Commands[command], Formatting.Indented);
+                    response = JsonConvert.SerializeObject(_config.Commands[command], Formatting.Indented);
                 }
                 else
                 {
@@ -97,15 +97,14 @@ namespace OniBot.Commands
         [RequireUserPermission(GuildPermission.SendMessages)]
         public async Task CustomCommand()
         {
-            var command = Context.Message.Content.Substring(1).ToLower();
-
-            var customCommands = Configuration.Get<CustomCommandsConfig>("customcommands");
-            if (!customCommands.Commands.ContainsKey(command))
+            var command = Context.Message.Content.Substring(0).ToLower();
+            
+            if (!_config.Commands.ContainsKey(command))
             {
                 await ReplyAsync("I'm a little teapot!");
             }
 
-            await ReplyAsync(customCommands.Commands[command]);
+            await ReplyAsync(_config.Commands[command]);
         }
     }
 }

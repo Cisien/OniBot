@@ -167,7 +167,7 @@ namespace OniBot
             switch (result)
             {
                 case ExecuteResult exResult:
-                    _logger.LogError(((ExecuteResult)result).Exception);
+                    _logger.LogError(exResult.Exception);
                     break;
                 case PreconditionResult pResult:
                     _logger.LogInformation(pResult.ErrorReason);
@@ -182,6 +182,5 @@ namespace OniBot
             }
 #endif
         }
-
     }
 }

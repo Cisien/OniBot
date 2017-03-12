@@ -9,6 +9,7 @@ namespace OniBot.CommandConfigs
         public List<ImageMessage> RandomMessages { get; set; } = new List<ImageMessage>();
         public int MinMessages { get; set; }
         public int MaxMessages { get; set; }
+        public bool Enabled { get; set; }
 
         [JsonIgnore]
         public override string ConfigKey => "randomly";

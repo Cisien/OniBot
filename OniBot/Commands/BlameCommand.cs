@@ -14,7 +14,7 @@ namespace OniBot.Commands
         [RequireUserPermission(ChannelPermission.SendMessages)]
         public async Task Blame(
             [Summary("The user or random thing to blame")]string toBlame, 
-            [Summary("[Optional] The reason for the blaming")][Remainder] string because = null)
+            [Summary("[Optional] The reason for the blaming"), Remainder] string because = null)
         {
             var user = Context.User as SocketGuildUser;
 

@@ -9,21 +9,22 @@ namespace OniBot.Infrastructure
     {
         private static readonly object _fileReadWriteLock = new object();
 
-        public static T Get<T>(string key) where T : class
+        public static T Get<T>(string key, ulong? guild = null) where T : class
         {
             return (T)Get(typeof(T), key);
         }
 
-        public static object Get(Type type, string key)
+        public static object Get(Type type, string key, ulong? guild = null)
         {
             lock (_fileReadWriteLock)
             {
-                if (!Directory.Exists("./config"))
+                var directory = Path.Combine(".", "config", guild?.ToString() ?? string.Empty);
+                if (!Directory.Exists(directory))
                 {
-                    Directory.CreateDirectory("./config");
+                    Directory.CreateDirectory(directory);
                 }
 
-                var configFile = $"./config/{key}.json";
+                var configFile = Path.Combine(directory, $"{key}.json");
                 if (!File.Exists(configFile))
                 {
                     File.WriteAllText(configFile, $"{{\r\n}}");
@@ -37,35 +38,35 @@ namespace OniBot.Infrastructure
             }
         }
 
-        public static string GetJson<T>(string key) where T : class
+        public static string GetJson<T>(string key, ulong? guild = null) where T : class
         {
-            var config = Get(typeof(T), key);
+            var config = Get(typeof(T), key, guild);
             return JsonConvert.SerializeObject(config, Formatting.Indented);
         }
 
-        public static void Write<T>(T data, string key) where T : class
+        public static void Write<T>(T data, string key, ulong? guild = null) where T : class
         {
             lock (_fileReadWriteLock)
             {
-                var configFile = $"./config/{key}.json";
+                var configFile = Path.Combine(".", "config", guild?.ToString() ?? string.Empty, $"{key}.json");
 
                 var config = JsonConvert.SerializeObject(data, Formatting.Indented);
                 File.WriteAllText(configFile, config);
             }
         }
 
-        public static async Task Modify<T>(string key, Func<T, Task> action) where T : class
+        public static async Task Modify<T>(string key, Func<T, Task> action, ulong? guild = null) where T : class
         {
-            var config = Get<T>(key);
+            var config = Get<T>(key, guild);
             await action(config);
-            Write(config, key);
+            Write(config, key, guild);
         }
 
-        public static Task Modify<T>(string key, Action<T> action) where T : class
+        public static Task Modify<T>(string key, Action<T> action, ulong? guild = null) where T : class
         {
-            var config = Get<T>(key);
+            var config = Get<T>(key, guild);
             action(config);
-            Write(config, key);
+            Write(config, key, guild);
             return Task.CompletedTask;
         }
     }

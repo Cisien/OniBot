@@ -1,5 +1,4 @@
-﻿using Discord.Commands;
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
@@ -12,7 +11,7 @@ namespace OniBot.Infrastructure
 {
     public class HostingEnvironment
     {
-        public string Environment { get; set; }
+        public string Environment { get; private set; } = "production";
         public Type Startup { get; set; }
         public ServiceProviderDependencyMap Map { get; set; }
         public ILoggerFactory LoggerFactory { get; set; }
@@ -27,20 +26,34 @@ namespace OniBot.Infrastructure
         public async Task RunAsync(CancellationToken token)
         {
             var serviceProvider = Map.GetProvider();
-            Environment = CommandLineOptions.SingleOrDefault(a => a.Key == "environment").Value;
+            var environmentOptions = CommandLineOptions.Where(a => a.Key == "environment");
+            if (environmentOptions.Count() == 1)
+            {
+                Environment = environmentOptions.Single().Value;
+            }
 
-            var startup = ActivatorUtilities.CreateInstance(serviceProvider, Startup);
+            var startup = ActivatorUtilities.CreateInstance(serviceProvider, Startup, this);
 
             var sti = Startup.GetTypeInfo();
             var configureMethod = sti.GetMethod("Configure");
             var configureServicesMethod = sti.GetMethod("ConfigureServices");
 
+            if (configureMethod == null)
+            {
+                throw new InvalidOperationException("Startup class is missing a Configure method");
+            }
+
+            if (configureServicesMethod == null)
+            {
+                throw new InvalidOperationException("Startup class is mssing a ConfigureServices method");
+            }
+
             configureServicesMethod.Invoke(startup, new object[] { Map, LoggerFactory });
+            serviceProvider = Map.GetProvider();
             configureMethod.Invoke(startup, GetMethodParameterInstances(configureMethod));
 
             var bot = ActivatorUtilities.CreateInstance(serviceProvider, Bot) as IDiscordBot;
             Map.Add(bot);
-            Map.Add(bot as DiscordBot);
 
             using (bot)
             {

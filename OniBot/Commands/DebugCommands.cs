@@ -21,26 +21,28 @@ namespace OniBot.Commands
     {
         [Command("config")]
         [Summary("Sends the currently running config")]
-        [RequireRole(CompareMode.Or, OniRoles.BotSmith, OniRoles.MasterArchitects)]
+        [RequireOwner]
         public async Task DumpConfig(
         [Summary("[Optional] If supplied, uploads just the single config to Discord")]string config = null)
         {
-            var files = Directory.GetFiles("./config/", "*.json");
+            var files = Directory.GetFiles("./config/", "*.json", SearchOption.AllDirectories);
 
             if (string.IsNullOrWhiteSpace(config))
             {
                 foreach (var file in files)
                 {
+                    var filename = file.Replace("/", "-").Replace("\\", "-").Substring(0);
                     var contents = File.ReadAllBytes(file);
-                    await Context.User.SendFileAsync(contents, Path.GetFileName(file));
+                    await Context.User.SendFileAsync(contents, filename);
                     await Task.Delay(TimeSpan.FromSeconds(1));
                 }
             }
             else
             {
                 var file = files.SingleOrDefault(a => a.Contains(config));
+                var filename = file.Replace("/", "-").Replace("\\", "-").Substring(0);
                 var contents = File.ReadAllBytes(file);
-                await Context.User.SendFileAsync(contents, Path.GetFileName(file));
+                await Context.User.SendFileAsync(contents, filename);
             }
         }
 
@@ -62,41 +64,32 @@ namespace OniBot.Commands
         [Command("user")]
         [Summary("Gets the current run state of a user")]
         [RequireOwner]
-        public async Task DumpUser([Remainder] string user)
+        public async Task DumpUser( SocketGuildUser user)
         {
-            var users = Context.Guild.Users;
-            var selectedUser = users.SingleOrDefault(a => a.Mention == user || a.Mention == user.Replace("<@", "<@!"));
-            if (selectedUser == null)
-            {
-                return;
-            }
-
-            var props = DumpProps(selectedUser);
+            var props = DumpProps(user);
             await Context.User.SendMessageAsync(props);
 
-            var cPerms = GetChannelPerms(selectedUser);
+            var cPerms = GetChannelPerms(user);
             await Context.User.SendMessageAsync($"```{"Channel Permissions".PadRight(20)}{string.Join(", ", cPerms)}```");
 
-            var gPerms = GetGuildPerms(selectedUser);
+            var gPerms = GetGuildPerms(user);
             await Context.User.SendMessageAsync($"```{"Guild Permissions".PadRight(20)}{string.Join(", ", gPerms)}```");
         }
 
         [Command("chat")]
         [Summary("Gets the current run state of a user")]
         [RequireOwner]
-        public async Task DumpChat([Remainder] string count)
+        public async Task DumpChat(int count)
         {
-            var amount = int.Parse(count);
+            var messages = await Context.Channel.GetMessagesAsync(limit: count, fromMessageId: Context.Message.Id, dir: Direction.Before).ToList();
 
-            var messages = await Context.Channel.GetMessagesAsync(limit: amount, fromMessageId: Context.Message.Id, dir: Direction.Before).ToList();
-            var userDmChannel = await Context.User.CreateDMChannelAsync();
             foreach (var messageContainer in messages)
             {
                 foreach (var message in messageContainer)
                 {
                     var props = DumpProps(message);
 
-                    await userDmChannel.SendMessageAsync(props);
+                    await Context.User.SendMessageAsync(props);
                     await Task.Delay(TimeSpan.FromSeconds(2));
                 }
             }
@@ -107,7 +100,7 @@ namespace OniBot.Commands
         public async Task Info()
         {
             var application = await Context.Client.GetApplicationInfoAsync();
-            await Context.User.SendMessageAsync(
+            var infoString =
                 $"{Format.Bold("Info")}\n" +
                 $"- Author: {application.Owner.Username} (ID {application.Owner.Id})\n" +
                 $"- Library: Discord.Net ({DiscordConfig.Version})\n" +
@@ -115,11 +108,16 @@ namespace OniBot.Commands
                 $"- Uptime: {GetUptime()}\n\n" +
 
                 $"{Format.Bold("Stats")}\n" +
-                $"- Heap Size: {GetHeapSize()} MB\n" +
-                $"- Guilds: {(Context.Client as DiscordSocketClient).Guilds.Count}\n" +
-                $"- Channels: {(Context.Client as DiscordSocketClient).Guilds.Sum(g => g.Channels.Count)}" +
-                $"- Users: {(Context.Client as DiscordSocketClient).Guilds.Sum(g => g.Users.Count)}"
-            );
+                $"- Heap Size: {GetHeapSize()} MB";
+            if (Context.Client is DiscordSocketClient guildClient)
+            {
+                infoString += "\n" +
+                $"- Guilds: {guildClient.Guilds.Count}\n" +
+                $"- Channels: {guildClient.Guilds.Sum(g => g.Channels.Count)}" +
+                $"- Users: {guildClient.Guilds.Sum(g => g.Users.Count)}";
+            }
+
+            await Context.User.SendMessageAsync(infoString);
         }
 
         private static string GetUptime()
@@ -164,8 +162,7 @@ namespace OniBot.Commands
         private List<ChannelPermission> GetChannelPerms(IGuildUser user)
         {
             var hasChannelPerms = new List<ChannelPermission>();
-            var channel = Context.Channel as IGuildChannel;
-            if (channel != null)
+            if (Context.Channel is IGuildChannel channel)
             {
                 var userChannelPerms = user.GetPermissions(channel);
 

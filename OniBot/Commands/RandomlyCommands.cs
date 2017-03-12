@@ -6,20 +6,25 @@ using System.Threading.Tasks;
 using OniBot.CommandConfigs;
 
 namespace OniBot.Commands
-{ 
+{
     [Group("randomly")]
     [Summary("A group of commands used for modifying the random channel messages")]
     public class RandomlyCommands : ModuleBase<SocketCommandContext>, IBotCommand
     {
-        private const string _configKey = "randomly";
+        private RandomlyConfig _config;
 
+        public RandomlyCommands(RandomlyConfig config)
+        {
+            _config = config;
+        }
+        
         [Command("show")]
         [Summary("Sends the current running randomly config in a DM")]
         [RequireRole(CompareMode.Or, OniRoles.BotSmith, OniRoles.MasterArchitects)]
         public async Task Show()
         {
-            var configTxt = Configuration.GetJson<RandomlyConfig>(_configKey);
-            await Context.User.SendMessageAsync($"```{configTxt}```");            
+            var configTxt = Configuration.GetJson<RandomlyConfig>(_config.ConfigKey, Context.Guild.Id);
+            await Context.User.SendMessageAsync($"```{configTxt}```");
         }
 
         [Command("min")]
@@ -28,10 +33,10 @@ namespace OniBot.Commands
         public async Task Min(
             [Summary("The minimum number of messages to constrain on.")]int min)
         {
-            await Configuration.Modify<RandomlyConfig>(_configKey, a =>
+            await Configuration.Modify<RandomlyConfig>(_config.ConfigKey, a =>
             {
                 a.MinMessages = min;
-            });
+            }, Context.Guild.Id);
 
             await Context.User.SendMessageAsync($"Maximum number of messages between interjecting: \"{min}\".");
         }
@@ -42,10 +47,10 @@ namespace OniBot.Commands
         public async Task Max(
             [Summary("The maximum number of messages to constrain on.")]int max)
         {
-            await Configuration.Modify<RandomlyConfig>(_configKey, a =>
+            await Configuration.Modify<RandomlyConfig>(_config.ConfigKey, a =>
             {
                 a.MaxMessages = max;
-            });
+            }, Context.Guild.Id);
 
             await Context.User.SendMessageAsync($"Maximum number of messages between interjecting: \"{max}\".");
         }
@@ -56,7 +61,7 @@ namespace OniBot.Commands
         public async Task Add(
             [Summary("The message to add. If including a URL to an image, it needs to be the last thing in the message.")]string message)
         {
-            await Configuration.Modify<RandomlyConfig>(_configKey, a =>
+            await Configuration.Modify<RandomlyConfig>(_config.ConfigKey, a =>
             {
                 var newMessage = new ImageMessage()
                 {
@@ -77,8 +82,8 @@ namespace OniBot.Commands
                     newMessage.Message = msg;
                 }
                 var tags = Context.Message.Tags;
-            });
-            
+            }, Context.Guild.Id);
+
             await Context.User.SendMessageAsync($"\"{message}\" added.");
         }
 
@@ -88,7 +93,8 @@ namespace OniBot.Commands
         public async Task Remove(
             [Summary("The full message to remove without the image link.")]string message)
         {
-            await Configuration.Modify<RandomlyConfig>(_configKey, async a => {
+            await Configuration.Modify<RandomlyConfig>(_config.ConfigKey, async a =>
+            {
                 var toRemove = a.RandomMessages.SingleOrDefault(b => b.Message == message);
 
                 if (toRemove == null)
@@ -100,9 +106,9 @@ namespace OniBot.Commands
                 {
                     a.RandomMessages.Remove(toRemove);
                 }
-            });
+            }, Context.Guild.Id);
 
-            await Context.User.SendMessageAsync($"\"{message}\" removed.");            
+            await Context.User.SendMessageAsync($"\"{message}\" removed.");
         }
     }
 }

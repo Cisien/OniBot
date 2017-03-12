@@ -4,7 +4,6 @@ using Discord;
 using System.Threading.Tasks;
 using Discord.WebSocket;
 using System.Threading;
-using OniBot.Infrastructure;
 using System.Net.Http;
 using System.IO;
 using System.Linq;
@@ -31,10 +30,10 @@ namespace OniBot.Behaviors
             _logger = logger;
         }
 
-        public async Task RunAsync()
+        public Task RunAsync()
         {
             _timer = new Timer(UpdateAvatar, _client, TimeSpan.FromSeconds(0), TimeSpan.FromHours(24));
-            await Task.Yield();
+            return Task.CompletedTask;
         }
 
         private void UpdateAvatar(object state)
@@ -46,8 +45,9 @@ namespace OniBot.Behaviors
             {
                 return;
             }
+
             _config.Reload();
-            
+
             if (_config.Avatars == null || _config.Avatars.Count == 0)
             {
                 _logger.LogWarning("No avatars found.");

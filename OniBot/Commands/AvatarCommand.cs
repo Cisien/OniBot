@@ -27,7 +27,7 @@ namespace OniBot.Commands
         [Command("remove")]
         [Summary("Removes the avatar from the list.")]
         [RequireUserPermission(GuildPermission.Administrator)]
-        public async Task Remove([Summary("The name of the avatar to remove.")]string name)
+        public async Task Remove([Summary("The name of the avatar to remove."), Remainder]string name)
         {
             await Configuration.Modify<AvatarConfig>(_configKey, a =>
             {

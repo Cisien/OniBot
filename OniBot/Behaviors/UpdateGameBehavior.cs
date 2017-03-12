@@ -27,7 +27,7 @@ namespace OniBot.Behaviors
             _config = config;
         }
 
-        public async Task RunAsync()
+        public Task RunAsync()
         {
             if (_timer != null)
             {
@@ -37,7 +37,7 @@ namespace OniBot.Behaviors
             }
 
             _timer = new Timer(UpdateGame, _client, TimeSpan.FromSeconds(0), TimeSpan.FromMinutes(5));
-            await Task.Yield();
+            return Task.CompletedTask;
         }
 
         private void UpdateGame(object state)

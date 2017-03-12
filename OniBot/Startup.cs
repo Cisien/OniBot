@@ -61,10 +61,16 @@ namespace OniBot
             var commandHanlder = new CommandHandler(commandService, config, logger);
 
             services.Add(services);
+            services.Add<IDependencyMap>(services);
             services.Add(config);
             services.Add(commandService);
             services.Add(behaviorService);
             services.Add<ICommandHandler>(commandHanlder);
+        }
+
+        public void Configure()
+        {
+
         }
 
         private void RegisterConfigInstances(IDependencyMap map)
@@ -87,10 +93,12 @@ namespace OniBot
                         continue;
                     }
 
-                    var instance = Activator.CreateInstance(type) as CommandConfig;
-                    instance.Reload();
-
-                    spMap.Add(type, instance);
+                    spMap.AddTransientFactory(type, () =>
+                    {
+                        var instance = Activator.CreateInstance(type) as CommandConfig;
+                        instance.Reload();
+                        return instance;
+                    });
                 }
                 catch (Exception ex)
                 {

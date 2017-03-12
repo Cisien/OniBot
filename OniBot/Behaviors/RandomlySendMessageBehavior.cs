@@ -5,7 +5,6 @@ using System.Threading.Tasks;
 using Discord.WebSocket;
 using System.Net.Http;
 using System.IO;
-using OniBot.Infrastructure;
 using System.Collections.Generic;
 using OniBot.CommandConfigs;
 using Microsoft.Extensions.Logging;
@@ -21,33 +20,36 @@ namespace OniBot.Behaviors
         private static readonly HttpClient client = new HttpClient();
         private BotConfig _globalConfig;
         private DiscordSocketClient _client;
-        private const string _configKey = "randomly";
         private ILogger _logger;
 
-        public RandomlySendMessageBehavior(BotConfig config, IDiscordClient client, ILogger logger)
+        public RandomlySendMessageBehavior(BotConfig config, IDiscordClient client, ILogger logger, RandomlyConfig randomlyConfig)
         {
             _globalConfig = config;
             _client = client as DiscordSocketClient;
             _logger = logger;
+            _config = randomlyConfig;
         }
 
         public string Name => nameof(RandomlySendMessageBehavior);
 
-        public async Task RunAsync()
+        public Task RunAsync()
         {
             if (client == null)
             {
-                _logger.LogError($"Discord client is invalid");
-                return;
+                throw new InvalidOperationException("Client is not valid");
             }
-            _config = Configuration.Get<RandomlyConfig>(_configKey);
 
             _client.MessageReceived += OnMessageReceived;
-            await Task.Yield();
+            return Task.CompletedTask;
         }
 
         private async Task OnMessageReceived(SocketMessage arg)
         {
+            if (!(arg.Channel is SocketGuildChannel channel))
+            {
+                return;
+            }
+
             if (arg.Content.StartsWith(_globalConfig.PrefixChar.ToString()))
             {
                 return;
@@ -58,8 +60,18 @@ namespace OniBot.Behaviors
                 return;
             }
 
+            var guildId = channel.Guild.Id;
+            _config.Reload(channel.Guild.Id);
+
+            if(!_config.Enabled)
+            {
+                _logger.LogDebug($"{Name} is disabled for guild {guildId}");
+                return;
+            }
+
             var channelId = arg.Channel.Id;
             _logger.LogDebug($"channel: {channelId}");
+
             if (!_messagesSinceLastSend.ContainsKey(channelId))
             {
                 _messagesSinceLastSend.Add(channelId, 0);
@@ -98,7 +110,7 @@ namespace OniBot.Behaviors
             _messageToSendOn[channelId] = _random.Next(_config.MinMessages, _config.MaxMessages);
             _logger.LogDebug($"Selected a new random message to send on: {_messageToSendOn[channelId]}");
             _messagesSinceLastSend[channelId] = 0;
-            _config = Configuration.Get<RandomlyConfig>(_configKey);
         }
+
     }
 }
