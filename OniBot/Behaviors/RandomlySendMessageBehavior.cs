@@ -63,12 +63,6 @@ namespace OniBot.Behaviors
             var guildId = channel.Guild.Id;
             _config.Reload(channel.Guild.Id);
 
-            if(!_config.Enabled)
-            {
-                _logger.LogDebug($"{Name} is disabled for guild {guildId}");
-                return;
-            }
-
             var channelId = arg.Channel.Id;
             _logger.LogDebug($"channel: {channelId}");
 
