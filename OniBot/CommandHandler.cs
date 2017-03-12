@@ -161,12 +161,18 @@ namespace OniBot
             _logger.LogInformation($"Command received: {newMessage.Content}");
 
             var context = new SocketCommandContext(_client, message);
-            
+
             var result = await _commands.ExecuteAsync(context, argPos, _map, MultiMatchHandling.Best);
 
-            if (result is ExecuteResult)
+            switch (result)
             {
-                _logger.LogError(((ExecuteResult)result).Exception);
+                case ExecuteResult exResult:
+                    _logger.LogError(((ExecuteResult)result).Exception);
+                    break;
+                case PreconditionResult pResult:
+                    _logger.LogInformation(pResult.ErrorReason);
+                    await context.User.SendMessageAsync(pResult.ErrorReason);
+                    break;
             }
 
 #if DEBUG

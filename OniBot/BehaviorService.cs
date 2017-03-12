@@ -1,6 +1,7 @@
-﻿using Discord;
-using Discord.Commands;
+﻿using Discord.Commands;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using OniBot.Infrastructure;
 using OniBot.Interfaces;
 using System;
 using System.Collections.Generic;
@@ -21,16 +22,15 @@ namespace OniBot
             _logger = logger;
         }
 
-        public async Task InstallAsync()
+        public Task InstallAsync()
         {
-            LoadBehaviors();
+            LoadBehaviors(_map);
 
-            await Task.Yield();
+            return Task.CompletedTask;
         }
 
         public async Task RunAsync()
         {
-
             await Task.Delay(TimeSpan.FromSeconds(10));
 
             foreach (var behavior in _behaviors)
@@ -47,8 +47,10 @@ namespace OniBot
             }
         }
 
-        private void LoadBehaviors()
+        private void LoadBehaviors(IDependencyMap map)
         {
+            var sMap = map as ServiceProviderDependencyMap;
+            
             var assembly = Assembly.GetEntryAssembly();
             var interfaceType = typeof(IBotBehavior);
 
@@ -64,53 +66,22 @@ namespace OniBot
                     {
                         continue;
                     }
-                    var ctor = FindMostSpecificCtor(typeInfo);
-
-                    IBotBehavior instance;
-                    if (ctor == null)
-                    {
-                        instance = (IBotBehavior)Activator.CreateInstance(type);
-                    }
-                    else
-                    {
-                        var parameterInstances = new List<object> { };
-                        var pars = ctor.GetParameters();
-                        foreach (var par in pars)
-                        {
-                            _map.TryGet(par.ParameterType, out object result);
-
-                            parameterInstances.Add(result);
-                        }
-
-                        instance = (IBotBehavior)Activator.CreateInstance(type, parameterInstances.ToArray());
-                    }
-
+                    
+                    var instance = ActivatorUtilities.CreateInstance(sMap.GetProvider(), type) as IBotBehavior;
                     if (instance == null)
                     {
                         _logger.LogError($"Unable to create instance of behavior {type.FullName}");
+                        continue;
                     }
 
                     _behaviors.Add(instance.Name, instance);
                     _logger.LogInformation($"Loaded behavior {instance.Name}");
-
                 }
                 catch (Exception ex)
                 {
                     _logger.LogError(ex);
                 }
             }
-        }
-
-        private ConstructorInfo FindMostSpecificCtor(TypeInfo typeInfo)
-        {
-            foreach (var ctor in typeInfo.DeclaredConstructors)
-            {
-                if (ctor.GetParameters().Length > 0)
-                {
-                    return ctor;
-                }
-            }
-            return null;
         }
     }
 }

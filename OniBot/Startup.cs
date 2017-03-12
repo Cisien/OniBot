@@ -1,11 +1,9 @@
 ﻿using Discord.Commands;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Console;
 using OniBot.Infrastructure;
 using OniBot.Interfaces;
 using System;
-using System.Collections.Generic;
 using System.Reflection;
 
 namespace OniBot
@@ -14,17 +12,9 @@ namespace OniBot
     {
         public IConfigurationRoot Configuration { get; private set; }
 
-        public Startup(string[] args)
+        public Startup(HostingEnvironment hostingEnvironment)
         {
-            var switchMappings = new Dictionary<string, string>
-                {
-                    { "-environment", "environment" }
-                };
-            var commandLine = new ConfigurationBuilder();
-            commandLine.AddCommandLine(args, switchMappings);
-            var commandLineConfig = commandLine.Build();
-
-            var environment = commandLineConfig["environment"]?.ToLower() ?? "production";
+            var environment = hostingEnvironment.Environment?.ToLower() ?? "production";
             var config = new ConfigurationBuilder();
             config.AddJsonFile("config.json", false);
             config.AddJsonFile($"config.{environment}.json", true);
@@ -33,7 +23,7 @@ namespace OniBot
             {
                 config.AddUserSecrets("OniBot");
             }
-            config.AddInMemoryCollection(commandLineConfig.AsEnumerable());
+            config.AddInMemoryCollection(hostingEnvironment.CommandLineOptions);
 
             var configuration = config.Build();
 #if DEBUG
@@ -45,19 +35,18 @@ namespace OniBot
             Configuration = configuration;
         }
 
-        public void ConfigureServices(IDependencyMap services)
+        public void ConfigureServices(ServiceProviderDependencyMap services, ILoggerFactory loggerFactory)
         {
             var config = new BotConfig();
             ConfigurationBinder.Bind(Configuration, config);
 
-            var provider = new LoggerFactory();
-            provider.AddConsole(LogLevel.Information);
+            loggerFactory.AddConsole(LogLevel.Information);
             if (Configuration["environment"] == "development")
             {
-                provider.AddDebug(LogLevel.Trace);
+                loggerFactory.AddDebug(LogLevel.Trace);
             }
 
-            var logger = provider.CreateLogger("Common");
+            var logger = loggerFactory.CreateLogger("Common");
             services.Add(logger);
             RegisterConfigInstances(services);
 
@@ -70,14 +59,12 @@ namespace OniBot
 
             var behaviorService = new BehaviorService(services, logger);
             var commandHanlder = new CommandHandler(commandService, config, logger);
-            var bot = new DiscordBot(config, commandHanlder, services, behaviorService, logger);
 
             services.Add(services);
             services.Add(config);
             services.Add(commandService);
             services.Add(behaviorService);
             services.Add<ICommandHandler>(commandHanlder);
-            services.Add<IDiscordBot>(bot);
         }
 
         private void RegisterConfigInstances(IDependencyMap map)
@@ -112,6 +99,5 @@ namespace OniBot
                 }
             }
         }
-
     }
 }

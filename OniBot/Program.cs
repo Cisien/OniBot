@@ -1,7 +1,8 @@
-﻿using Discord.Commands;
-using OniBot.Infrastructure;
+﻿using OniBot.Infrastructure;
 using System;
+using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 
 namespace OniBot
 {
@@ -12,42 +13,27 @@ namespace OniBot
             var program = new Program();
             AsyncPump.Run(program.MainAsync, args);
         }
-
-        private readonly IDependencyMap _depMap;
-        private bool _run = true;
+        
+        private CancellationTokenSource cts = new CancellationTokenSource();
 
         private Program()
-        {
-            _depMap = new ServiceProviderDependencyMap();
-        }
+        { }
 
         private async Task MainAsync(string[] args)
         {
             Console.CancelKeyPress += (s, e) =>
             {
-                _run = false;
+                cts.Cancel();
             };
 
-            var startup = new Startup(args);
-            startup.ConfigureServices(_depMap);
-           
-            try
-            {
-                using (var bot = _depMap.Get<IDiscordBot>())
-                {
-                    await bot.RunBotAsync();
+            var host = new HostingEnvironment()
+                .UseDependencyMap(new ServiceProviderDependencyMap())
+                .UseCommandLineOptions(args)
+                .UseLoggerFactory(new LoggerFactory())
+                .UseStartup<Startup>()
+                .UseBot<DiscordBot>();
 
-                    while (_run)
-                    {
-                        await Task.Delay(1000);
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine(ex);
-            }
-            Console.ReadKey();
+            await host.RunAsync(cts.Token);
         }
     }
 }
