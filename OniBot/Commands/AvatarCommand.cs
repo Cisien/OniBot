@@ -1,6 +1,4 @@
-﻿using Discord;
-using Discord.Commands;
-using Newtonsoft.Json;
+﻿using Discord.Commands;
 using OniBot.CommandConfigs;
 using OniBot.Infrastructure;
 using OniBot.Interfaces;
@@ -11,13 +9,13 @@ namespace OniBot.Commands
 {
     [Group("avatar")]
     [Summary("A group of commands related to bot avatar management")]
+    [ConfigurationPrecondition]
     public class AvatarCommand : ModuleBase<SocketCommandContext>, IBotCommand
     {
         private const string _configKey = "avatar";
  
         [Command("show")]
         [Summary("Sends you the current running Avatar config.")]
-        [RequireUserPermission(GuildPermission.Administrator)]
         public async Task Show()
         {
             var cfg = Configuration.GetJson<AvatarConfig>(_configKey);
@@ -26,7 +24,6 @@ namespace OniBot.Commands
 
         [Command("remove")]
         [Summary("Removes the avatar from the list.")]
-        [RequireUserPermission(GuildPermission.Administrator)]
         public async Task Remove([Summary("The name of the avatar to remove."), Remainder]string name)
         {
             await Configuration.Modify<AvatarConfig>(_configKey, a =>
@@ -42,7 +39,6 @@ namespace OniBot.Commands
 
         [Command("add")]
         [Summary("Adds the supplied avatar to the list.")]
-        [RequireUserPermission(GuildPermission.Administrator)]
         public async Task Add(
         [Summary("The name of the avatar to add.")]string name,
         [Summary("The URL of the avatar image.")]string url)

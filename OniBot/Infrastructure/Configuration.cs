@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json;
+using OniBot.Interfaces;
 using System;
 using System.IO;
 using System.Threading.Tasks;
@@ -9,9 +10,9 @@ namespace OniBot.Infrastructure
     {
         private static readonly object _fileReadWriteLock = new object();
 
-        public static T Get<T>(string key, ulong? guild = null) where T : class
+        public static T Get<T>(string key, ulong? guild = null) where T : CommandConfig
         {
-            return (T)Get(typeof(T), key);
+            return (T)Get(typeof(T), key, guild);
         }
 
         public static object Get(Type type, string key, ulong? guild = null)
@@ -38,13 +39,13 @@ namespace OniBot.Infrastructure
             }
         }
 
-        public static string GetJson<T>(string key, ulong? guild = null) where T : class
+        public static string GetJson<T>(string key, ulong? guild = null) where T : CommandConfig
         {
             var config = Get(typeof(T), key, guild);
             return JsonConvert.SerializeObject(config, Formatting.Indented);
         }
 
-        public static void Write<T>(T data, string key, ulong? guild = null) where T : class
+        public static void Write<T>(T data, string key, ulong? guild = null) where T : CommandConfig
         {
             lock (_fileReadWriteLock)
             {
@@ -55,14 +56,14 @@ namespace OniBot.Infrastructure
             }
         }
 
-        public static async Task Modify<T>(string key, Func<T, Task> action, ulong? guild = null) where T : class
+        public static async Task Modify<T>(string key, Func<T, Task> action, ulong? guild = null) where T : CommandConfig
         {
             var config = Get<T>(key, guild);
             await action(config);
             Write(config, key, guild);
         }
 
-        public static Task Modify<T>(string key, Action<T> action, ulong? guild = null) where T : class
+        public static Task Modify<T>(string key, Action<T> action, ulong? guild = null) where T : CommandConfig
         {
             var config = Get<T>(key, guild);
             action(config);

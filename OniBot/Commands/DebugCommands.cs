@@ -1,6 +1,7 @@
 ﻿using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
+using OniBot.Infrastructure;
 using OniBot.Interfaces;
 using System;
 using System.Collections.Generic;
@@ -15,12 +16,11 @@ using System.Threading.Tasks;
 namespace OniBot.Commands
 {
     [Group("debug")]
-    [RequireOwner]
+    [ConfigurationPrecondition]
     public class DebugCommands : ModuleBase<SocketCommandContext>, IBotCommand
     {
         [Command("config")]
         [Summary("Sends the currently running config")]
-        [RequireOwner]
         public async Task DumpConfig(
         [Summary("[Optional] If supplied, uploads just the single config to Discord")]string config = null)
         {
@@ -56,7 +56,6 @@ namespace OniBot.Commands
 
         [Command("bot")]
         [Summary("Gets the current run state of the bot")]
-        [RequireOwner]
         public async Task DumpMyself()
         {
             var props = DumpProps(Context.Client.CurrentUser);
@@ -71,7 +70,6 @@ namespace OniBot.Commands
 
         [Command("user")]
         [Summary("Gets the current run state of a user")]
-        [RequireOwner]
         public async Task DumpUser(SocketGuildUser user)
         {
             var props = DumpProps(user);
@@ -86,7 +84,6 @@ namespace OniBot.Commands
 
         [Command("chat")]
         [Summary("Gets the current run state of a user")]
-        [RequireOwner]
         public async Task DumpChat(int count)
         {
             var messages = await Context.Channel.GetMessagesAsync(limit: count, fromMessageId: Context.Message.Id, dir: Direction.Before).ToList();

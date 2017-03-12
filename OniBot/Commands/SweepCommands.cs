@@ -1,5 +1,4 @@
-﻿using Discord;
-using Discord.Commands;
+﻿using Discord.Commands;
 using Discord.WebSocket;
 using OniBot.Infrastructure;
 using OniBot.Interfaces;
@@ -7,17 +6,16 @@ using System;
 using System.Threading.Tasks;
 using OniBot.CommandConfigs;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace OniBot.Commands
 {
+    [ConfigurationPrecondition]
     public class SweepCommands : ModuleBase<SocketCommandContext>, IBotCommand
     {
         private static readonly Random random = new Random();
 
         [Command("sweep")]
         [Summary("Cleans up the mess in the room")]
-        [RequireUserPermission(ChannelPermission.SendMessages)]
         public async Task Attack(
             [Summary("The person or thing to sweep up")][Remainder] string target)
         {
@@ -38,7 +36,6 @@ namespace OniBot.Commands
 
         [Command("equip")]
         [Summary("Equips a broom to use for sweeping")]
-        [RequireUserPermission(ChannelPermission.SendMessages)]
         public async Task Equip(
             [Summary("The person or thing to equip as a broom")][Remainder] string weapon)
         {
@@ -59,7 +56,6 @@ namespace OniBot.Commands
 
         [Command("unequip")]
         [Summary("Sheathes the equiped broom")]
-        [RequireUserPermission(ChannelPermission.SendMessages)]
         public async Task Unequip()
         {
             var user = Context.User as SocketGuildUser;

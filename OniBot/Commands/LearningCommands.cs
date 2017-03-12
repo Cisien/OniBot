@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 
 namespace OniBot.Commands
 {
+    [ConfigurationPrecondition]
     public class LearningCommands : ModuleBase<SocketCommandContext>, IBotCommand
     {
         private ICommandHandler _commandHandler;
@@ -21,7 +22,6 @@ namespace OniBot.Commands
 
         [Command("learn")]
         [Summary("Teaches the bot a command.")]
-        [RequireUserPermission(GuildPermission.ManageEmojis)]
         public async Task Learn(
             [Summary("The name of the command to add")]string command,
             [Summary("The value to send as the response whenever this command is used."), Remainder]string response)
@@ -43,7 +43,6 @@ namespace OniBot.Commands
 
         [Command("forget")]
         [Summary("Instructs the bot to forget a command.")]
-        [RequireUserPermission(GuildPermission.ManageEmojis)]
         public async Task Forget(
             [Summary("The name of the command to forget.")]string command)
         {
@@ -65,7 +64,6 @@ namespace OniBot.Commands
 
         [Command("showcustomcommands")]
         [Summary("Shows the current list of custom commands")]
-        [RequireUserPermission(GuildPermission.ManageEmojis)]
         public async Task Show(
         [Summary("[Optional] The name of the command to show. If ommited, all commands will be shown.")]string command = null)
         {
@@ -93,7 +91,6 @@ namespace OniBot.Commands
 
         [Command("tag")]
         [Summary("Displays any content associated with the command")]
-        [RequireUserPermission(GuildPermission.SendMessages)]
         public async Task CustomCommand(
             [Summary("The command to execute")]string command
         )

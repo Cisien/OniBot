@@ -2,14 +2,15 @@
 using OniBot.Interfaces;
 using System;
 using System.Threading.Tasks;
-using Discord;
 using System.Net.Http;
 using System.Text.RegularExpressions;
 using System.IO;
 using Microsoft.Extensions.Logging;
+using OniBot.Infrastructure;
 
 namespace OniBot.Commands
 {
+    [ConfigurationPrecondition]
     public class MemeCommand : ModuleBase<SocketCommandContext>, IBotCommand
     {
         private static Random _random = new Random();
@@ -24,8 +25,6 @@ namespace OniBot.Commands
 
         [Command("randommeme")]
         [Summary("Searches Imgur and provides a random image from the results.")]
-        [RequireUserPermission(GuildPermission.Administrator)]
-        [RequireOwner]
         public async Task Meme(
             [Summary("The search term to submit to Imgur.")][Remainder] string search)
         {

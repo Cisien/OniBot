@@ -40,7 +40,7 @@ namespace OniBot
             var config = new BotConfig();
             ConfigurationBinder.Bind(Configuration, config);
 
-            loggerFactory.AddConsole(LogLevel.Information);
+            loggerFactory.AddConsole(LogLevel.Trace);
             if (Configuration["environment"] == "development")
             {
                 loggerFactory.AddDebug(LogLevel.Trace);
