@@ -35,7 +35,7 @@ namespace OniBot.Commands
                 }
 
                 a.Commands.Add(command, response);
-            });
+            }, Context.Guild.Id);
 
             await _commandHandler.ReloadCommands();
             await ReplyAsync($"I'll remember that {command} is {response}");
@@ -57,7 +57,7 @@ namespace OniBot.Commands
                 }
 
                 a.Commands.Remove(command);
-            });
+            }, Context.Guild.Id);
 
             await _commandHandler.ReloadCommands();
             await ReplyAsync($"I seem to have forgotten what {command} does!??");
@@ -91,17 +91,19 @@ namespace OniBot.Commands
             await Context.User.SendMessageAsync(response);
         }
 
-        [Command("[hidden]customcommands")]
-        [CustomCommandAlias("customcommands")]
+        [Command("tag")]
         [Summary("Displays any content associated with the command")]
         [RequireUserPermission(GuildPermission.SendMessages)]
-        public async Task CustomCommand()
+        public async Task CustomCommand(
+            [Summary("The command to execute")]string command
+        )
         {
-            var command = Context.Message.Content.Substring(0).ToLower();
-            
+            _config.Reload(Context.Guild.Id);
+                        
             if (!_config.Commands.ContainsKey(command))
             {
                 await ReplyAsync("I'm a little teapot!");
+                return;
             }
 
             await ReplyAsync(_config.Commands[command]);

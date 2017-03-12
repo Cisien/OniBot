@@ -1,7 +1,6 @@
 ﻿using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
-using OniBot.Infrastructure;
 using OniBot.Interfaces;
 using System;
 using System.Collections.Generic;
@@ -25,24 +24,33 @@ namespace OniBot.Commands
         public async Task DumpConfig(
         [Summary("[Optional] If supplied, uploads just the single config to Discord")]string config = null)
         {
-            var files = Directory.GetFiles("./config/", "*.json", SearchOption.AllDirectories);
+            var files = Directory.GetFiles("./config/", "*.json", SearchOption.AllDirectories).ToList();
 
             if (string.IsNullOrWhiteSpace(config))
             {
                 foreach (var file in files)
                 {
-                    var filename = file.Replace("/", "-").Replace("\\", "-").Substring(0);
+                    var filename = file.Substring(0);
                     var contents = File.ReadAllBytes(file);
                     await Context.User.SendFileAsync(contents, filename);
-                    await Task.Delay(TimeSpan.FromSeconds(1));
+                    await Task.Delay(TimeSpan.FromSeconds(3));
                 }
             }
             else
             {
-                var file = files.SingleOrDefault(a => a.Contains(config));
-                var filename = file.Replace("/", "-").Replace("\\", "-").Substring(0);
-                var contents = File.ReadAllBytes(file);
-                await Context.User.SendFileAsync(contents, filename);
+                files = files.Where(a => a.Contains(config)).ToList();
+                if (files.Count == 0)
+                {
+                    await Context.User.SendMessageAsync("No files found");
+                }
+
+                foreach (var file in files)
+                {
+                    var filename = file.Substring(0);
+                    var contents = File.ReadAllBytes(file);
+                    await Context.User.SendFileAsync(contents, filename);
+                    await Task.Delay(TimeSpan.FromSeconds(3));
+                }
             }
         }
 
@@ -64,7 +72,7 @@ namespace OniBot.Commands
         [Command("user")]
         [Summary("Gets the current run state of a user")]
         [RequireOwner]
-        public async Task DumpUser( SocketGuildUser user)
+        public async Task DumpUser(SocketGuildUser user)
         {
             var props = DumpProps(user);
             await Context.User.SendMessageAsync(props);
@@ -90,7 +98,7 @@ namespace OniBot.Commands
                     var props = DumpProps(message);
 
                     await Context.User.SendMessageAsync(props);
-                    await Task.Delay(TimeSpan.FromSeconds(2));
+                    await Task.Delay(TimeSpan.FromSeconds(3));
                 }
             }
         }

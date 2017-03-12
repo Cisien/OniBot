@@ -11,8 +11,8 @@ namespace OniBot.Infrastructure
 
         private static string[] GetDynamicCommands(string text = null)
         {
-            var config = Configuration.Get<CustomCommandsConfig>(text ?? "customcommands");
-            
+            var config = new CustomCommandsConfig();
+
             if(config?.Commands?.Count == 0) {
                 return new[] { "teapot" };
             }
