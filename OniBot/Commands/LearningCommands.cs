@@ -12,9 +12,9 @@ namespace OniBot.Commands
     public class LearningCommands : ModuleBase<SocketCommandContext>, IBotCommand
     {
         private ICommandHandler _commandHandler;
-        private CustomCommandsConfig _config;
+        private TagsConfig _config;
 
-        public LearningCommands(ICommandHandler commandHandler, CustomCommandsConfig config)
+        public LearningCommands(ICommandHandler commandHandler, TagsConfig config)
         {
             _commandHandler = commandHandler;
             _config = config;
@@ -26,11 +26,11 @@ namespace OniBot.Commands
             [Summary("The name of the command to add")]string command,
             [Summary("The value to send as the response whenever this command is used."), Remainder]string response)
         {
-            await Configuration.Modify<CustomCommandsConfig>(_config.ConfigKey, async a =>
+            await Configuration.Modify<TagsConfig>(_config.ConfigKey, async a =>
             {
                 if (a.Commands.ContainsKey(command))
                 {
-                    await ReplyAsync($"Command '{command}' is already known");
+                    await this.SafeReplyAsync($"Command '{command}' is already known");
                     return;
                 }
 
@@ -38,7 +38,7 @@ namespace OniBot.Commands
             }, Context.Guild.Id);
 
             await _commandHandler.ReloadCommands();
-            await ReplyAsync($"I'll remember that {command} is {response}");
+            await this.SafeReplyAsync($"I'll remember that {command} is {response}");
         }
 
         [Command("forget")]
@@ -47,11 +47,11 @@ namespace OniBot.Commands
             [Summary("The name of the command to forget.")]string command)
         {
             command = command.ToLower();
-            await Configuration.Modify<CustomCommandsConfig>(_config.ConfigKey, async a =>
+            await Configuration.Modify<TagsConfig>(_config.ConfigKey, async a =>
             {
                 if (!a.Commands.ContainsKey(command))
                 {
-                    await ReplyAsync($"I don't know '{command}'.");
+                    await this.SafeReplyAsync($"I don't know '{command}'.");
                     return;
                 }
 
@@ -59,7 +59,7 @@ namespace OniBot.Commands
             }, Context.Guild.Id);
 
             await _commandHandler.ReloadCommands();
-            await ReplyAsync($"I seem to have forgotten what {command} does!??");
+            await this.SafeReplyAsync($"I seem to have forgotten what {command} does!??");
         }
 
         [Command("showcustomcommands")]
@@ -99,11 +99,11 @@ namespace OniBot.Commands
                         
             if (!_config.Commands.ContainsKey(command))
             {
-                await ReplyAsync("I'm a little teapot!");
+                await this.SafeReplyAsync("I'm a little teapot!");
                 return;
             }
 
-            await ReplyAsync(_config.Commands[command]);
+            await this.SafeReplyAsync(_config.Commands[command]);
         }
     }
 }

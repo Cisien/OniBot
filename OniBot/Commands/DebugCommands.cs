@@ -118,7 +118,7 @@ namespace OniBot.Commands
             {
                 infoString += "\n" +
                 $"- Guilds: {guildClient.Guilds.Count}\n" +
-                $"- Channels: {guildClient.Guilds.Sum(g => g.Channels.Count)}" +
+                $"- Channels: {guildClient.Guilds.Sum(g => g.Channels.Count)}\n" +
                 $"- Users: {guildClient.Guilds.Sum(g => g.Users.Count)}";
             }
 

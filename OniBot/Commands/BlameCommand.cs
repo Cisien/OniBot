@@ -25,7 +25,7 @@ namespace OniBot.Commands
 
             var username = string.IsNullOrWhiteSpace(user.Nickname) ? user.Username : user.Nickname;
 
-            await ReplyAsync($"{username} blames {toBlame} {because}");
+            await this.SafeReplyAsync($"{username} blames {toBlame} {because}");
         }
     }
 }

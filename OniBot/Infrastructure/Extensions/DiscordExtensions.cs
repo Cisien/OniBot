@@ -15,11 +15,10 @@ namespace OniBot
             return Task.FromResult(userName);
         }
 
-        public static async Task<IUserMessage> SafeReplyAsync(this ModuleBase module, ICommandContext context, string message)
+        public static async Task<IUserMessage> SafeReplyAsync(this ModuleBase<SocketCommandContext> module, string message)
         {
-            //todo: get mentions in message, use mention to find user, replace mention with user
-
-            var response = await context.Channel.SendMessageAsync(message).ConfigureAwait(false);
+            message = message.Replace("@everyone", "everyone").Replace("@here", "here");
+            var response = await module.Context.Channel.SendMessageAsync(message).ConfigureAwait(false);
             return response;
         }
 

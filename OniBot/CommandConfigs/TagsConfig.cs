@@ -4,7 +4,7 @@ using Newtonsoft.Json;
 
 namespace OniBot.CommandConfigs
 {
-    public class CustomCommandsConfig : CommandConfig
+    public class TagsConfig : CommandConfig
     {
         //<string, string> = <command, response>
         public Dictionary<string, string> Commands { get; set; } = new Dictionary<string, string>();

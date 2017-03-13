@@ -31,7 +31,7 @@ namespace OniBot.Commands
             var username = await user.GetUserName();
             var hasEquiped = config.Equiped.ContainsKey(user.Id);
             var weapon = hasEquiped ? $" with a {config.Equiped[user.Id]}" : string.Empty;
-            await ReplyAsync($"_{username} sweeps up {target}{weapon}._");
+            await this.SafeReplyAsync( $"_{username} sweeps up {target}{weapon}._");
         }
 
         [Command("equip")]
@@ -51,7 +51,7 @@ namespace OniBot.Commands
             var username = await user.GetUserName();
             config.Equiped[user.Id] = weapon;
             Configuration.Write(config, "sweep");
-            await ReplyAsync($"_{username} equips a {weapon}_");
+            await this.SafeReplyAsync($"_{username} equips a {weapon}_");
         }
 
         [Command("unequip")]
@@ -70,7 +70,7 @@ namespace OniBot.Commands
             var username = await user.GetUserName();
             config.Equiped.Remove(user.Id);
             Configuration.Write(config, "sweep");
-            await ReplyAsync($"_{username} puts away their cleaning device._");
+            await this.SafeReplyAsync($"_{username} puts away their cleaning device._");
         }
     }
 }

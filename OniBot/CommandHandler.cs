@@ -161,7 +161,7 @@ namespace OniBot
             _logger.LogInformation($"Command received: {newMessage.Content}");
 
             var context = new SocketCommandContext(_client, message);
-
+            
             var result = await _commands.ExecuteAsync(context, argPos, _map, MultiMatchHandling.Best);
 
             switch (result)
