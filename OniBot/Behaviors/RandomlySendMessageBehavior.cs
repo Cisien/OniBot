@@ -64,19 +64,17 @@ namespace OniBot.Behaviors
             _config.Reload(channel.Guild.Id);
 
             var channelId = arg.Channel.Id;
-            _logger.LogDebug($"channel: {channelId}");
-
+            
             if (!_messagesSinceLastSend.ContainsKey(channelId))
             {
                 _messagesSinceLastSend.Add(channelId, 0);
             }
-            _logger.LogDebug($"current: {_messagesSinceLastSend[channelId]}");
-
+           
             if (!_messageToSendOn.ContainsKey(channelId))
             {
                 _messageToSendOn.Add(channelId, _random.Next(_config.MinMessages, _config.MaxMessages));
             }
-            _logger.LogDebug($"target: {_messagesSinceLastSend[channelId]}");
+            _logger.LogDebug($"Randomly: channel: {channelId} ({channel.Name})  current: { _messagesSinceLastSend[channelId]} target: {_messageToSendOn[channelId]}");
 
             _messagesSinceLastSend[channelId]++;
 
@@ -105,6 +103,5 @@ namespace OniBot.Behaviors
             _logger.LogDebug($"Selected a new random message to send on: {_messageToSendOn[channelId]}");
             _messagesSinceLastSend[channelId] = 0;
         }
-
     }
 }

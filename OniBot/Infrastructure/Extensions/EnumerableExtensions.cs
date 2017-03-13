@@ -10,7 +10,7 @@ namespace OniBot
 
         public static T Random<T>(this IList<T> items)
         {
-            var index = _random.Next(0, items.Count - 1);
+            var index = _random.Next(0, items.Count);
             var item = items[index];
 
             return item;

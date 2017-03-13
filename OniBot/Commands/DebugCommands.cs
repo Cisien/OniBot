@@ -4,6 +4,7 @@ using Discord.WebSocket;
 using OniBot.Infrastructure;
 using OniBot.Interfaces;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -54,12 +55,28 @@ namespace OniBot.Commands
             }
         }
 
+        [Command("channel")]
+        [Summary("Dumps the current channel")]
+        public async Task DumpChannel()
+        {
+            var props = DumpProps(Context.Channel);
+            await Context.User.SendFileAsync(Encoding.UTF8.GetBytes(props), $"{Context.Channel.Name}.txt");
+        }
+
+        [Command("guild")]
+        [Summary("Dumps the current guild")]
+        public async Task DumpGuild()
+        {
+            var props = DumpProps(Context.Guild);
+            await Context.User.SendFileAsync(Encoding.UTF8.GetBytes(props), $"{Context.Guild.Name}.txt");
+        }
+
         [Command("bot")]
         [Summary("Gets the current run state of the bot")]
         public async Task DumpMyself()
         {
             var props = DumpProps(Context.Client.CurrentUser);
-            await Context.User.SendMessageAsync(props);
+            await Context.User.SendMessageAsync($"```{props}```");
 
             var cPerms = GetChannelPerms(Context.Client.CurrentUser as IGuildUser);
             await Context.User.SendMessageAsync($"```{"Channel Permissions".PadRight(20)}{string.Join(", ", cPerms)}```");
@@ -73,7 +90,7 @@ namespace OniBot.Commands
         public async Task DumpUser(SocketGuildUser user)
         {
             var props = DumpProps(user);
-            await Context.User.SendMessageAsync(props);
+            await Context.User.SendMessageAsync($"```{props}```");
 
             var cPerms = GetChannelPerms(user);
             await Context.User.SendMessageAsync($"```{"Channel Permissions".PadRight(20)}{string.Join(", ", cPerms)}```");
@@ -94,7 +111,7 @@ namespace OniBot.Commands
                 {
                     var props = DumpProps(message);
 
-                    await Context.User.SendMessageAsync(props);
+                    await Context.User.SendMessageAsync($"```{props}```");
                     await Task.Delay(TimeSpan.FromSeconds(3));
                 }
             }
@@ -130,27 +147,38 @@ namespace OniBot.Commands
 
         private static string GetHeapSize() => Math.Round(GC.GetTotalMemory(true) / (1024.0 * 1024.0), 2).ToString();
 
-        private string DumpProps(object property)
+        private string DumpProps(object objects)
         {
             var sb = new StringBuilder();
-            var userType = property.GetType();
-            sb.AppendLine($"```{"Type".PadRight(20)}{userType}");
+            var userType = objects.GetType();
+            sb.AppendLine($"{"Type".PadRight(20)}{userType}");
             var props = userType.GetProperties(BindingFlags.Instance | BindingFlags.Public);
 
             foreach (var prop in props)
             {
-
                 var key = prop.Name.PadRight(20);
-                object value;
+                string value = string.Empty;
                 try
                 {
-                    if (prop.Name == "Roles")
+                    var property = prop.GetValue(objects);
+                    if(property == null) {
+                        value = string.Empty;
+                    }
+                    else if(prop.PropertyType == typeof(string)) {
+                        value = property.ToString();
+                    }
+                    else if (typeof(IEnumerable).IsAssignableFrom(property?.GetType()))
                     {
-                        value = string.Join(", ", prop.GetValue(property) as IEnumerable<SocketRole>);
+                        foreach (var item in property as IEnumerable)
+                        {
+                            value += item.ToString() + ", ";
+                        }
+
+                        value = value.TrimEnd(", ".ToCharArray());
                     }
                     else
                     {
-                        value = prop.GetValue(property);
+                        value = property.ToString();
                     }
                 }
                 catch (Exception ex)
@@ -159,8 +187,7 @@ namespace OniBot.Commands
                 }
                 sb.AppendLine($"{key}{value}");
             }
-
-            sb.Append("```");
+            
             return sb.ToString();
         }
 
