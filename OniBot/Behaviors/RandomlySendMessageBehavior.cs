@@ -21,6 +21,7 @@ namespace OniBot.Behaviors
         private BotConfig _globalConfig;
         private DiscordSocketClient _client;
         private ILogger _logger;
+        private static readonly object stateLock = new object();
 
         public RandomlySendMessageBehavior(BotConfig config, IDiscordClient client, ILogger logger, RandomlyConfig randomlyConfig)
         {
@@ -43,65 +44,69 @@ namespace OniBot.Behaviors
             return Task.CompletedTask;
         }
 
-        private async Task OnMessageReceived(SocketMessage arg)
+        private Task OnMessageReceived(SocketMessage arg)
         {
             if (!(arg.Channel is SocketGuildChannel channel))
             {
-                return;
+                return Task.CompletedTask;
             }
 
             if (arg.Content.StartsWith(_globalConfig.PrefixChar.ToString()))
             {
-                return;
+                return Task.CompletedTask;
             }
 
             if (arg.Author.IsBot)
             {
-                return;
+                return Task.CompletedTask;
             }
 
-            var guildId = channel.Guild.Id;
-            _config.Reload(channel.Guild.Id);
-
-            var channelId = arg.Channel.Id;
-            
-            if (!_messagesSinceLastSend.ContainsKey(channelId))
+            lock (stateLock)
             {
-                _messagesSinceLastSend.Add(channelId, 0);
+                var guildId = channel.Guild.Id;
+                _config.Reload(channel.Guild.Id);
+
+                var channelId = arg.Channel.Id;
+
+                if (!_messagesSinceLastSend.ContainsKey(channelId))
+                {
+                    _messagesSinceLastSend.Add(channelId, 0);
+                }
+
+                if (!_messageToSendOn.ContainsKey(channelId))
+                {
+                    _messageToSendOn.Add(channelId, _random.Next(_config.MinMessages, _config.MaxMessages));
+                }
+                _logger.LogDebug($"Randomly: channel: {channelId} ({channel.Name})  current: { _messagesSinceLastSend[channelId]} target: {_messageToSendOn[channelId]}");
+
+                _messagesSinceLastSend[channelId]++;
+
+                if (_messagesSinceLastSend[channelId] < _messageToSendOn[channelId])
+                {
+                    return Task.CompletedTask;
+                }
+
+                var message = _config.RandomMessages.Random();
+
+                if (message.Image == null)
+                {
+                    _logger.LogDebug("Sending message without attachment");
+                    arg.Channel.SendMessageAsync(message.Message).AsSync(false);
+                }
+                else
+                {
+                    _logger.LogDebug("Sending message with attachment");
+                    var image = client.GetByteArrayAsync(message.Image).AsSync(false);
+                    var extension = Path.GetExtension(message.Image);
+
+                    arg.Channel.SendFileAsync(image, extension, message.Message).AsSync(false);
+                }
+
+                _messageToSendOn[channelId] = _random.Next(_config.MinMessages, _config.MaxMessages);
+                _logger.LogDebug($"Selected a new random message to send on: {_messageToSendOn[channelId]}");
+                _messagesSinceLastSend[channelId] = 0;
             }
-           
-            if (!_messageToSendOn.ContainsKey(channelId))
-            {
-                _messageToSendOn.Add(channelId, _random.Next(_config.MinMessages, _config.MaxMessages));
-            }
-            _logger.LogDebug($"Randomly: channel: {channelId} ({channel.Name})  current: { _messagesSinceLastSend[channelId]} target: {_messageToSendOn[channelId]}");
-
-            _messagesSinceLastSend[channelId]++;
-
-            if (_messagesSinceLastSend[channelId] < _messageToSendOn[channelId])
-            {
-                return;
-            }
-
-            var message = _config.RandomMessages.Random();
-
-            if (message.Image == null)
-            {
-                _logger.LogDebug("Sending message without attachment");
-                await arg.Channel.SendMessageAsync(message.Message);
-            }
-            else
-            {
-                _logger.LogDebug("Sending message with attachment");
-                var image = await client.GetByteArrayAsync(message.Image);
-                var extension = Path.GetExtension(message.Image);
-
-                await arg.Channel.SendFileAsync(image, extension, message.Message);
-            }
-
-            _messageToSendOn[channelId] = _random.Next(_config.MinMessages, _config.MaxMessages);
-            _logger.LogDebug($"Selected a new random message to send on: {_messageToSendOn[channelId]}");
-            _messagesSinceLastSend[channelId] = 0;
+            return Task.CompletedTask;
         }
     }
 }

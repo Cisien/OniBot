@@ -68,7 +68,7 @@ namespace OniBot.Commands
         [Summary("[Optional] The name of the command to show. If ommited, all commands will be shown.")]string command = null)
         {
             command = command?.ToLower();
-
+            _config.Reload(Context.Guild.Id);
             string response = string.Empty;
             if (string.IsNullOrWhiteSpace(command))
             {

@@ -98,7 +98,7 @@ namespace OniBot
                 return;
             }
 
-            var message = $"{msg.Source}: {msg.Message}";
+            var message = msg.ToString();
 
             switch (msg.Severity)
             {
