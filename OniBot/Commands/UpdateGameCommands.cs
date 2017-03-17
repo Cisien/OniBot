@@ -18,7 +18,7 @@ namespace OniBot.Commands
         public async Task Show()
         {
             var cfg = Configuration.GetJson<GamesConfig>(_configKey);
-            await Context.User.SendMessageAsync($"```{cfg}```");
+            await Context.User.SendMessageAsync($"```{cfg}```").ConfigureAwait(false);
         }
 
         [Command("remove")]
@@ -32,9 +32,9 @@ namespace OniBot.Commands
                 {
                     a.Games.Remove(game);
                 }
-            });
+            }).ConfigureAwait(false);
 
-            await Context.User.SendMessageAsync($"{game} removed.");
+            await Context.User.SendMessageAsync($"{game} removed.").ConfigureAwait(false);
         }
 
         [Command("add")]
@@ -48,9 +48,9 @@ namespace OniBot.Commands
                 {
                     a.Games.Add(game);
                 }
-            });
+            }).ConfigureAwait(false);
 
-            await Context.User.SendMessageAsync($"{game} added.");
+            await Context.User.SendMessageAsync($"{game} added.").ConfigureAwait(false);
         }
     }
 }

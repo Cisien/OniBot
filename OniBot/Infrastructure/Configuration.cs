@@ -59,7 +59,7 @@ namespace OniBot.Infrastructure
         public static async Task Modify<T>(string key, Func<T, Task> action, ulong? guild = null) where T : CommandConfig
         {
             var config = Get<T>(key, guild);
-            await action(config);
+            await action(config).ConfigureAwait(false);
             Write(config, key, guild);
         }
 

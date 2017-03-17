@@ -28,16 +28,16 @@ namespace OniBot.Commands
         public async Task Meme(
             [Summary("The search term to submit to Imgur.")][Remainder] string search)
         {
-            var img = await FindImage($"meme+{search}");
+            var img = await FindImage($"meme+{search}").ConfigureAwait(false);
             if (img == null)
             {
-                await Context.Channel.SendMessageAsync("Someone lashed out against our meme!");
+                await Context.Channel.SendMessageAsync("Someone lashed out against our meme!").ConfigureAwait(false);
                 return;
             }
 
             try
             {
-                await Context.Channel.SendFileAsync(img.Filename, img.Description);
+                await Context.Channel.SendFileAsync(img.Filename, img.Description).ConfigureAwait(false);
             }
             finally
             {
@@ -52,9 +52,9 @@ namespace OniBot.Commands
                 var searchLink = $"http://imgur.com/search/score?q={question.Replace(" ", "+")}";
                 Console.WriteLine($"calling {searchLink}");
 
-                var data = await client.GetAsync(searchLink);
+                var data = await client.GetAsync(searchLink).ConfigureAwait(false);
 
-                var input = await data.Content.ReadAsStringAsync();
+                var input = await data.Content.ReadAsStringAsync().ConfigureAwait(false);
 
                 var galleryMatches = galleryRegex.Matches(input);
                 if (galleryMatches.Count == 0)
@@ -67,7 +67,7 @@ namespace OniBot.Commands
                 string galleryItemLink = $"http://imgur.com{galleryMatches[index].Value}";
                 Console.WriteLine($"calling {galleryItemLink}");
 
-                var galleryItemResult = await client.GetStringAsync(galleryItemLink);
+                var galleryItemResult = await client.GetStringAsync(galleryItemLink).ConfigureAwait(false);
                 var galleryPageMatches = imageRegex.Matches(galleryItemResult);
 
                 if (galleryPageMatches.Count == 0)
@@ -81,7 +81,7 @@ namespace OniBot.Commands
                 var imageLink = $"http://i.imgur.com{match.Groups["img"].Value}.{match.Groups["ext"].Value}";
                 Console.WriteLine($"calling {imageLink}");
 
-                var image = await client.GetByteArrayAsync(imageLink);
+                var image = await client.GetByteArrayAsync(imageLink).ConfigureAwait(false);
                 var temp = $"{Guid.NewGuid()}.{match.Groups["ext"].Value}";
                 
                 File.WriteAllBytes(temp, image);

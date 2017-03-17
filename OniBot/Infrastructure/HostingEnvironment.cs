@@ -57,8 +57,8 @@ namespace OniBot.Infrastructure
 
             using (bot)
             {
-                await bot.RunBotAsync();
-                await Task.Delay(-1, token);
+                await bot.RunBotAsync().ConfigureAwait(false);
+                await Task.Delay(-1, token).ConfigureAwait(false);
             }
         }
 

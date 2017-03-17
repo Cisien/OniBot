@@ -23,7 +23,7 @@ namespace OniBot.Infrastructure
             {
                 return PreconditionResult.FromError("This command must be run from a server channel.");
             }
-            var app = await context.Client.GetApplicationInfoAsync();
+            var app = await context.Client.GetApplicationInfoAsync().ConfigureAwait(false);
 
             if (context.User.Id == app.Owner.Id)
             {

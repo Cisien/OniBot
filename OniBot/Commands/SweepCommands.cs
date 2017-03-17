@@ -6,13 +6,20 @@ using System;
 using System.Threading.Tasks;
 using OniBot.CommandConfigs;
 using System.Collections.Generic;
+using Discord;
 
 namespace OniBot.Commands
 {
     [ConfigurationPrecondition]
     public class SweepCommands : ModuleBase<SocketCommandContext>, IBotCommand
     {
+        public SweepCommands(SweepConfig config)
+        {
+            _config = config;
+        }
+
         private static readonly Random random = new Random();
+        private SweepConfig _config;
 
         [Command("sweep")]
         [Summary("Cleans up the mess in the room")]
@@ -24,14 +31,12 @@ namespace OniBot.Commands
             {
                 return;
             }
-            
-            var config = Configuration.Get<SweepConfig>("sweep");
-            if (config.Equiped == null) config.Equiped = new Dictionary<ulong, string>();
 
-            var username = await user.GetUserName();
-            var hasEquiped = config.Equiped.ContainsKey(user.Id);
-            var weapon = hasEquiped ? $" with a {config.Equiped[user.Id]}" : string.Empty;
-            await this.SafeReplyAsync( $"_{username} sweeps up {target}{weapon}._");
+            var username = await user.GetUserName().ConfigureAwait(false);
+            var hasEquiped = _config.Equiped.ContainsKey(user.Id);
+            var weapon = hasEquiped ? $" with a {_config.Equiped[user.Id]}" : string.Empty;
+
+            await this.SafeReplyAsync($"_{username} sweeps up {target}{weapon}._").ConfigureAwait(false);
         }
 
         [Command("equip")]
@@ -45,13 +50,13 @@ namespace OniBot.Commands
                 return;
             }
 
-            var config = Configuration.Get<SweepConfig>("sweep");
-            if (config.Equiped == null) config.Equiped = new Dictionary<ulong, string>();
+            var username = await user.GetUserName().ConfigureAwait(false);
+            await Configuration.Modify<SweepConfig>(_config.ConfigKey, a =>
+            {
+                a.Equiped[user.Id] = weapon;
+            }).ConfigureAwait(false);
 
-            var username = await user.GetUserName();
-            config.Equiped[user.Id] = weapon;
-            Configuration.Write(config, "sweep");
-            await this.SafeReplyAsync($"_{username} equips a {weapon}_");
+            await this.SafeReplyAsync($"_{username} equips a {weapon}_").ConfigureAwait(false);
         }
 
         [Command("unequip")]
@@ -63,14 +68,14 @@ namespace OniBot.Commands
             {
                 return;
             }
-            
-            var config = Configuration.Get<SweepConfig>("sweep");
-            if (config.Equiped == null) config.Equiped = new Dictionary<ulong, string>();
 
-            var username = await user.GetUserName();
-            config.Equiped.Remove(user.Id);
-            Configuration.Write(config, "sweep");
-            await this.SafeReplyAsync($"_{username} puts away their cleaning device._");
+            var username = await user.GetUserName().ConfigureAwait(false);
+            await Configuration.Modify<SweepConfig>(_config.ConfigKey, a =>
+            {
+                a.Equiped.Remove(user.Id);
+            }).ConfigureAwait(false);
+
+            await this.SafeReplyAsync($"_{username} puts away their cleaning device._").ConfigureAwait(false);
         }
     }
 }

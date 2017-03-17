@@ -24,7 +24,7 @@ namespace OniBot.Commands
         public async Task Show()
         {
             var configTxt = Configuration.GetJson<RandomlyConfig>(_config.ConfigKey, Context.Guild.Id);
-            await Context.User.SendMessageAsync($"```{configTxt}```");
+            await Context.User.SendMessageAsync($"```{configTxt}```").ConfigureAwait(false);
         }
 
         [Command("min")]
@@ -35,9 +35,9 @@ namespace OniBot.Commands
             await Configuration.Modify<RandomlyConfig>(_config.ConfigKey, a =>
             {
                 a.MinMessages = min;
-            }, Context.Guild.Id);
+            }, Context.Guild.Id).ConfigureAwait(false);
 
-            await Context.User.SendMessageAsync($"Maximum number of messages between interjecting: \"{min}\".");
+            await Context.User.SendMessageAsync($"Maximum number of messages between interjecting: \"{min}\".").ConfigureAwait(false);
         }
 
         [Command("max")]
@@ -48,9 +48,9 @@ namespace OniBot.Commands
             await Configuration.Modify<RandomlyConfig>(_config.ConfigKey, a =>
             {
                 a.MaxMessages = max;
-            }, Context.Guild.Id);
+            }, Context.Guild.Id).ConfigureAwait(false);
 
-            await Context.User.SendMessageAsync($"Maximum number of messages between interjecting: \"{max}\".");
+            await Context.User.SendMessageAsync($"Maximum number of messages between interjecting: \"{max}\".").ConfigureAwait(false);
         }
 
         [Command("add")]
@@ -79,9 +79,9 @@ namespace OniBot.Commands
                     newMessage.Message = msg;
                 }
                 var tags = Context.Message.Tags;
-            }, Context.Guild.Id);
+            }, Context.Guild.Id).ConfigureAwait(false);
 
-            await Context.User.SendMessageAsync($"\"{message}\" added.");
+            await Context.User.SendMessageAsync($"\"{message}\" added.").ConfigureAwait(false);
         }
 
         [Command("remove")]
@@ -95,16 +95,15 @@ namespace OniBot.Commands
 
                 if (toRemove == null)
                 {
-                    var dmChannel = await Context.User.CreateDMChannelAsync();
-                    await dmChannel.SendMessageAsync($"\"{message}\" was not found.");
+                    await Context.User.SendMessageAsync($"\"{message}\" was not found.").ConfigureAwait(false);
                 }
                 else
                 {
                     a.RandomMessages.Remove(toRemove);
                 }
-            }, Context.Guild.Id);
+            }, Context.Guild.Id).ConfigureAwait(false);
 
-            await Context.User.SendMessageAsync($"\"{message}\" removed.");
+            await Context.User.SendMessageAsync($"\"{message}\" removed.").ConfigureAwait(false);
         }
     }
 }

@@ -6,7 +6,10 @@ services:
       args:
         source: ${DOCKER_BUILD_SOURCE}
     volumes:
-      - ~/clrdbg:/clrdbg:ro
-    entrypoint: tail -f /dev/null
+      - c:/users/ccurw/clrdbg:c:/clrdbg:ro
     labels:
       - "com.microsoft.visualstudio.targetoperatingsystem=windows"
+networks:
+  default:
+    external:
+      name: nat

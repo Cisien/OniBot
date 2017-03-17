@@ -30,15 +30,15 @@ namespace OniBot.Commands
             {
                 if (a.Commands.ContainsKey(command))
                 {
-                    await this.SafeReplyAsync($"Command '{command}' is already known");
+                    await this.SafeReplyAsync($"Command '{command}' is already known").ConfigureAwait(false);
                     return;
                 }
 
                 a.Commands.Add(command, response);
-            }, Context.Guild.Id);
+            }, Context.Guild.Id).ConfigureAwait(false);
 
-            await _commandHandler.ReloadCommands();
-            await this.SafeReplyAsync($"I'll remember that {command} is {response}");
+            await _commandHandler.ReloadCommands().ConfigureAwait(false);
+            await this.SafeReplyAsync($"I'll remember that {command} is {response}").ConfigureAwait(false);
         }
 
         [Command("forget")]
@@ -51,15 +51,15 @@ namespace OniBot.Commands
             {
                 if (!a.Commands.ContainsKey(command))
                 {
-                    await this.SafeReplyAsync($"I don't know '{command}'.");
+                    await this.SafeReplyAsync($"I don't know '{command}'.").ConfigureAwait(false);
                     return;
                 }
 
                 a.Commands.Remove(command);
-            }, Context.Guild.Id);
+            }, Context.Guild.Id).ConfigureAwait(false);
 
-            await _commandHandler.ReloadCommands();
-            await this.SafeReplyAsync($"I seem to have forgotten what {command} does!??");
+            await _commandHandler.ReloadCommands().ConfigureAwait(false);
+            await this.SafeReplyAsync($"I seem to have forgotten what {command} does!??").ConfigureAwait(false);
         }
 
         [Command("showcustomcommands")]
@@ -86,7 +86,7 @@ namespace OniBot.Commands
                 }
             }
             response = $"```{response}```";
-            await Context.User.SendMessageAsync(response);
+            await Context.User.SendMessageAsync(response).ConfigureAwait(false);
         }
 
         [Command("tag")]
@@ -99,11 +99,11 @@ namespace OniBot.Commands
                         
             if (!_config.Commands.ContainsKey(command))
             {
-                await this.SafeReplyAsync("I'm a little teapot!");
+                await this.SafeReplyAsync("I'm a little teapot!").ConfigureAwait(false);
                 return;
             }
 
-            await this.SafeReplyAsync(_config.Commands[command]);
+            await this.SafeReplyAsync(_config.Commands[command]).ConfigureAwait(false);
         }
     }
 }

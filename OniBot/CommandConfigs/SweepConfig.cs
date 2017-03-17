@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 namespace OniBot.CommandConfigs
 {
-    class SweepConfig : CommandConfig
+    public class SweepConfig : CommandConfig
     {
         public Dictionary<ulong, string> Equiped = new Dictionary<ulong, string>();
 

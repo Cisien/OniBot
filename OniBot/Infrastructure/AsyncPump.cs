@@ -33,7 +33,7 @@ namespace OniBot.Infrastructure
                     edi.Throw();
                 }
 
-                task.GetAwaiter().GetResult();
+                task.ConfigureAwait(false).GetAwaiter().GetResult();
             }
             finally
             {

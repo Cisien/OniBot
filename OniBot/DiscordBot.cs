@@ -3,7 +3,6 @@ using Discord.Audio;
 using Discord.Commands;
 using Discord.WebSocket;
 using Microsoft.Extensions.Logging;
-using OniBot.Infrastructure;
 using OniBot.Interfaces;
 using System;
 using System.Collections.Generic;
@@ -49,12 +48,12 @@ namespace OniBot
             client.Connected += OnConnectedAsync;
             client.Log += OnLogAsync;
 
-            await _commandHandler.InstallAsync(_depMap);
-            await _behaviorService.InstallAsync();
+            await _commandHandler.InstallAsync(_depMap).ConfigureAwait(false);
+            await _behaviorService.InstallAsync().ConfigureAwait(false);
 
             try
             {
-                await DoConnectAsync();
+                await DoConnectAsync().ConfigureAwait(false);
             }
             catch (Exception ex)
             {
@@ -65,7 +64,7 @@ namespace OniBot
 
         private async Task OnConnectedAsync()
         {
-            await _behaviorService.RunAsync();
+            await _behaviorService.RunAsync().ConfigureAwait(false);
         }
 
         private async Task DoConnectAsync()
@@ -77,25 +76,25 @@ namespace OniBot
                 currentAttempt++;
                 try
                 {
-                    await client.LoginAsync(TokenType.Bot, Configuration.Token);
-                    await client.StartAsync();
+                    await client.LoginAsync(TokenType.Bot, Configuration.Token).ConfigureAwait(false);
+                    await client.StartAsync().ConfigureAwait(false);
                     break;
                 }
                 catch (Exception ex)
                 {
                 
                     _logger.LogError($"Fialed to connect: {ex.Message}");
-                    await Task.Delay(currentAttempt * 1000);
+                    await Task.Delay(currentAttempt * 1000).ConfigureAwait(false);
                 }
             }
             while (currentAttempt < maxAttempts);
         }
 
-        private async Task OnLogAsync(LogMessage msg)
+        private Task OnLogAsync(LogMessage msg)
         {
             if (msg.Source == "Gateway" && !msg.Message.Contains("Received Dispatch"))
             {
-                return;
+                return Task.CompletedTask;
             }
 
             var message = msg.ToString();
@@ -132,7 +131,7 @@ namespace OniBot
                     break;
             }
 
-            await Task.Yield();
+            return Task.CompletedTask;
         }
 
         public void Dispose()

@@ -50,7 +50,7 @@ namespace OniBot
         {
             using (var ms = new MemoryStream(data))
             {
-                return await channel.SendFileAsync(ms, filename, message);
+                return await channel.SendFileAsync(ms, filename, message).ConfigureAwait(false);
             }
         }
     }

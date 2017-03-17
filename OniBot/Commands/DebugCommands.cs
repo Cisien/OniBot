@@ -33,8 +33,8 @@ namespace OniBot.Commands
                 {
                     var filename = file.Substring(0);
                     var contents = File.ReadAllBytes(file);
-                    await Context.User.SendFileAsync(contents, filename);
-                    await Task.Delay(TimeSpan.FromSeconds(3));
+                    await Context.User.SendFileAsync(contents, filename).ConfigureAwait(false);
+                    await Task.Delay(TimeSpan.FromSeconds(3)).ConfigureAwait(false);
                 }
             }
             else
@@ -42,15 +42,15 @@ namespace OniBot.Commands
                 files = files.Where(a => a.Contains(config)).ToList();
                 if (files.Count == 0)
                 {
-                    await Context.User.SendMessageAsync("No files found");
+                    await Context.User.SendMessageAsync("No files found").ConfigureAwait(false);
                 }
 
                 foreach (var file in files)
                 {
                     var filename = file.Substring(0);
                     var contents = File.ReadAllBytes(file);
-                    await Context.User.SendFileAsync(contents, filename);
-                    await Task.Delay(TimeSpan.FromSeconds(3));
+                    await Context.User.SendFileAsync(contents, filename).ConfigureAwait(false);
+                    await Task.Delay(TimeSpan.FromSeconds(3)).ConfigureAwait(false);
                 }
             }
         }
@@ -60,7 +60,7 @@ namespace OniBot.Commands
         public async Task DumpChannel()
         {
             var props = DumpProps(Context.Channel);
-            await Context.User.SendFileAsync(Encoding.UTF8.GetBytes(props), $"{Context.Channel.Name}.txt");
+            await Context.User.SendFileAsync(Encoding.UTF8.GetBytes(props), $"{Context.Channel.Name}.txt").ConfigureAwait(false);
         }
 
         [Command("guild")]
@@ -68,7 +68,7 @@ namespace OniBot.Commands
         public async Task DumpGuild()
         {
             var props = DumpProps(Context.Guild);
-            await Context.User.SendFileAsync(Encoding.UTF8.GetBytes(props), $"{Context.Guild.Name}.txt");
+            await Context.User.SendFileAsync(Encoding.UTF8.GetBytes(props), $"{Context.Guild.Name}.txt").ConfigureAwait(false);
         }
 
         [Command("bot")]
@@ -76,13 +76,13 @@ namespace OniBot.Commands
         public async Task DumpMyself()
         {
             var props = DumpProps(Context.Client.CurrentUser);
-            await Context.User.SendMessageAsync($"```{props}```");
+            await Context.User.SendMessageAsync($"```{props}```").ConfigureAwait(false);
 
             var cPerms = GetChannelPerms(Context.Client.CurrentUser as IGuildUser);
-            await Context.User.SendMessageAsync($"```{"Channel Permissions".PadRight(20)}{string.Join(", ", cPerms)}```");
+            await Context.User.SendMessageAsync($"```{"Channel Permissions".PadRight(20)}{string.Join(", ", cPerms)}```").ConfigureAwait(false);
 
             var gPerms = GetGuildPerms(Context.Client.CurrentUser as IGuildUser);
-            await Context.User.SendMessageAsync($"```{"Guild Permissions".PadRight(20)}{string.Join(", ", gPerms)}```");
+            await Context.User.SendMessageAsync($"```{"Guild Permissions".PadRight(20)}{string.Join(", ", gPerms)}```").ConfigureAwait(false);
         }
 
         [Command("user")]
@@ -90,20 +90,20 @@ namespace OniBot.Commands
         public async Task DumpUser(SocketGuildUser user)
         {
             var props = DumpProps(user);
-            await Context.User.SendMessageAsync($"```{props}```");
+            await Context.User.SendMessageAsync($"```{props}```").ConfigureAwait(false);
 
             var cPerms = GetChannelPerms(user);
-            await Context.User.SendMessageAsync($"```{"Channel Permissions".PadRight(20)}{string.Join(", ", cPerms)}```");
+            await Context.User.SendMessageAsync($"```{"Channel Permissions".PadRight(20)}{string.Join(", ", cPerms)}```").ConfigureAwait(false);
 
             var gPerms = GetGuildPerms(user);
-            await Context.User.SendMessageAsync($"```{"Guild Permissions".PadRight(20)}{string.Join(", ", gPerms)}```");
+            await Context.User.SendMessageAsync($"```{"Guild Permissions".PadRight(20)}{string.Join(", ", gPerms)}```").ConfigureAwait(false);
         }
 
         [Command("chat")]
         [Summary("Gets the current run state of a user")]
         public async Task DumpChat(int count)
         {
-            var messages = await Context.Channel.GetMessagesAsync(limit: count, fromMessageId: Context.Message.Id, dir: Direction.Before).ToList();
+            var messages = await Context.Channel.GetMessagesAsync(limit: count, fromMessageId: Context.Message.Id, dir: Direction.Before).ToList().ConfigureAwait(false);
 
             foreach (var messageContainer in messages)
             {
@@ -111,8 +111,8 @@ namespace OniBot.Commands
                 {
                     var props = DumpProps(message);
 
-                    await Context.User.SendMessageAsync($"```{props}```");
-                    await Task.Delay(TimeSpan.FromSeconds(3));
+                    await Context.User.SendMessageAsync($"```{props}```").ConfigureAwait(false);
+                    await Task.Delay(TimeSpan.FromSeconds(3)).ConfigureAwait(false);
                 }
             }
         }
@@ -121,7 +121,7 @@ namespace OniBot.Commands
         [Summary("Provides basic information about the bot and its environment")]
         public async Task Info()
         {
-            var application = await Context.Client.GetApplicationInfoAsync();
+            var application = await Context.Client.GetApplicationInfoAsync().ConfigureAwait(false);
             var infoString =
                 $"{Format.Bold("Info")}\n" +
                 $"- Author: {application.Owner.Username} (ID {application.Owner.Id})\n" +
@@ -139,7 +139,7 @@ namespace OniBot.Commands
                 $"- Users: {guildClient.Guilds.Sum(g => g.Users.Count)}";
             }
 
-            await Context.User.SendMessageAsync(infoString);
+            await Context.User.SendMessageAsync(infoString).ConfigureAwait(false);
         }
 
         private static string GetUptime()
@@ -199,8 +199,7 @@ namespace OniBot.Commands
                 var userChannelPerms = user.GetPermissions(channel);
 
                 var channelPerms = Enum.GetValues(typeof(ChannelPermission)).Cast<ChannelPermission>();
-
-
+                
                 foreach (var perm in channelPerms)
                 {
                     if (userChannelPerms.Has(perm))

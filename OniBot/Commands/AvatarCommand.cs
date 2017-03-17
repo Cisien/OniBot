@@ -19,7 +19,7 @@ namespace OniBot.Commands
         public async Task Show()
         {
             var cfg = Configuration.GetJson<AvatarConfig>(_configKey);
-            await Context.User.SendMessageAsync($"```{cfg}```");
+            await Context.User.SendMessageAsync($"```{cfg}```").ConfigureAwait(false);
         }
 
         [Command("remove")]
@@ -32,9 +32,9 @@ namespace OniBot.Commands
                 {
                     a.Avatars.Remove(name);
                 }
-            });
+            }).ConfigureAwait(false);
 
-            await Context.User.SendMessageAsync($"{name} removed.");
+            await Context.User.SendMessageAsync($"{name} removed.").ConfigureAwait(false);
         }
 
         [Command("add")]
@@ -54,9 +54,9 @@ namespace OniBot.Commands
                 {
                     a.Avatars.Add(name, url);
                 }
-            });
+            }).ConfigureAwait(false);
 
-            await Context.User.SendMessageAsync($"{name} added.");
+            await Context.User.SendMessageAsync($"{name} added.").ConfigureAwait(false);
 
         }
     }

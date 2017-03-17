@@ -7,9 +7,12 @@ services:
       args:
         source: ${DOCKER_BUILD_SOURCE}
     volumes:
-      - ./OniBot:/app
-      - ~/.nuget/packages:/root/.nuget/packages:ro
+      - ./OniBot:c:/app
       - ~/clrdbg:/clrdbg:ro
     entrypoint: tail -f /dev/null
     labels:
       - "com.microsoft.visualstudio.targetoperatingsystem=windows"
+networks:
+  default:
+    external:
+      name: nat

@@ -13,7 +13,7 @@ namespace OniBot.Commands
         [Command]
         public async Task Echo([Remainder]string message)
         {
-            await this.SafeReplyAsync(message);
+            await this.SafeReplyAsync(message).ConfigureAwait(false);
         }
     }
 }

@@ -31,18 +31,18 @@ namespace OniBot
 
         public async Task RunAsync()
         {
-            await Task.Delay(TimeSpan.FromSeconds(10));
+            await Task.Delay(TimeSpan.FromSeconds(10)).ConfigureAwait(false);
 
             foreach (var behavior in _behaviors)
             {
                 try
                 {
-                    await behavior.Value.RunAsync();
+                    await behavior.Value.RunAsync().ConfigureAwait(false);
                     _logger.LogInformation($"Started behavior {behavior.Key}");
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError(new EventId(), ex, ex.Message);
+                    _logger.LogError(ex);
                 }
             }
         }

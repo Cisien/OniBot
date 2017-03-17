@@ -32,7 +32,7 @@ namespace OniBot
             _map = map;
             _client = _map.Get<DiscordSocketClient>();
 
-            await LoadAllModules();
+            await LoadAllModules().ConfigureAwait(false);
 
             _client.MessageReceived += OnMessageReceivedAsync;
             _client.MessageUpdated += OnMessageUpdatedAsync;
@@ -42,10 +42,10 @@ namespace OniBot
         {
             foreach (var module in _commands.Modules.ToList())
             {
-                await _commands.RemoveModuleAsync(module);
+                await _commands.RemoveModuleAsync(module).ConfigureAwait(false);
             }
 
-            await LoadAllModules();
+            await LoadAllModules().ConfigureAwait(false);
         }
 
         public async Task<List<Help>> BuildHelp(ICommandContext context)
@@ -57,7 +57,7 @@ namespace OniBot
 
             foreach (var command in _commands.Modules.SelectMany(a => a.Commands))
             {
-                var permission = await command.CheckPreconditionsAsync(context, _map);
+                var permission = await command.CheckPreconditionsAsync(context, _map).ConfigureAwait(false);
                 if (!permission.IsSuccess)
                 {
                     continue;
@@ -87,7 +87,7 @@ namespace OniBot
                 }
             }
 
-            await Task.Yield();
+            
             return helpList;
         }
 
@@ -115,14 +115,9 @@ namespace OniBot
             return cmd;
         }
 
-        private bool HasPermission(CommandInfo a, ICommandContext context)
-        {
-            return a.CheckPreconditionsAsync(context, _map).AsSync(false).IsSuccess;
-        }
-
         private async Task LoadAllModules()
         {
-            var modules = await _commands.AddModulesAsync(Assembly.GetEntryAssembly());
+            var modules = await _commands.AddModulesAsync(Assembly.GetEntryAssembly()).ConfigureAwait(false);
             foreach (var module in modules)
             {
                 _logger.LogInformation($"Loaded command: {string.Join(", ", module.Commands.Select(a => a.Name))} from module {module.Name}");
@@ -136,7 +131,7 @@ namespace OniBot
                 return;
             }
 
-            await OnMessageReceivedAsync(newMessage);
+            await OnMessageReceivedAsync(newMessage).ConfigureAwait(false);
         }
 
         private async Task OnMessageReceivedAsync(SocketMessage newMessage)
@@ -162,7 +157,7 @@ namespace OniBot
 
             var context = new SocketCommandContext(_client, message);
             
-            var result = await _commands.ExecuteAsync(context, argPos, _map, MultiMatchHandling.Best);
+            var result = await _commands.ExecuteAsync(context, argPos, _map, MultiMatchHandling.Best).ConfigureAwait(false);
 
             switch (result)
             {
@@ -171,14 +166,14 @@ namespace OniBot
                     break;
                 case PreconditionResult pResult:
                     _logger.LogInformation(pResult.ErrorReason);
-                    await context.User.SendMessageAsync(pResult.ErrorReason);
+                    await context.User.SendMessageAsync(pResult.ErrorReason).ConfigureAwait(false);
                     break;
             }
 
 #if DEBUG
             if (!result.IsSuccess)
             {
-                await message.Channel.SendMessageAsync($"Error: {result.ErrorReason}");
+                await message.Channel.SendMessageAsync($"Error: {result.ErrorReason}").ConfigureAwait(false);
             }
 #endif
         }
