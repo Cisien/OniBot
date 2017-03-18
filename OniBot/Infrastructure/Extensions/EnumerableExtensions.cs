@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
+using System.Linq;
 
 namespace OniBot
 {
@@ -12,6 +12,14 @@ namespace OniBot
         {
             var index = _random.Next(0, items.Count);
             var item = items[index];
+
+            return item;
+        }
+
+        public static KeyValuePair<TKey, TValue> Random<TKey, TValue>(this IDictionary<TKey, TValue> items)
+        {
+            var index = _random.Next(0, items.Count);
+            var item = items.ElementAtOrDefault(index);
 
             return item;
         }

@@ -40,8 +40,9 @@ namespace OniBot.Behaviors
             return Task.CompletedTask;
         }
 
-        private void UpdateGame(object state)
+        private async void UpdateGame(object state)
         {
+            _logger.LogDebug("Update Game beginning");
             var client = state as DiscordSocketClient;
             if (client == null)
             {
@@ -58,12 +59,14 @@ namespace OniBot.Behaviors
             try
             {
                 var game = _config.Games.Random();
-                client.SetGameAsync(game).AsSync(false);
+                await client.SetGameAsync(game).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex.ToString());
             }
+
+            _logger.LogDebug("Update Game finished");
         }
     }
 }

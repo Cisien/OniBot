@@ -38,7 +38,6 @@ namespace OniBot
                 LogLevel = Configuration.LogLevel,
                 AlwaysDownloadUsers = Configuration.AlwaysDownloadUsers,
                 MessageCacheSize = Configuration.MessageCacheSize,
-                AudioMode = AudioMode.Outgoing,
                 DefaultRetryMode = RetryMode.AlwaysRetry
             });
 
@@ -92,10 +91,10 @@ namespace OniBot
 
         private Task OnLogAsync(LogMessage msg)
         {
-            if (msg.Source == "Gateway" && !msg.Message.Contains("Received Dispatch"))
-            {
-                return Task.CompletedTask;
-            }
+            //if (msg.Source == "Gateway" && !msg.Message.Contains("Received Dispatch"))
+            //{
+            //    return Task.CompletedTask;
+            //}
 
             var message = msg.ToString();
 
