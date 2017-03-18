@@ -28,6 +28,7 @@ namespace OniBot.Infrastructure
                 var configFile = Path.Combine(directory, $"{key}.json");
                 if (!File.Exists(configFile))
                 {
+                    File.Create(configFile);
                     File.WriteAllText(configFile, $"{{\r\n}}");
                 }
 

@@ -87,7 +87,7 @@ namespace OniBot
                 }
             }
 
-            
+
             return helpList;
         }
 
@@ -156,13 +156,16 @@ namespace OniBot
             _logger.LogInformation($"Command received: {newMessage.Content}");
 
             var context = new SocketCommandContext(_client, message);
-            
+
             var result = await _commands.ExecuteAsync(context, argPos, _map, MultiMatchHandling.Best).ConfigureAwait(false);
 
             switch (result)
             {
                 case ExecuteResult exResult:
-                    _logger.LogError(exResult.Exception);
+                    if (!exResult.IsSuccess)
+                    {
+                        _logger.LogError(exResult.Exception);
+                    }
                     break;
                 case PreconditionResult pResult:
                     _logger.LogInformation(pResult.ErrorReason);

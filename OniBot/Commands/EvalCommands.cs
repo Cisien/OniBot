@@ -28,9 +28,10 @@ namespace OniBot.Commands
                 var linqAssembly = typeof(Enumerable).GetTypeInfo().Assembly;
                 var discordAssembly = typeof(ChannelPermissions).GetTypeInfo().Assembly;
                 var discordCommandAssembly = typeof(SocketCommandContext).GetTypeInfo().Assembly;
-                Context.Guild.Users.Select(a => a.Username);
+                
                 var opts = ScriptOptions.Default.AddImports("System", "System.Linq", "System.Diagnostics", "System.Collections", "System.Threading.Tasks", "Discord", "Discord.Commands")
                                                 .AddReferences(linqAssembly, discordAssembly, discordCommandAssembly);
+
                 result = await CSharpScript.EvaluateAsync(code,options: opts, globals: Context, globalsType: typeof(SocketCommandContext)).ConfigureAwait(false);
                 success = true;
             }
@@ -47,8 +48,8 @@ namespace OniBot.Commands
                 .WithAuthor(a => a.WithIconUrl(Context.Client.CurrentUser.GetAvatarUrl()).WithName(Context.Client.CurrentUser.Username))
                 .WithFooter(a => a.WithText($"{sw.ElapsedMilliseconds}ms"));
                 
-            embed.AddField(a => a.WithName("Code").WithValue($"```{code}```"));
-            embed.AddField(a => a.WithName($"Result: {result?.GetType()?.Name?? "null"}").WithValue($"```{result}```"));
+            embed.AddField(a => a.WithName("Code").WithValue($"```cs\n{code}```"));
+            embed.AddField(a => a.WithName($"Result: {result?.GetType()?.Name?? "null"}").WithValue($"```{result ?? " "}```"));
 
             await Context.Channel.SendMessageAsync(string.Empty, embed: embed).ConfigureAwait(false);
         }

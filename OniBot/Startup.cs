@@ -63,7 +63,7 @@ namespace OniBot
             services.Add(services);
             services.Add<IDependencyMap>(services);
             services.Add(config);
-            services.Add(commandService);
+            //services.Add(commandService);
             services.Add(behaviorService);
             services.Add<ICommandHandler>(commandHanlder);
         }
