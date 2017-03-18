@@ -17,6 +17,12 @@ namespace OniBot.Commands
     [ConfigurationPrecondition]
     public class EvalCommands : ModuleBase<SocketCommandContext>, IBotCommand
     {
+        private IDependencyMap _map;
+
+        public EvalCommands(IDependencyMap map) {
+            _map = map;
+        }
+
         [Command]
         public async Task Evaulate([Remainder]string code)
         {

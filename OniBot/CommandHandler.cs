@@ -9,6 +9,7 @@ using System.Text;
 using System.Collections.Generic;
 using OniBot.Infrastructure.Help;
 using Microsoft.Extensions.Logging;
+using System;
 
 namespace OniBot
 {
@@ -136,9 +137,8 @@ namespace OniBot
 
         private async Task OnMessageReceivedAsync(SocketMessage newMessage)
         {
-            var message = newMessage as SocketUserMessage;
-            if (message == null)
-            {
+            if(!(newMessage is SocketUserMessage message))
+            { 
                 return;
             }
 

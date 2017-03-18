@@ -24,13 +24,13 @@ namespace OniBot.Commands
             _handler = handler;
         }
 
-        [Command("add"), Priority(200)]
+        [Command("add"), Priority(800)]
         public async Task AddPermission(string command, SocketRole role)
         {
             await AddPermission(command, role.Id).ConfigureAwait(false);
         }
 
-        [Command("add"), Priority(100)]
+        [Command("add"), Priority(900)]
         public async Task AddPermission(string command, ulong roleId)
         {
             command = command.ToLower();
@@ -68,13 +68,13 @@ namespace OniBot.Commands
             }, Context.Guild.Id).ConfigureAwait(false);
         }
 
-        [Command("remove"), Priority(200)]
+        [Command("remove"), Priority(800)]
         public async Task RemovePermission(string command, SocketRole role)
         {
             await RemovePermission(command, role.Id).ConfigureAwait(false);
         }
 
-        [Command("remove"), Priority(100)]
+        [Command("remove"), Priority(900)]
         public async Task RemovePermission(string command, ulong roleId)
         {
             command = command.ToLower();
@@ -107,14 +107,14 @@ namespace OniBot.Commands
             await Context.User.SendMessageAsync($"```{json}```").ConfigureAwait(false);
         }
 
-        [Command("show"), Priority(300)]
+        [Command("show"), Priority(700)]
         public async Task ShowPermissions()
         {
             var json = Configuration.GetJson<PermissionsConfig>(_config.ConfigKey, Context.Guild.Id);
             await Context.User.SendFileAsync(Encoding.UTF8.GetBytes(json), "permissions.json").ConfigureAwait(false);
         }
 
-        [Command("show"), Priority(200)]
+        [Command("show"), Priority(800)]
         public async Task ShowPermission(string command)
         {
             command = command.ToLower();
@@ -129,13 +129,13 @@ namespace OniBot.Commands
             await Context.User.SendFileAsync(Encoding.UTF8.GetBytes(json), "permissions.json").ConfigureAwait(false);
         }
 
-        [Command("show"), Priority(100)]
+        [Command("show"), Priority(900)]
         public async Task ShowPermission(SocketRole role)
         {
             await ShowPermission(role.Id).ConfigureAwait(false);
         }
 
-        [Command("show"), Priority(50)]
+        [Command("show"), Priority(1000)]
         public async Task ShowPermission(ulong roleId)
         {
             var role = Context.Guild.Roles.SingleOrDefault(a => a.Id == roleId);

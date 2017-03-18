@@ -21,7 +21,7 @@ namespace OniBot.Commands
             _config = config;
         }
 
-        [Command("help"), Priority(50)]
+        [Command("help"), Priority(1000)]
         [Summary("Prints the list of commands you have permission to execute.")]
         public async Task Help(
             [Summary("[Optional] The page to load.")]int page = 1)
@@ -51,7 +51,7 @@ namespace OniBot.Commands
             await Context.User.SendMessageAsync($"```{helpText}```").ConfigureAwait(false);
         }
 
-        [Command("help"), Priority(100)]
+        [Command("help"), Priority(900)]
         [Summary("Prints the help of a specific command")]
         public async Task Help([Summary("[Optional] The name of the command to view the help of."), Remainder]string command)
         {
