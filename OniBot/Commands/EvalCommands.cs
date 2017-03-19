@@ -1,5 +1,6 @@
 ﻿using Discord;
 using Discord.Commands;
+using Discord.WebSocket;
 using Microsoft.CodeAnalysis.CSharp.Scripting;
 using Microsoft.CodeAnalysis.Scripting;
 using OniBot.Infrastructure;
@@ -31,6 +32,9 @@ namespace OniBot.Commands
             object result;
             try
             {
+                if(Context.User is SocketGuildUser guildUser)
+                    guildUser.GetAvatarUrl();
+
                 var linqAssembly = typeof(Enumerable).GetTypeInfo().Assembly;
                 var discordAssembly = typeof(ChannelPermissions).GetTypeInfo().Assembly;
                 var discordCommandAssembly = typeof(SocketCommandContext).GetTypeInfo().Assembly;
@@ -46,7 +50,7 @@ namespace OniBot.Commands
                 result = $"Unable to evaluate: {ex.Message}";
             }
             sw.Stop();
-
+            
             var embed = new EmbedBuilder()
                 .WithTitle("Eval Result")
                 .WithDescription(success ? "Successful" : "Failed")

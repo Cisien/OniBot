@@ -23,7 +23,7 @@ namespace OniBot.Commands
 
         [Command("sweep")]
         [Summary("Cleans up the mess in the room")]
-        public async Task Attack(
+        public async Task Sweep(
             [Summary("The person or thing to sweep up")][Remainder] string target)
         {
             var user = Context.User as SocketGuildUser;
@@ -31,7 +31,7 @@ namespace OniBot.Commands
             {
                 return;
             }
-
+            _config.Reload(Context.Guild.Id);
             var username = await user.GetUserName().ConfigureAwait(false);
             var hasEquiped = _config.Equiped.ContainsKey(user.Id);
             var weapon = hasEquiped ? $" with a {_config.Equiped[user.Id]}" : string.Empty;
@@ -54,7 +54,7 @@ namespace OniBot.Commands
             await Configuration.Modify<SweepConfig>(_config.ConfigKey, a =>
             {
                 a.Equiped[user.Id] = weapon;
-            }).ConfigureAwait(false);
+            }, Context.Guild.Id).ConfigureAwait(false);
 
             await this.SafeReplyAsync($"_{username} equips a {weapon}_").ConfigureAwait(false);
         }
@@ -73,7 +73,7 @@ namespace OniBot.Commands
             await Configuration.Modify<SweepConfig>(_config.ConfigKey, a =>
             {
                 a.Equiped.Remove(user.Id);
-            }).ConfigureAwait(false);
+            }, Context.Guild.Id).ConfigureAwait(false);
 
             await this.SafeReplyAsync($"_{username} puts away their cleaning device._").ConfigureAwait(false);
         }
