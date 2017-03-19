@@ -127,7 +127,7 @@ namespace OniBot
 
         private async Task OnMessageUpdatedAsync(Cacheable<IMessage, ulong> existingMessage, SocketMessage newMessage, ISocketMessageChannel channel)
         {
-            if (existingMessage.Value.Content == newMessage.Content)
+            if (existingMessage.HasValue && existingMessage.Value?.Content == newMessage.Content)
             {
                 return;
             }

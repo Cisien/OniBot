@@ -9,7 +9,7 @@ namespace OniBot.Infrastructure
     public class Configuration
     {
         private static readonly object _fileReadWriteLock = new object();
-
+        private const string EmptyJson = "{\r\n}";
         public static T Get<T>(string key, ulong? guild = null) where T : CommandConfig
         {
             return (T)Get(typeof(T), key, guild);
@@ -29,10 +29,16 @@ namespace OniBot.Infrastructure
                 if (!File.Exists(configFile))
                 {
                     File.Create(configFile);
-                    File.WriteAllText(configFile, $"{{\r\n}}");
+                    File.WriteAllText(configFile, EmptyJson);
                 }
 
                 var configContents = File.ReadAllText(configFile);
+
+                if (configContents == string.Empty)
+                {
+                    configContents = EmptyJson;
+                }
+
                 var config = Activator.CreateInstance(type);
                 JsonConvert.PopulateObject(configContents, config, new JsonSerializerSettings { NullValueHandling = NullValueHandling.Ignore });
 
