@@ -5,9 +5,6 @@ using OniBot.Interfaces;
 using System;
 using System.Threading.Tasks;
 using OniBot.CommandConfigs;
-using System.Collections.Generic;
-using Discord;
-
 namespace OniBot.Commands
 {
     [ConfigurationPrecondition]

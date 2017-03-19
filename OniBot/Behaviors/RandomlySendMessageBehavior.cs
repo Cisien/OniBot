@@ -43,7 +43,7 @@ namespace OniBot.Behaviors
             _client.MessageReceived += OnMessageReceived;
             return Task.CompletedTask;
         }
-
+        
         private async Task OnMessageReceived(SocketMessage arg)
         {
             if (!(arg.Channel is SocketGuildChannel channel))
@@ -103,6 +103,11 @@ namespace OniBot.Behaviors
             _messageToSendOn[channelId] = _random.Next(_config.MinMessages, _config.MaxMessages);
             _logger.LogDebug($"Selected a new random message to send on: {_messageToSendOn[channelId]}");
             _messagesSinceLastSend[channelId] = 0;
+        }
+
+        public Task StopAsync()
+        {
+            return Task.CompletedTask;
         }
     }
 }

@@ -19,11 +19,14 @@ namespace OniBot.Behaviors
             return Task.CompletedTask;
         }
 
-
+        public Task StopAsync()
+        {
+            return Task.CompletedTask;
+        }
         private static void UpdateFeeds(object state)
         {
             var client = state as DiscordSocketClient;
-            
+
 
             //_timer.Change(TimeSpan.FromMinutes(config.CheckFrequencyMinutes), TimeSpan.FromMinutes(config.CheckFrequencyMinutes));
         }

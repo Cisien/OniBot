@@ -19,7 +19,7 @@ namespace OniBot.Behaviors
         private static Timer _timer;
         private static readonly Random _random = new Random();
         private DiscordSocketClient _client;
-        
+
         private AvatarConfig _config;
         private ILogger _logger;
 
@@ -33,6 +33,14 @@ namespace OniBot.Behaviors
         public Task RunAsync()
         {
             _timer = new Timer(UpdateAvatar, _client, TimeSpan.FromSeconds(0), TimeSpan.FromHours(24));
+            return Task.CompletedTask;
+        }
+
+        public Task StopAsync()
+        {
+            _timer?.Change(Timeout.Infinite, Timeout.Infinite);
+            _timer?.Dispose();
+            _timer = null;
             return Task.CompletedTask;
         }
 

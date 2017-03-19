@@ -47,10 +47,18 @@ namespace OniBot
             }
         }
 
+        public async Task StopAsync()
+        {
+            foreach (var behavior in _behaviors)
+            {
+                await behavior.Value.StopAsync();
+            }
+        }
+
         private void LoadBehaviors(IDependencyMap map)
         {
             var sMap = map as ServiceProviderDependencyMap;
-            
+
             var assembly = Assembly.GetEntryAssembly();
             var interfaceType = typeof(IBotBehavior);
 
@@ -66,7 +74,7 @@ namespace OniBot
                     {
                         continue;
                     }
-                    
+
                     var instance = ActivatorUtilities.CreateInstance(sMap.GetProvider(), type) as IBotBehavior;
                     if (instance == null)
                     {

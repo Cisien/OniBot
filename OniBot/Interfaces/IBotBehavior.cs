@@ -8,5 +8,6 @@ namespace OniBot.Interfaces
         string Name { get; }
 
         Task RunAsync();
+        Task StopAsync();
     }
 }

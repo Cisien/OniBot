@@ -40,6 +40,15 @@ namespace OniBot.Behaviors
             return Task.CompletedTask;
         }
 
+
+        public Task StopAsync()
+        {
+            _timer?.Change(Timeout.Infinite, Timeout.Infinite);
+            _timer?.Dispose();
+            _timer = null;
+            return Task.CompletedTask;
+        }
+
         private async void UpdateGame(object state)
         {
             _logger.LogDebug("Update Game beginning");

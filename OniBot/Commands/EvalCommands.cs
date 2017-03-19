@@ -18,12 +18,13 @@ namespace OniBot.Commands
     [ConfigurationPrecondition]
     public class EvalCommands : ModuleBase<SocketCommandContext>, IBotCommand
     {
-        private IDependencyMap _map;
+        private static Assembly linqAssembly = typeof(Enumerable).GetTypeInfo().Assembly;
+        private static Assembly discordAssembly = typeof(ChannelPermissions).GetTypeInfo().Assembly;
+        private static Assembly discordCommandAssembly = typeof(SocketCommandContext).GetTypeInfo().Assembly;
 
-        public EvalCommands(IDependencyMap map) {
-            _map = map;
-        }
-
+        private static ScriptOptions opts = ScriptOptions.Default.AddImports("System", "System.Linq", "System.Diagnostics", "System.Collections", "System.Threading.Tasks", "Discord", "Discord.Commands")
+                                             .AddReferences(linqAssembly, discordAssembly, discordCommandAssembly);
+                                             
         [Command]
         public async Task Evaulate([Remainder]string code)
         {
@@ -32,16 +33,6 @@ namespace OniBot.Commands
             object result;
             try
             {
-                if(Context.User is SocketGuildUser guildUser)
-                    guildUser.GetAvatarUrl();
-
-                var linqAssembly = typeof(Enumerable).GetTypeInfo().Assembly;
-                var discordAssembly = typeof(ChannelPermissions).GetTypeInfo().Assembly;
-                var discordCommandAssembly = typeof(SocketCommandContext).GetTypeInfo().Assembly;
-                
-                var opts = ScriptOptions.Default.AddImports("System", "System.Linq", "System.Diagnostics", "System.Collections", "System.Threading.Tasks", "Discord", "Discord.Commands")
-                                                .AddReferences(linqAssembly, discordAssembly, discordCommandAssembly);
-
                 result = await CSharpScript.EvaluateAsync(code,options: opts, globals: Context, globalsType: typeof(SocketCommandContext)).ConfigureAwait(false);
                 success = true;
             }
@@ -62,11 +53,6 @@ namespace OniBot.Commands
             embed.AddField(a => a.WithName($"Result: {result?.GetType()?.Name?? "null"}").WithValue($"```{result ?? " "}```"));
 
             await Context.Channel.SendMessageAsync(string.Empty, embed: embed).ConfigureAwait(false);
-        }
-
-        public class Globals
-        {
-            public SocketCommandContext Discord { get; set; }
         }
     }
 }
