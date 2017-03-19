@@ -6,7 +6,7 @@ namespace OniBot.CommandConfigs
 {
     public class SweepConfig : CommandConfig
     {
-        public Dictionary<ulong, string> Equiped = new Dictionary<ulong, string>();
+        public Dictionary<ulong, string> Equiped { get; set; } = new Dictionary<ulong, string>();
 
         [JsonIgnore]
         public override string ConfigKey => "sweep";
