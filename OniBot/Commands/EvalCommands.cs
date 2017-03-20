@@ -26,7 +26,7 @@ namespace OniBot.Commands
         private static ScriptOptions opts = ScriptOptions.Default.AddImports("System", "System.Linq", "System.Diagnostics", "System.Collections", "System.Threading.Tasks", "Discord", "Discord.Commands", "Newtonsoft.Json")
                                              .AddReferences(linqAssembly, discordAssembly, discordCommandAssembly, jsonNetAssembly);
                                              
-        [Command]
+        [Command(RunMode = RunMode.Async)]
         public async Task Evaulate([Remainder]string code)
         {
             var sw = Stopwatch.StartNew();
