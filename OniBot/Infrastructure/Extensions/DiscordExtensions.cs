@@ -17,7 +17,7 @@ namespace OniBot
 
         public static async Task<IUserMessage> SafeReplyAsync(this ModuleBase<SocketCommandContext> module, string message)
         {
-            message = message.Replace("@everyone", "everyone").Replace("@here", "here");
+            message = message.Replace("@​everyone", "@every\x200Bone").Replace("@here", "@he\x200Bre");
             var response = await module.Context.Channel.SendMessageAsync(message).ConfigureAwait(false);
             return response;
         }
@@ -50,6 +50,7 @@ namespace OniBot
         {
             using (var ms = new MemoryStream(data))
             {
+                ms.Position = 0;
                 return await channel.SendFileAsync(ms, filename, message).ConfigureAwait(false);
             }
         }

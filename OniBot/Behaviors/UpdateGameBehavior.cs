@@ -16,7 +16,7 @@ namespace OniBot.Behaviors
         private Timer _timer;
         private static Random _random = new Random();
         private DiscordSocketClient _client;
-        
+
         private ILogger _logger;
         private GamesConfig _config;
 
@@ -68,6 +68,12 @@ namespace OniBot.Behaviors
             try
             {
                 var game = _config.Games.Random();
+
+                if (game == null)
+                {
+                    return;
+                }
+
                 await client.SetGameAsync(game).ConfigureAwait(false);
             }
             catch (Exception ex)

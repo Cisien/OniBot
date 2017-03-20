@@ -31,8 +31,6 @@ namespace OniBot
 
         public async Task RunAsync()
         {
-            await Task.Delay(TimeSpan.FromSeconds(10)).ConfigureAwait(false);
-
             foreach (var behavior in _behaviors)
             {
                 try

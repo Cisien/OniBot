@@ -54,8 +54,10 @@ namespace OniBot
             {
                 CaseSensitiveCommands = false,
                 DefaultRunMode = RunMode.Sync,
-                SeparatorChar = ' '
+                SeparatorChar = ' ',
+                LogLevel = config.LogLevel
             });
+            commandService.Log += DiscordBot.OnLogAsync;
 
             var behaviorService = new BehaviorService(services, logger);
             var commandHanlder = new CommandHandler(commandService, config, logger);
@@ -63,7 +65,6 @@ namespace OniBot
             services.Add(services);
             services.Add<IDependencyMap>(services);
             services.Add(config);
-            //services.Add(commandService);
             services.Add(behaviorService);
             services.Add<ICommandHandler>(commandHanlder);
         }

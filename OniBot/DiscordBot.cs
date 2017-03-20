@@ -19,7 +19,7 @@ namespace OniBot
         private Dictionary<string, IBotBehavior> _behaviors = new Dictionary<string, IBotBehavior>();
         private IDependencyMap _depMap;
         private BehaviorService _behaviorService;
-        private ILogger _logger;
+        private static ILogger _logger;
 
         public static BotConfig Configuration { get; set; }
 
@@ -45,7 +45,7 @@ namespace OniBot
             _depMap.Add<IDiscordClient>(client);
             _depMap.Add(client);
 
-            client.Connected += OnConnectedAsync;
+            client.Ready += OnReadyAsync;
             client.Log += OnLogAsync;
 
             await _commandHandler.InstallAsync(_depMap).ConfigureAwait(false);
@@ -62,8 +62,9 @@ namespace OniBot
             }
         }
 
-        private async Task OnConnectedAsync()
+        private async Task OnReadyAsync()
         {
+            Console.WriteLine(client.CurrentUser.Username);
             await _behaviorService.RunAsync().ConfigureAwait(false);
         }
 
@@ -90,13 +91,8 @@ namespace OniBot
             while (currentAttempt < maxAttempts);
         }
 
-        private Task OnLogAsync(LogMessage msg)
+        public static Task OnLogAsync(LogMessage msg)
         {
-            //if (msg.Source == "Gateway" && !msg.Message.Contains("Received Dispatch"))
-            //{
-            //    return Task.CompletedTask;
-            //}
-
             var message = msg.ToString();
 
             switch (msg.Severity)

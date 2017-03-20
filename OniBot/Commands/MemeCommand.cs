@@ -19,7 +19,8 @@ namespace OniBot.Commands
         private static HttpClient client = new HttpClient();
         private ILogger _logger;
 
-        public MemeCommand(ILogger logger) {
+        public MemeCommand(ILogger logger)
+        {
             _logger = logger;
         }
 
@@ -45,6 +46,13 @@ namespace OniBot.Commands
             }
         }
 
+        [Command("dank")]
+        [Summary("why?")]
+        public async Task Dank()
+        {
+            await Context.Channel.SendMessageAsync(Context.User.Mention).ConfigureAwait(false);
+        }
+
         private async Task<ImageResult> FindImage(string question)
         {
             try
@@ -63,7 +71,7 @@ namespace OniBot.Commands
                 }
 
                 int index = _random.Next(0, galleryMatches.Count);
-                
+
                 string galleryItemLink = $"http://imgur.com{galleryMatches[index].Value}";
                 Console.WriteLine($"calling {galleryItemLink}");
 
@@ -83,7 +91,7 @@ namespace OniBot.Commands
 
                 var image = await client.GetByteArrayAsync(imageLink).ConfigureAwait(false);
                 var temp = $"{Guid.NewGuid()}.{match.Groups["ext"].Value}";
-                
+
                 File.WriteAllBytes(temp, image);
 
                 return new ImageResult { Filename = temp, Description = match.Groups["desc"]?.Value };

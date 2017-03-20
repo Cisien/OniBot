@@ -1,8 +1,8 @@
 ﻿using Discord;
 using Discord.Commands;
-using Discord.WebSocket;
 using Microsoft.CodeAnalysis.CSharp.Scripting;
 using Microsoft.CodeAnalysis.Scripting;
+using Newtonsoft.Json;
 using OniBot.Infrastructure;
 using OniBot.Interfaces;
 using System;
@@ -21,9 +21,10 @@ namespace OniBot.Commands
         private static Assembly linqAssembly = typeof(Enumerable).GetTypeInfo().Assembly;
         private static Assembly discordAssembly = typeof(ChannelPermissions).GetTypeInfo().Assembly;
         private static Assembly discordCommandAssembly = typeof(SocketCommandContext).GetTypeInfo().Assembly;
+        private static Assembly jsonNetAssembly = typeof(JsonConvert).GetTypeInfo().Assembly;
 
-        private static ScriptOptions opts = ScriptOptions.Default.AddImports("System", "System.Linq", "System.Diagnostics", "System.Collections", "System.Threading.Tasks", "Discord", "Discord.Commands")
-                                             .AddReferences(linqAssembly, discordAssembly, discordCommandAssembly);
+        private static ScriptOptions opts = ScriptOptions.Default.AddImports("System", "System.Linq", "System.Diagnostics", "System.Collections", "System.Threading.Tasks", "Discord", "Discord.Commands", "Newtonsoft.Json")
+                                             .AddReferences(linqAssembly, discordAssembly, discordCommandAssembly, jsonNetAssembly);
                                              
         [Command]
         public async Task Evaulate([Remainder]string code)
@@ -33,7 +34,7 @@ namespace OniBot.Commands
             object result;
             try
             {
-                result = await CSharpScript.EvaluateAsync(code,options: opts, globals: Context, globalsType: typeof(SocketCommandContext)).ConfigureAwait(false);
+                result = await CSharpScript.EvaluateAsync(code, options: opts, globals: Context, globalsType: typeof(SocketCommandContext)).ConfigureAwait(false);
                 success = true;
             }
             catch (Exception ex)

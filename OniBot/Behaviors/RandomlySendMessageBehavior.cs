@@ -43,7 +43,7 @@ namespace OniBot.Behaviors
             _client.MessageReceived += OnMessageReceived;
             return Task.CompletedTask;
         }
-        
+
         private async Task OnMessageReceived(SocketMessage arg)
         {
             if (!(arg.Channel is SocketGuildChannel channel))
@@ -85,6 +85,11 @@ namespace OniBot.Behaviors
             }
 
             var message = _config.RandomMessages.Random();
+
+            if (message == null)
+            {
+                return;
+            }
 
             if (message.Image == null)
             {

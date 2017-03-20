@@ -63,7 +63,7 @@ namespace OniBot
                 {
                     continue;
                 }
-
+                
                 var help = new Help();
                 helpList.Add(help);
 
