@@ -47,7 +47,7 @@ namespace OniBot
 
             client.Ready += OnReadyAsync;
             client.Log += OnLogAsync;
-
+            client.Disconnected += OnDisconnectedAsync;
             await _commandHandler.InstallAsync(_depMap).ConfigureAwait(false);
             await _behaviorService.InstallAsync().ConfigureAwait(false);
 
@@ -60,6 +60,11 @@ namespace OniBot
                 _logger.LogError(ex);
                 throw;
             }
+        }
+
+        private async Task OnDisconnectedAsync(Exception arg)
+        {
+            await _behaviorService.StopAsync().ConfigureAwait(false);
         }
 
         private async Task OnReadyAsync()

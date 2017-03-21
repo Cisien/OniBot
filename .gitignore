@@ -256,5 +256,5 @@ paket-files/
 # JetBrains Rider
 .idea/
 *.sln.iml
-/OniBot/config/sweep.json
+
 /OniBot/config

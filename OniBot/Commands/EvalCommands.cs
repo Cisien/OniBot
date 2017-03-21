@@ -39,7 +39,7 @@ namespace OniBot.Commands
             }
             catch (Exception ex)
             {
-                result = $"Unable to evaluate: {ex.Message}";
+                result = ex.Message;
             }
             sw.Stop();
             
@@ -52,7 +52,7 @@ namespace OniBot.Commands
                 
             embed.AddField(a => a.WithName("Code").WithValue($"```cs\n{code}```"));
             embed.AddField(a => a.WithName($"Result: {result?.GetType()?.Name?? "null"}").WithValue($"```{result ?? " "}```"));
-
+            
             await Context.Channel.SendMessageAsync(string.Empty, embed: embed).ConfigureAwait(false);
         }
     }

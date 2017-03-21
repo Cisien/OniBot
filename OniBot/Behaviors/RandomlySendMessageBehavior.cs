@@ -112,6 +112,7 @@ namespace OniBot.Behaviors
 
         public Task StopAsync()
         {
+            _client.MessageReceived -= OnMessageReceived;
             return Task.CompletedTask;
         }
     }
