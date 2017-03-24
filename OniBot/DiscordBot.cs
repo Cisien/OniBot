@@ -44,10 +44,11 @@ namespace OniBot
 
             _depMap.Add<IDiscordClient>(client);
             _depMap.Add(client);
-
+            
             client.Ready += OnReadyAsync;
             client.Log += OnLogAsync;
             client.Disconnected += OnDisconnectedAsync;
+
             await _commandHandler.InstallAsync(_depMap).ConfigureAwait(false);
             await _behaviorService.InstallAsync().ConfigureAwait(false);
 

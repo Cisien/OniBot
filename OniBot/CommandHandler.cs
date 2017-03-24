@@ -53,9 +53,6 @@ namespace OniBot
         {
             var helpList = new List<Help>();
 
-            var sb = new StringBuilder();
-            sb.AppendLine($"{"Command".PadRight(20)}{"Parameters".PadRight(20)}Summary");
-
             foreach (var command in _commands.Modules.SelectMany(a => a.Commands))
             {
                 var permission = await command.CheckPreconditionsAsync(context, _map).ConfigureAwait(false);
