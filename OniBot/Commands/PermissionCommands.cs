@@ -42,7 +42,7 @@ namespace OniBot.Commands
                 return;
             }
 
-            var commands = await _handler.BuildHelp(Context).ConfigureAwait(false);
+            var commands = await _handler.BuildHelpAsync(Context).ConfigureAwait(false);
             if (command != "*" && !commands.SelectMany(a => a.Commands).Any(a => a.Alias == command))
             {
                 await ReplyAsync("Command either does not exist, or you do not already have permissions to it.").ConfigureAwait(false);

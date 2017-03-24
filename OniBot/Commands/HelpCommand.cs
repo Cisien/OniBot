@@ -26,7 +26,7 @@ namespace OniBot.Commands
         public async Task Help(
             [Summary("[Optional] The page to load.")]int page = 1)
         {
-            var help = await _commandHandler.BuildHelp(Context).ConfigureAwait(false);
+            var help = await _commandHandler.BuildHelpAsync(Context).ConfigureAwait(false);
             var resultMax = (_pageSize - help.Count % _pageSize) + help.Count;
             var pages = resultMax / _pageSize;
 
@@ -48,7 +48,7 @@ namespace OniBot.Commands
            
             helpText.AppendLine($"Page {page} of {pages}. Use {_config.PrefixChar}help # to view the other pages.");
 
-            await Context.User.SendMessageAsync($"```{helpText}```").ConfigureAwait(false);
+            await Context.User.SendMessageAsync(Format.Code(helpText.ToString())).ConfigureAwait(false);
         }
 
         [Command("help"), Priority(900)]
@@ -60,7 +60,7 @@ namespace OniBot.Commands
                 command = command.Substring(0);
             }
 
-            var help = await _commandHandler.BuildHelp(Context).ConfigureAwait(false);
+            var help = await _commandHandler.BuildHelpAsync(Context).ConfigureAwait(false);
             var cmds = help.SelectMany(a => a.Commands).Where(a => a.Alias.Contains(command));
             
             var sb = new StringBuilder();
@@ -78,7 +78,7 @@ namespace OniBot.Commands
                 sb.AppendLine();
             }
 
-            await Context.User.SendMessageAsync($"```{sb}```").ConfigureAwait(false);
+            await Context.User.SendMessageAsync(Format.Code(sb.ToString())).ConfigureAwait(false);
         }
     }
 }

@@ -10,6 +10,6 @@ namespace OniBot.Interfaces
     {
         Task InstallAsync(IDependencyMap map);
         Task ReloadCommands();
-        Task<List<Help>> BuildHelp(ICommandContext context);
+        Task<List<Help>> BuildHelpAsync(ICommandContext context);
     }
 }

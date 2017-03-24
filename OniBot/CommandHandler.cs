@@ -49,7 +49,7 @@ namespace OniBot
             await LoadAllModules().ConfigureAwait(false);
         }
 
-        public async Task<List<Help>> BuildHelp(ICommandContext context)
+        public async Task<List<Help>> BuildHelpAsync(ICommandContext context)
         {
             var helpList = new List<Help>();
 
@@ -84,7 +84,6 @@ namespace OniBot
                     }
                 }
             }
-
 
             return helpList;
         }
