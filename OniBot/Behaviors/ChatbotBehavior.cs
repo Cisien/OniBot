@@ -65,7 +65,8 @@ namespace OniBot.Behaviors
                 return;
             }
 
-            var message = arg.Content.Replace(_client.CurrentUser.Mention, string.Empty).Trim();
+            var message = arg.Content.Replace(_client.CurrentUser.Mention, string.Empty)
+                .Replace(_client.CurrentUser.Mention.Replace("!", string.Empty), string.Empty).Trim();
             var response = await _cleverBot.GetResponseAsync(message);
 
             if (string.IsNullOrWhiteSpace(response.errorLine))
