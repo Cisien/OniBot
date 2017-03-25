@@ -1,5 +1,4 @@
-﻿using System;
-using Discord;
+﻿using Discord;
 
 namespace OniBot.Interfaces
 {
@@ -10,6 +9,7 @@ namespace OniBot.Interfaces
         public int MessageCacheSize { get; set; }
         public string Token { get; set; }
         public char PrefixChar { get; set; }
- 
+        public string ForgeKey { get; set; }
+        public string ForgeSecret { get; set; }
     }
 }

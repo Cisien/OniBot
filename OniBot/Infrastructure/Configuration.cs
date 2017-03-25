@@ -2,6 +2,7 @@
 using OniBot.Interfaces;
 using System;
 using System.IO;
+using System.Text;
 using System.Threading.Tasks;
 
 namespace OniBot.Infrastructure
@@ -28,8 +29,12 @@ namespace OniBot.Infrastructure
                 var configFile = Path.Combine(directory, $"{key}.json");
                 if (!File.Exists(configFile))
                 {
-                    File.Create(configFile);
-                    File.WriteAllText(configFile, EmptyJson);
+                    using (var file = File.Create(configFile))
+                    {
+                        var content = Encoding.UTF8.GetBytes(EmptyJson);
+                        file.Write(content, 0, content.Length);
+                        file.Flush();
+                    }
                 }
 
                 var configContents = File.ReadAllText(configFile);
