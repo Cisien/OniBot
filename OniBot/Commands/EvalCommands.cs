@@ -9,6 +9,7 @@ using Newtonsoft.Json;
 using OniBot.Infrastructure;
 using OniBot.Interfaces;
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
@@ -39,6 +40,8 @@ namespace OniBot.Commands
 
         private static ScriptOptions opts = ScriptOptions.Default.AddImports(namespaces).AddReferences(assemblies);
 
+        private static Random random = new Random();
+
         [Command(RunMode = RunMode.Async)]
         public async Task Evaulate([Remainder]string code)
         {
@@ -47,7 +50,7 @@ namespace OniBot.Commands
             object result;
             try
             {
-                result = await CSharpScript.EvaluateAsync(code, options: opts, globals: Context).ConfigureAwait(false);
+                result = await CSharpScript.EvaluateAsync(code, options: opts, globals: new Globals(Context, random)).ConfigureAwait(false);
                 success = true;
             }
             catch (Exception ex)
@@ -65,8 +68,31 @@ namespace OniBot.Commands
 
             embed.AddField(a => a.WithName("Code").WithValue(Format.Code(code, "cs")));
             embed.AddField(a => a.WithName($"Result: {result?.GetType()?.Name ?? "null"}").WithValue(Format.Code($"{result ?? " "}")));
-
+            
             await Context.Channel.SendMessageAsync(string.Empty, embed: embed).ConfigureAwait(false);
         }
+
+        public class Globals {
+            public DiscordSocketClient Client { get; }
+            public SocketGuild Guild { get; }
+            public ISocketMessageChannel Channel { get; }
+            public SocketUser User { get; }
+            public SocketUserMessage Message { get; }
+            public bool IsPrivate { get; }
+            public Random RNG { get; set; }
+            public SocketGuildUser GuildUser { get; set; }
+
+            public Globals(SocketCommandContext context, Random rng){
+                RNG = rng;
+                Client = context.Client;
+                Guild = context.Guild;
+                Channel = context.Channel;
+                User = context.User;
+                GuildUser = context.User as SocketGuildUser;
+                Message = context.Message;
+                IsPrivate = context.IsPrivate;
+            }
+        }
+
     }
 }
