@@ -28,7 +28,7 @@ namespace OniBot.Behaviors
 
         public Task RunAsync()
         {
-            _forge = new PersonalityForge(_globalConfig.ForgeSecret, _globalConfig.ForgeKey, 63906);
+            _forge = new PersonalityForge(_globalConfig.ForgeSecret, _globalConfig.ForgeKey, 24007);
             _client.MessageReceived += OnMessageReceivedAsync;
 
             return Task.CompletedTask;
