@@ -1,18 +1,19 @@
-﻿using Discord;
+﻿using Cleverbot.Net;
+using Discord;
 using Discord.WebSocket;
-using JamesWright.PersonalityForge;
 using Microsoft.Extensions.Logging;
 using OniBot.CommandConfigs;
 using OniBot.Interfaces;
 using System.Linq;
 using System.Threading.Tasks;
 
+
 namespace OniBot.Behaviors
 {
     public class ChatbotBehavior : IBotBehavior
     {
         private DiscordSocketClient _client;
-        private PersonalityForge _forge;
+        private CleverbotSession _cleverBot;
         private ILogger _logger;
         private BotConfig _globalConfig;
         private ChatConfig _config;
@@ -28,7 +29,7 @@ namespace OniBot.Behaviors
 
         public Task RunAsync()
         {
-            _forge = new PersonalityForge(_globalConfig.ForgeSecret, _globalConfig.ForgeKey, _globalConfig.BotId);
+            _cleverBot = new CleverbotSession(_globalConfig.CleverbotKey);
             _client.MessageReceived += OnMessageReceivedAsync;
 
             return Task.CompletedTask;
@@ -65,20 +66,15 @@ namespace OniBot.Behaviors
             }
 
             var message = arg.Content.Replace(_client.CurrentUser.Mention, string.Empty).Trim();
-            var response = await _forge.SendAsync(arg.Author.Username, message);
+            var response = await _cleverBot.GetResponseAsync(message);
 
-            if (response.Success == 1)
+            if (string.IsNullOrWhiteSpace(response.errorLine))
             {
-                if (response.Message.Text.ToLower().Contains("nigger"))
-                {
-                    await arg.Channel.SendMessageAsync("7-second tape delay.");
-                    return;
-                }
-                await arg.Channel.SendMessageAsync(response.Message.Text);
+                await arg.Channel.SendMessageAsync(response.Response);
             }
             else
             {
-                _logger.LogInformation(response.ToJson());
+                _logger.LogInformation(response.errorLine);
                 await arg.Channel.SendMessageAsync("I forgot what we were talking about.");
             }
         }

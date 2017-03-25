@@ -9,8 +9,6 @@ namespace OniBot.Interfaces
         public int MessageCacheSize { get; set; }
         public string Token { get; set; }
         public char PrefixChar { get; set; }
-        public string ForgeKey { get; set; }
-        public string ForgeSecret { get; set; }
-        public int BotId { get; set; }
+        public string CleverbotKey { get; set; }
     }
 }
