@@ -63,12 +63,17 @@ namespace OniBot.Behaviors
             {
                 return;
             }
-            
+
             var message = arg.Content.Replace(_client.CurrentUser.Mention, string.Empty).Trim();
             var response = await _forge.SendAsync(arg.Author.Username, message);
 
             if (response.Success == 1)
             {
+                if (response.Message.Text.ToLower().Contains("nigger"))
+                {
+                    await arg.Channel.SendMessageAsync("7-second tape delay.");
+                    return;
+                }
                 await arg.Channel.SendMessageAsync(response.Message.Text);
             }
             else
