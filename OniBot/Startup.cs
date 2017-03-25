@@ -1,7 +1,9 @@
 ﻿using Discord.Commands;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Console;
 using OniBot.Infrastructure;
+using OniBot.Infrastructure.Logger;
 using OniBot.Interfaces;
 using System;
 using System.Reflection;
@@ -40,7 +42,7 @@ namespace OniBot
             var config = new BotConfig();
             ConfigurationBinder.Bind(Configuration, config);
 
-            loggerFactory.AddConsole(LogLevel.Trace);
+            loggerFactory.AddCustomConsole(LogLevel.Trace);
             if (Configuration["environment"] == "development")
             {
                 loggerFactory.AddDebug(LogLevel.Trace);
