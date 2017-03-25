@@ -11,5 +11,6 @@ namespace OniBot.Interfaces
         public char PrefixChar { get; set; }
         public string ForgeKey { get; set; }
         public string ForgeSecret { get; set; }
+        public int BotId { get; set; }
     }
 }
