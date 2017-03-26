@@ -5,6 +5,7 @@ using Microsoft.Extensions.Logging;
 using OniBot.CommandConfigs;
 using OniBot.Interfaces;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 
@@ -17,6 +18,8 @@ namespace OniBot.Behaviors
         private ILogger _logger;
         private BotConfig _globalConfig;
         private ChatConfig _config;
+        private static object conversationId = null;
+        
 
         public ChatbotBehavior(IDiscordClient client, ILogger logger, BotConfig globalConfig, ChatConfig config)
         {
@@ -29,7 +32,7 @@ namespace OniBot.Behaviors
 
         public Task RunAsync()
         {
-            _cleverBot = new CleverbotSession(_globalConfig.CleverbotKey);
+            _cleverBot = new CleverbotSession(_globalConfig.CleverbotKey, false);
             _client.MessageReceived += OnMessageReceivedAsync;
 
             return Task.CompletedTask;
@@ -64,10 +67,9 @@ namespace OniBot.Behaviors
             {
                 return;
             }
-
-            var message = arg.Content.Replace(_client.CurrentUser.Mention, string.Empty)
-                .Replace(_client.CurrentUser.Mention.Replace("!", string.Empty), string.Empty).Trim();
-            var response = await _cleverBot.GetResponseAsync(message);
+            
+            var message = arg.Content.Replace("!", string.Empty).Replace(_client.CurrentUser.Mention, string.Empty).Trim();
+            var response = await _cleverBot.GetResponseAsync(message, conversationId?.ToString() ?? string.Empty);
 
             if (string.IsNullOrWhiteSpace(response.errorLine))
             {
@@ -78,6 +80,7 @@ namespace OniBot.Behaviors
                 _logger.LogInformation(response.errorLine);
                 await arg.Channel.SendMessageAsync("I forgot what we were talking about.");
             }
+            Interlocked.Exchange(ref conversationId, response.ConversationId);
         }
     }
 }

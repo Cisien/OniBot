@@ -67,7 +67,7 @@ namespace OniBot.Commands
                 .WithFooter(a => a.WithText($"{sw.ElapsedMilliseconds}ms"));
 
             embed.AddField(a => a.WithName("Code").WithValue(Format.Code(code, "cs")));
-            embed.AddField(a => a.WithName($"Result: {result?.GetType()?.Name ?? "null"}").WithValue(Format.Code($"{result ?? " "}")));
+            embed.AddField(a => a.WithName($"Result: {result?.GetType()?.Name ?? "null"}").WithValue(Format.Code($"{result ?? " "}", "txt")));
             
             await Context.Channel.SendMessageAsync(string.Empty, embed: embed).ConfigureAwait(false);
         }
