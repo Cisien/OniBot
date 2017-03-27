@@ -88,7 +88,7 @@ namespace OniBot.Infrastructure
 
 
         /// <inheritdoc />
-        public T Get<T>()
+        public T Get<T>() where T : class
         {
             return (T)Get(typeof(T));
         }
@@ -107,7 +107,7 @@ namespace OniBot.Infrastructure
         }
 
         /// <inheritdoc />
-        public bool TryGet<T>(out T result)
+        public bool TryGet<T>(out T result) where T : class
         {
             object untypedResult;
             if (TryGet(typeof(T), out untypedResult))

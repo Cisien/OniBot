@@ -6,6 +6,7 @@ using Microsoft.Extensions.Logging;
 using OniBot.Interfaces;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -47,7 +48,7 @@ namespace OniBot
             
             client.Ready += OnReadyAsync;
             client.Log += OnLogAsync;
-            client.Disconnected += OnDisconnectedAsync;
+            client.LoggedOut += OnLoggedOutAsync;
 
             await _commandHandler.InstallAsync(_depMap).ConfigureAwait(false);
             await _behaviorService.InstallAsync().ConfigureAwait(false);
@@ -63,14 +64,13 @@ namespace OniBot
             }
         }
 
-        private async Task OnDisconnectedAsync(Exception arg)
+        private async Task OnLoggedOutAsync()
         {
             await _behaviorService.StopAsync().ConfigureAwait(false);
         }
-
+        
         private async Task OnReadyAsync()
         {
-            Console.WriteLine(client.CurrentUser.Username);
             await _behaviorService.RunAsync().ConfigureAwait(false);
         }
 
@@ -138,6 +138,7 @@ namespace OniBot
 
         public void Dispose()
         {
+            client?.SetStatusAsync(UserStatus.Offline)?.AsSync(false);
             client?.LogoutAsync()?.AsSync(false);
             client?.StopAsync()?.AsSync(false);
         }

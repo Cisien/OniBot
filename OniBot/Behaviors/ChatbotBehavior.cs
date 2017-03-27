@@ -44,41 +44,41 @@ namespace OniBot.Behaviors
             return Task.CompletedTask;
         }
 
-        private async Task OnMessageReceivedAsync(SocketMessage arg)
+        private async Task OnMessageReceivedAsync(SocketMessage msg)
         {
-            if (arg.Author.IsBot)
+            if (msg.Author.IsBot)
             {
                 return;
             }
 
-            if (!arg.MentionedUsers.Any(a => a.Mention == _client.CurrentUser.Mention))
+            if (!msg.MentionedUsers.Any(a => a.Id == _client.CurrentUser.Id))
             {
                 return;
             }
 
-            if (!(arg.Channel is SocketGuildChannel guildChannel))
+            if (!(msg.Channel is SocketGuildChannel guildChannel))
             {
                 return;
             }
 
             _config.Reload(guildChannel.Guild.Id);
 
-            if (!_config.AllowedChannels.Contains(arg.Channel.Id))
+            if (!_config.AllowedChannels.Contains(msg.Channel.Id))
             {
                 return;
             }
             
-            var message = arg.Content.Replace("!", string.Empty).Replace(_client.CurrentUser.Mention, string.Empty).Trim();
+            var message = msg.Content.Replace("!", string.Empty).Replace(_client.CurrentUser.Mention, string.Empty).Trim();
             var response = await _cleverBot.GetResponseAsync(message, conversationId?.ToString() ?? string.Empty);
 
             if (string.IsNullOrWhiteSpace(response.errorLine))
             {
-                await arg.Channel.SendMessageAsync(response.Response);
+                await msg.Channel.SendMessageAsync(response.Response);
             }
             else
             {
                 _logger.LogInformation(response.errorLine);
-                await arg.Channel.SendMessageAsync("I forgot what we were talking about.");
+                await msg.Channel.SendMessageAsync("I forgot what we were talking about.");
             }
             Interlocked.Exchange(ref conversationId, response.ConversationId);
         }

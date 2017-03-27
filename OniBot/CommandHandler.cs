@@ -168,7 +168,6 @@ namespace OniBot
                     await context.User.SendMessageAsync(pResult.ErrorReason).ConfigureAwait(false);
                     break;
             }
-
 #if DEBUG
             if (!result.IsSuccess)
             {

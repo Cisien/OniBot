@@ -4,6 +4,7 @@ using Newtonsoft.Json;
 using OniBot.CommandConfigs;
 using OniBot.Infrastructure;
 using OniBot.Interfaces;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace OniBot.Commands
@@ -96,7 +97,7 @@ namespace OniBot.Commands
         )
         {
             _config.Reload(Context.Guild.Id);
-                        
+
             if (!_config.Commands.ContainsKey(command))
             {
                 await this.SafeReplyAsync("I'm a little teapot!").ConfigureAwait(false);
@@ -104,6 +105,17 @@ namespace OniBot.Commands
             }
 
             await this.SafeReplyAsync(_config.Commands[command]).ConfigureAwait(false);
+        }
+
+        [Command("tags")]
+        [Summary("Lists all of the tags available")]
+        public async Task ListTags()
+        {
+            _config.Reload(Context.Guild.Id);
+
+            var tags = string.Join(", ", _config.Commands.Keys.Cast<string>());
+
+            await ReplyAsync(tags);
         }
     }
 }
