@@ -40,6 +40,7 @@ namespace OniBot.Behaviors
                 throw new InvalidOperationException("Client is not valid");
             }
 
+            _client.MessageReceived -= OnMessageReceived;
             _client.MessageReceived += OnMessageReceived;
             return Task.CompletedTask;
         }

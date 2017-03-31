@@ -33,6 +33,7 @@ namespace OniBot.Behaviors
         public Task RunAsync()
         {
             _cleverBot = new CleverbotSession(_globalConfig.CleverbotKey, false);
+            _client.MessageReceived -= OnMessageReceivedAsync;
             _client.MessageReceived += OnMessageReceivedAsync;
 
             return Task.CompletedTask;

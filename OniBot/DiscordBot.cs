@@ -1,13 +1,11 @@
 ﻿using Discord;
-using Discord.Audio;
 using Discord.Commands;
 using Discord.WebSocket;
 using Microsoft.Extensions.Logging;
 using OniBot.Interfaces;
 using System;
 using System.Collections.Generic;
-using System.IO;
-using System.Linq;
+using System.Reflection;
 using System.Threading.Tasks;
 
 namespace OniBot
@@ -15,31 +13,32 @@ namespace OniBot
     class DiscordBot : IDiscordBot
     {
         private DiscordSocketClient client;
-        private static ICommandHandler _commandHandler;
+        private  ICommandHandler _commandHandler;
         private static Random random = new Random();
-        private Dictionary<string, IBotBehavior> _behaviors = new Dictionary<string, IBotBehavior>();
+        private Dictionary<string, IBotBehavior> _behaviors;
         private IDependencyMap _depMap;
         private BehaviorService _behaviorService;
         private static ILogger _logger;
 
-        public static BotConfig Configuration { get; set; }
+        private BotConfig _configuration;
 
         public DiscordBot(BotConfig config, ICommandHandler commandHandler, IDependencyMap depMap, BehaviorService behaviorService, ILogger logger)
         {
-            Configuration = config;
+            _configuration = config;
             _depMap = depMap;
             _commandHandler = commandHandler;
             _behaviorService = behaviorService;
             _logger = logger;
+            _behaviors = new Dictionary<string, IBotBehavior>();
         }
 
         public async Task RunBotAsync()
         {
             client = new DiscordSocketClient(new DiscordSocketConfig
             {
-                LogLevel = Configuration.LogLevel,
-                AlwaysDownloadUsers = Configuration.AlwaysDownloadUsers,
-                MessageCacheSize = Configuration.MessageCacheSize,
+                LogLevel = _configuration.LogLevel,
+                AlwaysDownloadUsers = _configuration.AlwaysDownloadUsers,
+                MessageCacheSize = _configuration.MessageCacheSize,
                 DefaultRetryMode = RetryMode.AlwaysRetry
             });
 
@@ -83,7 +82,7 @@ namespace OniBot
                 currentAttempt++;
                 try
                 {
-                    await client.LoginAsync(TokenType.Bot, Configuration.Token).ConfigureAwait(false);
+                    await client.LoginAsync(TokenType.Bot, _configuration.Token).ConfigureAwait(false);
                     await client.StartAsync().ConfigureAwait(false);
                     break;
                 }
