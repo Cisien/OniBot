@@ -1,5 +1,6 @@
 ﻿using Discord.Commands;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Console;
 using OniBot.Infrastructure;
@@ -37,7 +38,7 @@ namespace OniBot
             Configuration = configuration;
         }
 
-        public void ConfigureServices(ServiceProviderDependencyMap services, ILoggerFactory loggerFactory)
+        public void ConfigureServices(IServiceCollection services, ILoggerFactory loggerFactory)
         {
             var config = new BotConfig();
             ConfigurationBinder.Bind(Configuration, config);
@@ -49,8 +50,8 @@ namespace OniBot
             }
 
             var logger = loggerFactory.CreateLogger("Common");
-            services.Add(logger);
-            RegisterConfigInstances(services);
+            services.AddSingleton(logger);
+            RegisterConfigInstances(services, logger);
 
             var commandService = new CommandService(new CommandServiceConfig
             {
@@ -63,12 +64,10 @@ namespace OniBot
 
             var behaviorService = new BehaviorService(services, logger);
             var commandHanlder = new CommandHandler(commandService, config, logger);
-
-            services.Add(services);
-            services.Add<IDependencyMap>(services);
-            services.Add(config);
-            services.Add(behaviorService);
-            services.Add<ICommandHandler>(commandHanlder);
+            
+            services.AddSingleton(config);
+            services.AddSingleton(behaviorService);
+            services.AddSingleton<ICommandHandler>(commandHanlder);
         }
 
         public void Configure()
@@ -76,10 +75,8 @@ namespace OniBot
 
         }
 
-        private void RegisterConfigInstances(IDependencyMap map)
+        private void RegisterConfigInstances(IServiceCollection map, ILogger logger)
         {
-            var spMap = map as ServiceProviderDependencyMap;
-            var logger = spMap.Get<ILogger>();
             var assembly = Assembly.GetEntryAssembly();
             var interfaceType = typeof(CommandConfig);
 
@@ -96,9 +93,9 @@ namespace OniBot
                         continue;
                     }
 
-                    spMap.AddTransientFactory(type, () =>
+                    map.AddTransient(type, (sp) =>
                     {
-                        var instance = Activator.CreateInstance(type) as CommandConfig;
+                        var instance = ActivatorUtilities.CreateInstance<CommandConfig>(sp, type);
                         instance.Reload();
                         return instance;
                     });

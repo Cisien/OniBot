@@ -5,17 +5,17 @@ using OniBot.Interfaces;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
-using System.Text;
 using System.Collections.Generic;
 using OniBot.Infrastructure.Help;
 using Microsoft.Extensions.Logging;
 using System;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace OniBot
 {
     internal class CommandHandler : ICommandHandler
     {
-        private IDependencyMap _map;
+        private IServiceProvider _map;
         private DiscordSocketClient _client;
         private CommandService _commands;
         private BotConfig _config;
@@ -28,10 +28,10 @@ namespace OniBot
             _logger = logger;
         }
 
-        public async Task InstallAsync(IDependencyMap map)
+        public async Task InstallAsync(IServiceCollection map)
         {
-            _map = map;
-            _client = _map.Get<DiscordSocketClient>();
+            _map = map.BuildServiceProvider();
+            _client = (DiscordSocketClient)_map.GetService(typeof(DiscordSocketClient));
 
             await LoadAllModules().ConfigureAwait(false);
 

@@ -11,9 +11,9 @@ namespace OniBot.Infrastructure
 {
     class ConfigurationPreconditionAttribute : PreconditionAttribute
     {
-        public override async Task<PreconditionResult> CheckPermissions(ICommandContext context, CommandInfo command, IDependencyMap map)
+        public override async Task<PreconditionResult> CheckPermissions(ICommandContext context, CommandInfo command, IServiceProvider map)
         {
-            var logger = map.Get<ILogger>();
+            var logger = (ILogger)map.GetService(typeof(ILogger));
             if (!(context is SocketCommandContext ctx))
             {
                 return PreconditionResult.FromError("Command must have a socket context");
@@ -31,7 +31,7 @@ namespace OniBot.Infrastructure
                 return PreconditionResult.FromSuccess();
             }
 
-            var config = map.Get<PermissionsConfig>();
+            var config = (PermissionsConfig)map.GetService(typeof(PermissionsConfig));
             config.Reload(context.Guild.Id);
 
             var roleIds = user.Roles.Select(a => a.Id);
@@ -65,5 +65,6 @@ namespace OniBot.Infrastructure
             logger.LogInformation($"User does not have permission to command: {context.User.Username}: {command.Aliases.First()}");
             return PreconditionResult.FromError("You do not have permission to run this command");
         }
+
     }
 }

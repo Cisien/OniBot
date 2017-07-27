@@ -24,13 +24,13 @@ namespace OniBot
 
         public static async Task<IUserMessage> SendMessageAsync(this IUser user, string message)
         {
-            var dmChannel = await user.CreateDMChannelAsync().ConfigureAwait(false);
+            var dmChannel = await user.GetOrCreateDMChannelAsync().ConfigureAwait(false);
             return await dmChannel.SendMessageAsync(message).ConfigureAwait(false);
         }
 
         public static async Task<IUserMessage> SendFileAsync(this IUser user, byte[] file, string message = null)
         {
-            var dmChannel = await user.CreateDMChannelAsync().ConfigureAwait(false);
+            var dmChannel = await user.GetOrCreateDMChannelAsync().ConfigureAwait(false);
 
             using (var ms = new MemoryStream(file))
             {
@@ -41,7 +41,7 @@ namespace OniBot
 
         public static async Task<IUserMessage> SendEmbedAsync(this IUser user, Embed embed, string message = null)
         {
-            var dmChannel = await user.CreateDMChannelAsync().ConfigureAwait(false);
+            var dmChannel = await user.GetOrCreateDMChannelAsync().ConfigureAwait(false);
 
             return await dmChannel.SendMessageAsync(message, embed: embed).ConfigureAwait(false);
         }

@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using OniBot.Infrastructure;
 using System.Collections.Generic;
@@ -19,7 +20,7 @@ namespace OniBot
             return builder;
         }
 
-        public static HostingEnvironment UseDependencyMap(this HostingEnvironment builder, ServiceProviderDependencyMap map)
+        public static HostingEnvironment UseDependencyMap(this HostingEnvironment builder, IServiceCollection map)
         {
             builder.Map = map;
             return builder;

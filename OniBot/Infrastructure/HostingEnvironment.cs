@@ -13,7 +13,7 @@ namespace OniBot.Infrastructure
     {
         public string Environment { get; private set; } = "production";
         public Type Startup { get; set; }
-        public ServiceProviderDependencyMap Map { get; set; }
+        public IServiceCollection Map { get; set; }
         public ILoggerFactory LoggerFactory { get; set; }
         public Type Bot { get; set; }
         public IEnumerable<KeyValuePair<string, string>> CommandLineOptions { get; set; }
@@ -25,7 +25,7 @@ namespace OniBot.Infrastructure
         /// <returns>an awaitable task that will continue to run for the lifetime of the bot.</returns>
         public async Task RunAsync(CancellationToken token)
         {
-            var serviceProvider = Map.GetProvider();
+            var serviceProvider = Map.BuildServiceProvider();
             var environmentOptions = CommandLineOptions.Where(a => a.Key == "environment");
             if (environmentOptions.Count() == 1)
             {
@@ -49,11 +49,11 @@ namespace OniBot.Infrastructure
             }
 
             configureServicesMethod.Invoke(startup, new object[] { Map, LoggerFactory });
-            serviceProvider = Map.GetProvider();
+            serviceProvider = Map.BuildServiceProvider();
             configureMethod.Invoke(startup, GetMethodParameterInstances(configureMethod));
 
-            var bot = ActivatorUtilities.CreateInstance(serviceProvider, Bot) as IDiscordBot;
-            Map.Add(bot);
+            var bot = ActivatorUtilities.CreateInstance<IDiscordBot>(serviceProvider, Bot);
+            Map.AddSingleton(bot);
 
             using (bot)
             {
@@ -71,10 +71,11 @@ namespace OniBot.Infrastructure
         private object[] GetMethodParameterInstances(MethodInfo method)
         {
             var parameters = new List<object>();
-
+            var provider = Map.BuildServiceProvider();
             foreach (var param in method.GetParameters())
             {
-                if (!Map.TryGet(param.ParameterType, out object paramToAdd))
+                object paramToAdd = provider.GetService(param.ParameterType);
+                if (paramToAdd == null)
                 {
                     throw new InvalidOperationException($"{param.ParameterType} is not registered in DI.");
                 }

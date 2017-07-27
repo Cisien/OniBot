@@ -1,6 +1,7 @@
 ﻿using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using OniBot.Interfaces;
 using System;
@@ -16,13 +17,13 @@ namespace OniBot
         private  ICommandHandler _commandHandler;
         private static Random random = new Random();
         private Dictionary<string, IBotBehavior> _behaviors;
-        private IDependencyMap _depMap;
+        private IServiceCollection _depMap;
         private BehaviorService _behaviorService;
         private static ILogger _logger;
 
         private BotConfig _configuration;
 
-        public DiscordBot(BotConfig config, ICommandHandler commandHandler, IDependencyMap depMap, BehaviorService behaviorService, ILogger logger)
+        public DiscordBot(BotConfig config, ICommandHandler commandHandler, IServiceCollection depMap, BehaviorService behaviorService, ILogger logger)
         {
             _configuration = config;
             _depMap = depMap;
@@ -42,8 +43,8 @@ namespace OniBot
                 DefaultRetryMode = RetryMode.AlwaysRetry
             });
 
-            _depMap.Add<IDiscordClient>(client);
-            _depMap.Add(client);
+            _depMap.AddSingleton<IDiscordClient>(client);
+            _depMap.AddSingleton(client);
             
             client.Ready += OnReadyAsync;
             client.Log += OnLogAsync;

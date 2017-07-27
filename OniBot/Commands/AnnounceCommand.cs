@@ -42,7 +42,7 @@ namespace OniBot.Commands
 
         [Command("remove")]
         [Summary("Removes a channel from announcing presence updates.")]
-        public async Task Remove([Summary("The channel to remove."),] SocketVoiceChannel channel)
+        public async Task Remove([Summary("The channel to remove.")] SocketVoiceChannel channel)
         {
             await Configuration.Modify<AnnounceConfig>(_config.ConfigKey, a =>
             {

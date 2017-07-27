@@ -3,6 +3,7 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace OniBot
 {
@@ -27,7 +28,7 @@ namespace OniBot
             };
 
             var host = new HostingEnvironment()
-                .UseDependencyMap(new ServiceProviderDependencyMap())
+                .UseDependencyMap(new ServiceCollection())
                 .UseCommandLineOptions(args)
                 .UseLoggerFactory(new LoggerFactory())
                 .UseStartup<Startup>()
