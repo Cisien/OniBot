@@ -23,6 +23,7 @@ namespace OniBot
         public static HostingEnvironment UseDependencyMap(this HostingEnvironment builder, IServiceCollection map)
         {
             builder.Map = map;
+            map.AddSingleton(map);
             return builder;
         }
 

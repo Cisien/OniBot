@@ -95,7 +95,7 @@ namespace OniBot
 
                     map.AddTransient(type, (sp) =>
                     {
-                        var instance = ActivatorUtilities.CreateInstance<CommandConfig>(sp, type);
+                        var instance = ActivatorUtilities.CreateInstance(sp, type) as CommandConfig;
                         instance.Reload();
                         return instance;
                     });

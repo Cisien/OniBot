@@ -66,16 +66,23 @@ namespace OniBot.Behaviors
 
             using (var httpClient = new HttpClient())
             {
-                var data = await httpClient.GetByteArrayAsync(avatar.Value).ConfigureAwait(false);
-                using (var ms = new MemoryStream(data))
+                try
                 {
-                    ms.Position = 0;
-                    await client.CurrentUser.ModifyAsync(a =>
+                    var data = await httpClient.GetByteArrayAsync(avatar.Value).ConfigureAwait(false);
+                    using (var ms = new MemoryStream(data))
                     {
-                        a.Avatar = new Image(ms);
-                    }).ConfigureAwait(false);
+                        ms.Position = 0;
+                        await client.CurrentUser.ModifyAsync(a =>
+                        {
+                            a.Avatar = new Image(ms);
+                        }).ConfigureAwait(false);
 
-                    _logger.LogInformation($"Avatar image set to {avatar.Key}: {avatar.Value}");
+                        _logger.LogInformation($"Avatar image set to {avatar.Key}: {avatar.Value}");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogCritical(new EventId(0), ex, ex.Message);
                 }
             }
             _logger.LogDebug("Update Avatar done");

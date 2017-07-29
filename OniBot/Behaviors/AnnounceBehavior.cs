@@ -2,9 +2,6 @@
 using Microsoft.Extensions.Logging;
 using OniBot.CommandConfigs;
 using OniBot.Interfaces;
-using System;
-using System.Collections.Generic;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace OniBot.Behaviors
@@ -93,13 +90,13 @@ namespace OniBot.Behaviors
                 return;
             }
 
-            if (_config.VoiceChannels.Contains(after.VoiceChannel.Id))
+            if (after.VoiceChannel != null &&_config.VoiceChannels.Contains(after.VoiceChannel.Id))
             {
-                await channel.SendMessageAsync($"Hi {name}!", true);
+                await channel.SendMessageAsync($"{name} joined {after.VoiceChannel.Name}!", true);
             }
-            else if (_config.VoiceChannels.Contains(before.VoiceChannel.Id))
+            else if (guildUser.VoiceState == null || _config.VoiceChannels.Contains(before.VoiceChannel.Id))
             {
-                await channel.SendMessageAsync($"Goodbye {name}", true);
+                await channel.SendMessageAsync($"{name} left {before.VoiceChannel.Name}", true);
             }
         }
 

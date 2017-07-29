@@ -10,13 +10,13 @@ namespace OniBot
 {
     class BehaviorService
     {
-        private IServiceProvider _map;
+        private IServiceCollection _map;
         private Dictionary<string, IBotBehavior> _behaviors = new Dictionary<string, IBotBehavior>();
         private ILogger _logger;
 
         public BehaviorService(IServiceCollection map, ILogger logger)
         {
-            _map = map.BuildServiceProvider();
+            _map = map;
             _logger = logger;
         }
 
@@ -51,8 +51,9 @@ namespace OniBot
             }
         }
 
-        private void LoadBehaviors(IServiceProvider map)
+        private void LoadBehaviors(IServiceCollection map)
         {
+            var provider = map.BuildServiceProvider();
             var assembly = Assembly.GetEntryAssembly();
             var interfaceType = typeof(IBotBehavior);
 
@@ -69,7 +70,7 @@ namespace OniBot
                         continue;
                     }
 
-                    var instance = ActivatorUtilities.CreateInstance<IBotBehavior>(map, type);
+                    var instance = ActivatorUtilities.CreateInstance(provider, type) as IBotBehavior;
                     if (instance == null)
                     {
                         _logger.LogError($"Unable to create instance of behavior {type.FullName}");

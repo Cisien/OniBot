@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using Discord.WebSocket;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
@@ -31,7 +32,7 @@ namespace OniBot.Infrastructure
             {
                 Environment = environmentOptions.Single().Value;
             }
-
+            
             var startup = ActivatorUtilities.CreateInstance(serviceProvider, Startup, this);
 
             var sti = Startup.GetTypeInfo();
@@ -52,7 +53,7 @@ namespace OniBot.Infrastructure
             serviceProvider = Map.BuildServiceProvider();
             configureMethod.Invoke(startup, GetMethodParameterInstances(configureMethod));
 
-            var bot = ActivatorUtilities.CreateInstance<IDiscordBot>(serviceProvider, Bot);
+            var bot = ActivatorUtilities.CreateInstance(serviceProvider, Bot) as IDiscordBot;
             Map.AddSingleton(bot);
 
             using (bot)

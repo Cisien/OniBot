@@ -142,7 +142,7 @@ namespace OniBot
             {
                 return;
             }
-
+            
             int argPos = 0;
             if (!(message.HasMentionPrefix(_client.CurrentUser, ref argPos) || message.HasCharPrefix(_config.PrefixChar, ref argPos)))
             {
