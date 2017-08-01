@@ -11,7 +11,7 @@ before_build:
   - dotnet restore OniBot\OniBot.csproj --configfile ..\.nuget\nuget.config
   - 7z a deploy-script.zip before-deploy.ps1
 build:
-  project: CSDiscord.sln
+  project: OniBot.sln
   verbosity: minimal
 test: off  
 after_build:
@@ -20,7 +20,7 @@ after_build:
       if(-not [System.String]::IsNullOrWhitespace($env:APPVEYOR_PULL_REQUEST_NUMBER)) { $tag = "$tag-pr-${$env:APPVEYOR_PULL_REQUEST_NUMBER}" }
       if([System.String]::IsNullOrWhitespace($tag)) { $tag = "untagged" }
       docker login -u="$env:DOCKER_USER" -p="$env:DOCKER_PASS"
-      docker tag csdiscordservice cisien/onibot:$tag
+      docker tag onibot cisien/onibot:$tag
       docker push cisien/onibot:$tag
 artifacts:
   - path: deploy-script.zip
