@@ -1,36 +1,41 @@
 version: 1.0.{build}
 image: Visual Studio 2017
-
-install:
-- ps: choco install docker-compose
-- cmd: docker version
-
-before_build:
-- nuget restore OniBot.sln
-
-build:
-  project: OniBot.sln
-  verbosity: minimal
-
-platform: Any CPU
 configuration: Release
-
+platform: Any CPU
+pull_requests:
+  do_not_increment_build_number: true
+install:
+  - dotnet --info
+  - ps: choco install docker-compose
+before_build:
+  - dotnet restore OniBot\OniBot.csproj --configfile ..\.nuget\nuget.config
+  - 7z a deploy-script.zip before-deploy.ps1
+build:
+  project: CSDiscord.sln
+  verbosity: minimal
 test: off  
-
-artifacts:  
-- path: OniBot\bin\$(configuration)\netcoreapp1.1
-  name: Release
-
+after_build:
+  - ps: |
+      $tag = $env:APPVEYOR_REPO_BRANCH
+      if(-not [System.String]::IsNullOrWhitespace($env:APPVEYOR_PULL_REQUEST_NUMBER)) { $tag = "$tag-pr-${$env:APPVEYOR_PULL_REQUEST_NUMBER}" }
+      if([System.String]::IsNullOrWhitespace($tag)) { $tag = "untagged" }
+      docker login -u="$env:DOCKER_USER" -p="$env:DOCKER_PASS"
+      docker tag csdiscordservice cisien/onibot:$tag
+      docker push cisien/onibot:$tag
+artifacts:
+  - path: deploy-script.zip
+    name: deploy-script
 deploy:
-- provider: GitHub
-  auth_token:
-    secure: LpWUNFuHR3+5I1gSO10HZta7xDC3oY/WKzSTSFdc8y3axHbmy2Q92EWCssT7tgd/
-
+  - provider: Environment
+    name: docker
+    on:
+      branch: master
 environment:
   DOCKER_USER:
     secure: ry9x9cQ9gzMNaPOd45RSHQ==
   DOCKER_PASS:
     secure: AXXeju7g+0ZE1ZMW2TKcXfW6+CMT70ZDh5iWYE5Bg80=
-
-deploy_script:
- - ps: .\deploy.ps1
+  MeowBotToken:
+    secure: iuwvarj9VO+3Ngb4V/jTorl1YZVVowMNlPGalLYwREO/g7g/eqJ1MG7yaD+kkRS6myEz3nHJJAbmhH63h9x0kw==
+  OniBotToken:
+    secure: n4yT1iDd7LLLYhC4d0yX+ax8mCfcJ8co3sJEOtcxdWian9hGj+HNtFWp8yg3c4X3CB7ay5Nmp47wAShnFLqCfQ==
