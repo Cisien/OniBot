@@ -15,6 +15,6 @@ if (Enter-OncePerDeployment "install_docker_image")
 	docker rm OniBot
 	docker rm MeowBot
 	docker pull "cisien/onibot:$tag"
-	docker run -d -e "Token=$env:OniBotToken" --name OniBot -v onibot:c:\app\config "cisien/onibot:$tag"
-	docker run -d -e "Token=$env:MeowBotToken" --name MeowBot -v meowbot:c:\app\config "cisien/onibot:$tag"
+	docker run -d -e "Token=$env:OniBotToken" --name OniBot -v onibot:c:\app\config --restart=always "cisien/onibot:$tag"
+	docker run -d -e "Token=$env:MeowBotToken" --name MeowBot -v meowbot:c:\app\config --restart=always "cisien/onibot:$tag"
 }
