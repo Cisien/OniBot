@@ -101,9 +101,9 @@ namespace OniBot.Behaviors
             {
                 _logger.LogDebug("Sending message with attachment");
                 var image = await client.GetByteArrayAsync(message.Image).ConfigureAwait(false);
-                var extension = Path.GetExtension(message.Image);
+                var filename = $"{Guid.NewGuid()}.{Path.GetExtension(message.Image)}";
 
-                await arg.Channel.SendFileAsync(image, extension, message.Message).ConfigureAwait(false);
+                await arg.Channel.SendFileAsync(image, filename, message.Message).ConfigureAwait(false);
             }
 
             _messageToSendOn[channelId] = _random.Next(_config.MinMessages, _config.MaxMessages);
