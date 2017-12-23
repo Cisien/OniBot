@@ -93,11 +93,10 @@ namespace OniBot.Commands
         [Command("tag")]
         [Summary("Displays any content associated with the command")]
         public async Task CustomCommand(
-            [Summary("The command to execute")]string command
-        )
+            [Summary("The command to execute")]string command)
         {
             _config.Reload(Context.Guild.Id);
-
+            command = command.ToLower();
             if (!_config.Commands.ContainsKey(command))
             {
                 await this.SafeReplyAsync("I'm a little teapot!").ConfigureAwait(false);
@@ -113,7 +112,7 @@ namespace OniBot.Commands
         {
             _config.Reload(Context.Guild.Id);
 
-            var tags = string.Join(", ", _config.Commands.Keys.Cast<string>());
+            var tags = string.Join(", ", _config.Commands.Keys.Cast<string>().Select(a => a.ToLower()));
 
             await ReplyAsync(tags);
         }
