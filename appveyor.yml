@@ -8,7 +8,7 @@ install:
   - dotnet --info
   - ps: choco install docker-compose
 before_build:
-  - dotnet restore OniBot\OniBot.csproj --configfile ..\.nuget\nuget.config
+  - dotnet restore OniBot\OniBot.csproj --configfile .nuget\nuget.config
   - 7z a deploy-script.zip before-deploy.ps1
 build:
   project: OniBot.sln
