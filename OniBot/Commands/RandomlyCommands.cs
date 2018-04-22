@@ -4,6 +4,7 @@ using OniBot.Interfaces;
 using System.Linq;
 using System.Threading.Tasks;
 using OniBot.CommandConfigs;
+using System.Text;
 
 namespace OniBot.Commands
 {
@@ -24,7 +25,7 @@ namespace OniBot.Commands
         public async Task Show()
         {
             var configTxt = Configuration.GetJson<RandomlyConfig>(_config.ConfigKey, Context.Guild.Id);
-            await Context.User.SendMessageAsync($"```{configTxt}```").ConfigureAwait(false);
+            await Context.User.SendFileAsync(Encoding.UTF8.GetBytes(configTxt), "randomly.json").ConfigureAwait(false);
         }
 
         [Command("min")]

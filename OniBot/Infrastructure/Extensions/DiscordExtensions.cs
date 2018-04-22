@@ -28,14 +28,14 @@ namespace OniBot
             return await dmChannel.SendMessageAsync(message).ConfigureAwait(false);
         }
 
-        public static async Task<IUserMessage> SendFileAsync(this IUser user, byte[] file, string message = null)
+        public static async Task<IUserMessage> SendFileAsync(this IUser user, byte[] file, string filename = null)
         {
             var dmChannel = await user.GetOrCreateDMChannelAsync().ConfigureAwait(false);
 
             using (var ms = new MemoryStream(file))
             {
                 ms.Position = 0;
-                return await dmChannel.SendFileAsync(ms, message).ConfigureAwait(false);
+                return await dmChannel.SendFileAsync(ms, filename).ConfigureAwait(false);
             }
         }
 
