@@ -1,6 +1,5 @@
 ﻿using OniBot.Interfaces;
 using System.Threading.Tasks;
-using System.Threading;
 using Discord.WebSocket;
 using System.Net.Http;
 
@@ -8,7 +7,6 @@ namespace OniBot.Behaviors
 {
     class RssWatcherBehavior : IBotBehavior
     {
-        private static Timer _timer;
         private static HttpClient _client = new HttpClient();
 
         public string Name => nameof(RssWatcherBehavior);

@@ -20,10 +20,10 @@ namespace OniBot.Behaviors
         private static readonly HttpClient client = new HttpClient();
         private BotConfig _globalConfig;
         private DiscordSocketClient _client;
-        private ILogger _logger;
+        private ILogger<RandomlySendMessageBehavior> _logger;
         private static readonly object stateLock = new object();
 
-        public RandomlySendMessageBehavior(BotConfig config, IDiscordClient client, ILogger logger, RandomlyConfig randomlyConfig)
+        public RandomlySendMessageBehavior(BotConfig config, IDiscordClient client, ILogger<RandomlySendMessageBehavior> logger, RandomlyConfig randomlyConfig)
         {
             _globalConfig = config;
             _client = client as DiscordSocketClient;

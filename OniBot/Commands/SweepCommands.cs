@@ -20,14 +20,13 @@ namespace OniBot.Commands
 
         [Command("sweep")]
         [Summary("Cleans up the mess in the room")]
-        public async Task Sweep(
-            [Summary("The person or thing to sweep up")][Remainder] string target)
+        public async Task Sweep([Summary("The person or thing to sweep up")][Remainder] string target)
         {
-            var user = Context.User as SocketGuildUser;
-            if (user == null)
+            if (!(Context.User is SocketGuildUser user))
             {
                 return;
             }
+
             _config.Reload(Context.Guild.Id);
             var username = await user.GetUserName().ConfigureAwait(false);
             var hasEquiped = _config.Equiped.ContainsKey(user.Id);
@@ -38,11 +37,9 @@ namespace OniBot.Commands
 
         [Command("equip")]
         [Summary("Equips a broom to use for sweeping")]
-        public async Task Equip(
-            [Summary("The person or thing to equip as a broom")][Remainder] string weapon)
+        public async Task Equip([Summary("The person or thing to equip as a broom")][Remainder] string weapon)
         {
-            var user = Context.User as SocketGuildUser;
-            if (user == null)
+            if (!(Context.User is SocketGuildUser user))
             {
                 return;
             }
@@ -60,8 +57,7 @@ namespace OniBot.Commands
         [Summary("Sheathes the equiped broom")]
         public async Task Unequip()
         {
-            var user = Context.User as SocketGuildUser;
-            if (user == null)
+            if (!(Context.User is SocketGuildUser user))
             {
                 return;
             }

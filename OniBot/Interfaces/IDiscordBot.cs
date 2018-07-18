@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 
 namespace OniBot
 {
-    public interface IDiscordBot : IDisposable
+    public interface IDiscordBot
     {
         Task RunBotAsync();
     }

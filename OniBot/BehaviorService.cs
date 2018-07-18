@@ -8,21 +8,21 @@ using System.Threading.Tasks;
 
 namespace OniBot
 {
-    class BehaviorService
+    public class BehaviorService: IBehaviorService
     {
-        private IServiceCollection _map;
-        private Dictionary<string, IBotBehavior> _behaviors = new Dictionary<string, IBotBehavior>();
-        private ILogger _logger;
+        private readonly IServiceProvider _provider;
+        private readonly Dictionary<string, IBotBehavior> _behaviors = new Dictionary<string, IBotBehavior>();
+        private readonly ILogger<BehaviorService> _logger;
 
-        public BehaviorService(IServiceCollection map, ILogger logger)
+        public BehaviorService(IServiceProvider provider, ILogger<BehaviorService> logger)
         {
-            _map = map;
+            _provider = provider;
             _logger = logger;
         }
 
         public Task InstallAsync()
         {
-            LoadBehaviors(_map);
+            LoadBehaviors();
 
             return Task.CompletedTask;
         }
@@ -51,9 +51,9 @@ namespace OniBot
             }
         }
 
-        private void LoadBehaviors(IServiceCollection map)
+        private void LoadBehaviors()
         {
-            var provider = map.BuildServiceProvider();
+
             var assembly = Assembly.GetEntryAssembly();
             var interfaceType = typeof(IBotBehavior);
 
@@ -70,8 +70,7 @@ namespace OniBot
                         continue;
                     }
 
-                    var instance = ActivatorUtilities.CreateInstance(provider, type) as IBotBehavior;
-                    if (instance == null)
+                    if (!(ActivatorUtilities.CreateInstance(_provider, type) is IBotBehavior instance))
                     {
                         _logger.LogError($"Unable to create instance of behavior {type.FullName}");
                         continue;

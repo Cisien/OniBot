@@ -62,7 +62,11 @@ namespace OniBot.Infrastructure
             lock (_fileReadWriteLock)
             {
                 var configFile = Path.Combine(".", "config", guild?.ToString() ?? string.Empty, $"{key}.json");
-
+                var directory = Path.Combine(".", "config", guild?.ToString() ?? string.Empty);
+                if (!Directory.Exists(directory))
+                {
+                    Directory.CreateDirectory(directory);
+                }
                 var config = JsonConvert.SerializeObject(data, Formatting.Indented);
                 File.WriteAllText(configFile, config);
             }

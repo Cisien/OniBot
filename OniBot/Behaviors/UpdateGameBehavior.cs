@@ -17,10 +17,10 @@ namespace OniBot.Behaviors
         private static Random _random = new Random();
         private DiscordSocketClient _client;
 
-        private ILogger _logger;
+        private ILogger<RandomlySendMessageBehavior> _logger;
         private GamesConfig _config;
 
-        public UpdateGameBehavior(IDiscordClient client, ILogger logger, GamesConfig config)
+        public UpdateGameBehavior(IDiscordClient client, ILogger<RandomlySendMessageBehavior> logger, GamesConfig config)
         {
             _client = client as DiscordSocketClient;
             _logger = logger;

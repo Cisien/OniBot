@@ -13,7 +13,7 @@ namespace OniBot.Infrastructure
     {
         public override async Task<PreconditionResult> CheckPermissions(ICommandContext context, CommandInfo command, IServiceProvider map)
         {
-            var logger = (ILogger)map.GetService(typeof(ILogger));
+            var logger = (ILogger<ConfigurationPreconditionAttribute>)map.GetService(typeof(ILogger<ConfigurationPreconditionAttribute>));
             if (!(context is SocketCommandContext ctx))
             {
                 return PreconditionResult.FromError("Command must have a socket context");

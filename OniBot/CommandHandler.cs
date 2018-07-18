@@ -9,31 +9,32 @@ using System.Collections.Generic;
 using OniBot.Infrastructure.Help;
 using Microsoft.Extensions.Logging;
 using System;
-using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 
 namespace OniBot
 {
     internal class CommandHandler : ICommandHandler
     {
-        private IServiceProvider _map;
         private DiscordSocketClient _client;
+        private IServiceProvider _provider;
+        private IHostingEnvironment _hostingEnv;
         private CommandService _commands;
         private BotConfig _config;
-        private ILogger _logger;
+        private ILogger<ICommandHandler> _logger;
 
-        public CommandHandler(CommandService commandService, BotConfig config, ILogger logger)
+        public CommandHandler(CommandService commandService, BotConfig config, ILogger<ICommandHandler> logger, DiscordSocketClient discordClient, IServiceProvider provider, IHostingEnvironment hostingEnv)
         {
             _commands = commandService;
             _config = config;
             _logger = logger;
+            _client = discordClient;
+            _provider = provider;
+            _hostingEnv = hostingEnv;
         }
 
-        public async Task InstallAsync(IServiceCollection map)
+        public async Task InstallAsync()
         {
-            _map = map.BuildServiceProvider();
-            _client = (DiscordSocketClient)_map.GetService(typeof(DiscordSocketClient));
-
-            await LoadAllModules().ConfigureAwait(false);
+            await LoadAllModules();
 
             _client.MessageReceived += OnMessageReceivedAsync;
             _client.MessageUpdated += OnMessageUpdatedAsync;
@@ -43,10 +44,10 @@ namespace OniBot
         {
             foreach (var module in _commands.Modules.ToList())
             {
-                await _commands.RemoveModuleAsync(module).ConfigureAwait(false);
+                await _commands.RemoveModuleAsync(module);
             }
 
-            await LoadAllModules().ConfigureAwait(false);
+            await LoadAllModules();
         }
 
         public async Task<List<Help>> BuildHelpAsync(ICommandContext context)
@@ -55,12 +56,12 @@ namespace OniBot
 
             foreach (var command in _commands.Modules.SelectMany(a => a.Commands))
             {
-                var permission = await command.CheckPreconditionsAsync(context, _map).ConfigureAwait(false);
+                var permission = await command.CheckPreconditionsAsync(context, _provider).ConfigureAwait(false);
                 if (!permission.IsSuccess)
                 {
                     continue;
                 }
-                
+
                 var help = new Help();
                 helpList.Add(help);
 
@@ -114,7 +115,7 @@ namespace OniBot
 
         private async Task LoadAllModules()
         {
-            var modules = await _commands.AddModulesAsync(Assembly.GetEntryAssembly()).ConfigureAwait(false);
+            var modules = await _commands.AddModulesAsync(Assembly.GetEntryAssembly());
             foreach (var module in modules)
             {
                 _logger.LogInformation($"Loaded command: {string.Join(", ", module.Commands.Select(a => a.Name))} from module {module.Name}");
@@ -133,8 +134,8 @@ namespace OniBot
 
         private async Task OnMessageReceivedAsync(SocketMessage newMessage)
         {
-            if(!(newMessage is SocketUserMessage message))
-            { 
+            if (!(newMessage is SocketUserMessage message))
+            {
                 return;
             }
 
@@ -142,7 +143,7 @@ namespace OniBot
             {
                 return;
             }
-            
+
             int argPos = 0;
             if (!(message.HasMentionPrefix(_client.CurrentUser, ref argPos) || message.HasCharPrefix(_config.PrefixChar, ref argPos)))
             {
@@ -153,7 +154,7 @@ namespace OniBot
 
             var context = new SocketCommandContext(_client, message);
 
-            var result = await _commands.ExecuteAsync(context, argPos, _map, MultiMatchHandling.Best).ConfigureAwait(false);
+            var result = await _commands.ExecuteAsync(context, argPos, _provider, MultiMatchHandling.Best).ConfigureAwait(false);
 
             switch (result)
             {
@@ -168,12 +169,11 @@ namespace OniBot
                     await context.User.SendMessageAsync(pResult.ErrorReason).ConfigureAwait(false);
                     break;
             }
-#if DEBUG
-            if (!result.IsSuccess)
+
+            if (_hostingEnv.IsDevelopment() && !result.IsSuccess)
             {
                 await message.Channel.SendMessageAsync($"Error: {result.ErrorReason}").ConfigureAwait(false);
             }
-#endif
         }
     }
 }

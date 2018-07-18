@@ -6,7 +6,6 @@ using Discord.WebSocket;
 using System.Threading;
 using System.Net.Http;
 using System.IO;
-using System.Linq;
 using OniBot.CommandConfigs;
 using Microsoft.Extensions.Logging;
 
@@ -21,9 +20,9 @@ namespace OniBot.Behaviors
         private DiscordSocketClient _client;
 
         private AvatarConfig _config;
-        private ILogger _logger;
+        private ILogger<AvatarRotatorBehavior> _logger;
 
-        public AvatarRotatorBehavior(IDiscordClient client, AvatarConfig config, ILogger logger)
+        public AvatarRotatorBehavior(IDiscordClient client, AvatarConfig config, ILogger<AvatarRotatorBehavior> logger)
         {
             _client = client as DiscordSocketClient;
             _config = config;

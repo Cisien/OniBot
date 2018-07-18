@@ -2,7 +2,7 @@
   "profiles": {
     "OniBot": {
       "commandName": "Project",
-      "commandLineArgs": "-environment development"
+      "commandLineArgs": "--environment development"
     }
   }
 }

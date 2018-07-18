@@ -1,8 +1,0 @@
-version: '3'
-
-services:
-  onibot:
-    image: onibot
-    build:
-      context: ./OniBot
-      dockerfile: Dockerfile

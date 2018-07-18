@@ -9,10 +9,10 @@ namespace OniBot.Behaviors
     public class AnnounceBehavior : IBotBehavior
     {
         private DiscordSocketClient _bot;
-        private ILogger _logger;
+        private ILogger<AnnounceBehavior> _logger;
         private AnnounceConfig _config;
 
-        public AnnounceBehavior(DiscordSocketClient bot, ILogger logger, AnnounceConfig config)
+        public AnnounceBehavior(DiscordSocketClient bot, ILogger<AnnounceBehavior> logger, AnnounceConfig config)
         {
             _bot = bot;
             _logger = logger;

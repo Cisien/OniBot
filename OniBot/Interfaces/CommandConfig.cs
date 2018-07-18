@@ -12,18 +12,8 @@ namespace OniBot.Interfaces
             var type = GetType();
             var typeInfo = type.GetTypeInfo();
             var properties = typeInfo.GetProperties(BindingFlags.Instance | BindingFlags.Public);
-            string path;
 
-            if (!guild.HasValue)
-            {
-                path = ConfigKey;
-            }
-            else
-            {
-                path = Path.Combine(guild.Value.ToString(), ConfigKey);
-            }
-
-            var config = Configuration.Get(type, path);
+            var config = Configuration.Get(type, ConfigKey, guild);
 
             foreach (var prop in properties)
             {
