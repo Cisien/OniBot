@@ -16,9 +16,7 @@ namespace OniBot.Commands
             [Summary("The user or random thing to blame")]string toBlame, 
             [Summary("[Optional] The reason for the blaming"), Remainder] string because = null)
         {
-            var user = Context.User as SocketGuildUser;
-
-            if (user == null)
+            if (!(Context.User is SocketGuildUser user))
             {
                 return;
             }

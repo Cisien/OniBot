@@ -10,19 +10,20 @@ using OniBot.Infrastructure.Help;
 using Microsoft.Extensions.Logging;
 using System;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace OniBot
 {
     internal class CommandHandler : ICommandHandler
     {
-        private DiscordSocketClient _client;
-        private IServiceProvider _provider;
-        private IHostingEnvironment _hostingEnv;
-        private CommandService _commands;
-        private BotConfig _config;
-        private ILogger<ICommandHandler> _logger;
+        private readonly DiscordSocketClient _client;
+        private readonly IServiceProvider _provider;
+        private readonly IHostEnvironment _hostingEnv;
+        private readonly CommandService _commands;
+        private readonly BotConfig _config;
+        private readonly ILogger<ICommandHandler> _logger;
 
-        public CommandHandler(CommandService commandService, BotConfig config, ILogger<ICommandHandler> logger, DiscordSocketClient discordClient, IServiceProvider provider, IHostingEnvironment hostingEnv)
+        public CommandHandler(CommandService commandService, BotConfig config, ILogger<ICommandHandler> logger, DiscordSocketClient discordClient, IServiceProvider provider, IHostEnvironment hostingEnv)
         {
             _commands = commandService;
             _config = config;
@@ -115,7 +116,7 @@ namespace OniBot
 
         private async Task LoadAllModules()
         {
-            var modules = await _commands.AddModulesAsync(Assembly.GetEntryAssembly());
+            var modules = await _commands.AddModulesAsync(Assembly.GetEntryAssembly(), _provider);
             foreach (var module in modules)
             {
                 _logger.LogInformation($"Loaded command: {string.Join(", ", module.Commands.Select(a => a.Name))} from module {module.Name}");
@@ -132,48 +133,52 @@ namespace OniBot
             await OnMessageReceivedAsync(newMessage).ConfigureAwait(false);
         }
 
-        private async Task OnMessageReceivedAsync(SocketMessage newMessage)
+        private Task OnMessageReceivedAsync(SocketMessage newMessage)
         {
             if (!(newMessage is SocketUserMessage message))
             {
-                return;
+                return Task.CompletedTask;
             }
 
             if (message.Author.IsBot)
             {
-                return;
+                return Task.CompletedTask;
             }
 
             int argPos = 0;
             if (!(message.HasMentionPrefix(_client.CurrentUser, ref argPos) || message.HasCharPrefix(_config.PrefixChar, ref argPos)))
             {
-                return;
+                return Task.CompletedTask;
             }
 
             _logger.LogInformation($"Command received: {newMessage.Content}");
 
             var context = new SocketCommandContext(_client, message);
 
-            var result = await _commands.ExecuteAsync(context, argPos, _provider, MultiMatchHandling.Best).ConfigureAwait(false);
+            _ = Task.Run(async () => {
+                using var scope = _provider.CreateScope();
+                var result = await _commands.ExecuteAsync(context, argPos, scope.ServiceProvider, MultiMatchHandling.Best).ConfigureAwait(false);
 
-            switch (result)
-            {
-                case ExecuteResult exResult:
-                    if (!exResult.IsSuccess)
-                    {
-                        _logger.LogError(exResult.Exception);
-                    }
-                    break;
-                case PreconditionResult pResult:
-                    _logger.LogInformation(pResult.ErrorReason);
-                    await context.User.SendMessageAsync(pResult.ErrorReason).ConfigureAwait(false);
-                    break;
-            }
+                switch (result)
+                {
+                    case ExecuteResult exResult:
+                        if (!exResult.IsSuccess)
+                        {
+                            _logger.LogError(exResult.Exception);
+                        }
+                        break;
+                    case PreconditionResult pResult:
+                        _logger.LogInformation(pResult.ErrorReason);
+                        await context.User.SendMessageAsync(pResult.ErrorReason).ConfigureAwait(false);
+                        break;
+                }
 
-            if (_hostingEnv.IsDevelopment() && !result.IsSuccess)
-            {
-                await message.Channel.SendMessageAsync($"Error: {result.ErrorReason}").ConfigureAwait(false);
-            }
+                if (_hostingEnv.IsDevelopment() && !result.IsSuccess)
+                {
+                    await message.Channel.SendMessageAsync($"Error: {result.ErrorReason}").ConfigureAwait(false);
+                }
+            });
+            return Task.CompletedTask;
         }
     }
 }

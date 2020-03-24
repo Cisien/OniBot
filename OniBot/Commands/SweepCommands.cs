@@ -16,7 +16,7 @@ namespace OniBot.Commands
         }
 
         private static readonly Random random = new Random();
-        private SweepConfig _config;
+        private readonly SweepConfig _config;
 
         [Command("sweep")]
         [Summary("Cleans up the mess in the room")]

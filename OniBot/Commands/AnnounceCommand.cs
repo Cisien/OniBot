@@ -13,7 +13,7 @@ namespace OniBot.Commands
     [ConfigurationPrecondition]
     public class AnnounceCommand : ModuleBase<SocketCommandContext>, IBotCommand
     {
-        private AnnounceConfig _config;
+        private readonly AnnounceConfig _config;
 
         public AnnounceCommand(AnnounceConfig config)
         {
@@ -21,7 +21,7 @@ namespace OniBot.Commands
         }
 
         [Command("show")]
-        [Summary("Sends you the current running Avatar config.")]
+        [Summary("Sends you the current running Announce config.")]
         public async Task Show()
         {
             var cfg = Configuration.GetJson<AnnounceConfig>(_config.ConfigKey, Context.Guild.Id);

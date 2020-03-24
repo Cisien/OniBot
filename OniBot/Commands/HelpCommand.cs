@@ -11,9 +11,9 @@ namespace OniBot.Commands
     [ConfigurationPrecondition]
     public class HelpCommand : ModuleBase<SocketCommandContext>, IBotCommand
     {
-        private ICommandHandler _commandHandler;
+        private readonly ICommandHandler _commandHandler;
         private const int _pageSize = 10;
-        private BotConfig _config;
+        private readonly BotConfig _config;
 
         public HelpCommand(ICommandHandler commandHandler, BotConfig config)
         {

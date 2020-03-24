@@ -14,11 +14,11 @@ namespace OniBot.Behaviors
         public string Name => nameof(UpdateGameBehavior);
 
         private Timer _timer;
-        private static Random _random = new Random();
-        private DiscordSocketClient _client;
+        private static readonly Random _random = new Random();
+        private readonly DiscordSocketClient _client;
 
-        private ILogger<RandomlySendMessageBehavior> _logger;
-        private GamesConfig _config;
+        private readonly ILogger<RandomlySendMessageBehavior> _logger;
+        private readonly GamesConfig _config;
 
         public UpdateGameBehavior(IDiscordClient client, ILogger<RandomlySendMessageBehavior> logger, GamesConfig config)
         {
@@ -52,8 +52,7 @@ namespace OniBot.Behaviors
         private async void UpdateGame(object state)
         {
             _logger.LogDebug("Update Game beginning");
-            var client = state as DiscordSocketClient;
-            if (client == null)
+            if (!(state is DiscordSocketClient client))
             {
                 _logger.LogError($"client is {state?.GetType()?.Name ?? "null"}");
                 return;

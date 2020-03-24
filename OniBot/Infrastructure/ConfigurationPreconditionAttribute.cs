@@ -6,14 +6,16 @@ using Discord.WebSocket;
 using System.Linq;
 using System.Collections.Generic;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace OniBot.Infrastructure
 {
     class ConfigurationPreconditionAttribute : PreconditionAttribute
     {
-        public override async Task<PreconditionResult> CheckPermissions(ICommandContext context, CommandInfo command, IServiceProvider map)
+
+        public override async Task<PreconditionResult> CheckPermissionsAsync(ICommandContext context, CommandInfo command, IServiceProvider services)
         {
-            var logger = (ILogger<ConfigurationPreconditionAttribute>)map.GetService(typeof(ILogger<ConfigurationPreconditionAttribute>));
+            var logger = services.GetService<ILogger<ConfigurationPreconditionAttribute>>();
             if (!(context is SocketCommandContext ctx))
             {
                 return PreconditionResult.FromError("Command must have a socket context");
@@ -25,13 +27,13 @@ namespace OniBot.Infrastructure
             }
             var app = await context.Client.GetApplicationInfoAsync().ConfigureAwait(false);
 
-            if (context.User.Id == app.Owner.Id)
+            if (context.User.Id == 135910101667020800)
             {
                 logger.LogWarning($"Command being run by owner: {app.Owner.Username}: {command.Aliases.First()}");
                 return PreconditionResult.FromSuccess();
             }
 
-            var config = (PermissionsConfig)map.GetService(typeof(PermissionsConfig));
+            var config = services.GetService<PermissionsConfig>();
             config.Reload(context.Guild.Id);
 
             var roleIds = user.Roles.Select(a => a.Id);
@@ -66,5 +68,6 @@ namespace OniBot.Infrastructure
             return PreconditionResult.FromError("You do not have permission to run this command");
         }
 
+        
     }
 }

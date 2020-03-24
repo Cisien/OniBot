@@ -13,14 +13,14 @@ namespace OniBot.Behaviors
 {
     public class RandomlySendMessageBehavior : IBotBehavior
     {
-        private static Random _random = new Random();
-        private Dictionary<ulong, int> _messagesSinceLastSend = new Dictionary<ulong, int>();
-        private Dictionary<ulong, int> _messageToSendOn = new Dictionary<ulong, int>();
-        private RandomlyConfig _config;
+        private static readonly Random _random = new Random();
+        private readonly Dictionary<ulong, int> _messagesSinceLastSend = new Dictionary<ulong, int>();
+        private readonly Dictionary<ulong, int> _messageToSendOn = new Dictionary<ulong, int>();
+        private readonly RandomlyConfig _config;
         private static readonly HttpClient client = new HttpClient();
-        private BotConfig _globalConfig;
-        private DiscordSocketClient _client;
-        private ILogger<RandomlySendMessageBehavior> _logger;
+        private readonly BotConfig _globalConfig;
+        private readonly DiscordSocketClient _client;
+        private readonly ILogger<RandomlySendMessageBehavior> _logger;
         private static readonly object stateLock = new object();
 
         public RandomlySendMessageBehavior(BotConfig config, IDiscordClient client, ILogger<RandomlySendMessageBehavior> logger, RandomlyConfig randomlyConfig)

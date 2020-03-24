@@ -17,10 +17,10 @@ namespace OniBot.Behaviors
 
         private static Timer _timer;
         private static readonly Random _random = new Random();
-        private DiscordSocketClient _client;
+        private readonly DiscordSocketClient _client;
 
-        private AvatarConfig _config;
-        private ILogger<AvatarRotatorBehavior> _logger;
+        private readonly AvatarConfig _config;
+        private readonly ILogger<AvatarRotatorBehavior> _logger;
 
         public AvatarRotatorBehavior(IDiscordClient client, AvatarConfig config, ILogger<AvatarRotatorBehavior> logger)
         {
@@ -46,9 +46,8 @@ namespace OniBot.Behaviors
         private async void UpdateAvatar(object state)
         {
             _logger.LogDebug("Update Avatar beginning");
-            var client = state as DiscordSocketClient;
 
-            if (client == null)
+            if (!(state is DiscordSocketClient client))
             {
                 return;
             }
@@ -63,27 +62,27 @@ namespace OniBot.Behaviors
 
             var avatar = _config.Avatars.Random();
 
-            using (var httpClient = new HttpClient())
-            {
-                try
-                {
-                    var data = await httpClient.GetByteArrayAsync(avatar.Value).ConfigureAwait(false);
-                    using (var ms = new MemoryStream(data))
-                    {
-                        ms.Position = 0;
-                        await client.CurrentUser.ModifyAsync(a =>
-                        {
-                            a.Avatar = new Image(ms);
-                        }).ConfigureAwait(false);
+            using var httpClient = new HttpClient();
 
-                        _logger.LogInformation($"Avatar image set to {avatar.Key}: {avatar.Value}");
-                    }
-                }
-                catch (Exception ex)
+            try
+            {
+                var data = await httpClient.GetByteArrayAsync(avatar.Value).ConfigureAwait(false);
+                using var ms = new MemoryStream(data)
                 {
-                    _logger.LogCritical(new EventId(0), ex, ex.Message);
-                }
+                    Position = 0
+                };
+                await client.CurrentUser.ModifyAsync(a =>
+                {
+                    a.Avatar = new Image(ms);
+                }).ConfigureAwait(false);
+
+                _logger.LogInformation($"Avatar image set to {avatar.Key}: {avatar.Value}");
             }
+            catch (Exception ex)
+            {
+                _logger.LogCritical(new EventId(0), ex, ex.Message);
+            }
+
             _logger.LogDebug("Update Avatar done");
         }
     }

@@ -1,11 +1,9 @@
 ﻿using Discord;
 using Discord.WebSocket;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using OniBot.Infrastructure;
 using System;
-using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -15,18 +13,16 @@ namespace OniBot.Interfaces
     {
         private readonly DiscordSocketClient _client;
         private readonly ICommandHandler _commandHandler;
-        private readonly IApplicationLifetime _appLifetime;
-        private readonly Dictionary<string, IBotBehavior> _behaviors;
+        private readonly IHostApplicationLifetime _appLifetime;
         private readonly IBehaviorService _behaviorService;
         private readonly ILogger<SocketDiscordBot> _logger;
         private readonly BotConfig _configuration;
 
-        public SocketDiscordBot(BotConfig config, DiscordSocketClient client, IBehaviorService behaviorService, ICommandHandler commandHandler, ILogger<SocketDiscordBot> logger, IConfiguration configroot, IApplicationLifetime appLifetime)
+        public SocketDiscordBot(BotConfig config, DiscordSocketClient client, IBehaviorService behaviorService, ICommandHandler commandHandler, ILogger<SocketDiscordBot> logger, IHostApplicationLifetime appLifetime)
         {
             _configuration = config;
             _behaviorService = behaviorService;
             _logger = logger;
-            _behaviors = new Dictionary<string, IBotBehavior>();
             _client = client as DiscordSocketClient;
             _commandHandler = commandHandler;
             _appLifetime = appLifetime;

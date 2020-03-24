@@ -39,7 +39,7 @@ namespace OniBot.Commands
             embed.AddField(a => a.WithName("Code").WithValue(Format.Code(code, "cs")));
             embed.AddField(a => a.WithName($"Result: {result?.GetType()?.Name ?? "null"}").WithValue(Format.Code($"{result ?? " "}", "txt")));
             
-            await Context.Channel.SendMessageAsync(string.Empty, embed: embed).ConfigureAwait(false);
+            await Context.Channel.SendMessageAsync(string.Empty, embed: embed.Build()).ConfigureAwait(false);
         }
     }
 }

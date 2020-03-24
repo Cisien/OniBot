@@ -7,7 +7,7 @@ namespace OniBot.Behaviors
 {
     class RssWatcherBehavior : IBotBehavior
     {
-        private static HttpClient _client = new HttpClient();
+        private static readonly HttpClient _client = new HttpClient();
 
         public string Name => nameof(RssWatcherBehavior);
 

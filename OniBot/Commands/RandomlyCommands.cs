@@ -13,7 +13,7 @@ namespace OniBot.Commands
     [ConfigurationPrecondition]
     public class RandomlyCommands : ModuleBase<SocketCommandContext>, IBotCommand
     {
-        private RandomlyConfig _config;
+        private readonly RandomlyConfig _config;
 
         public RandomlyCommands(RandomlyConfig config)
         {

@@ -12,8 +12,8 @@ namespace OniBot.Commands
     [ConfigurationPrecondition]
     public class LearningCommands : ModuleBase<SocketCommandContext>, IBotCommand
     {
-        private ICommandHandler _commandHandler;
-        private TagsConfig _config;
+        private readonly ICommandHandler _commandHandler;
+        private readonly TagsConfig _config;
 
         public LearningCommands(ICommandHandler commandHandler, TagsConfig config)
         {

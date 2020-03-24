@@ -15,8 +15,8 @@ namespace OniBot.Commands
     [ConfigurationPrecondition]
     public class PermissionCommands : ModuleBase<SocketCommandContext>, IBotCommand
     {
-        private PermissionsConfig _config;
-        private ICommandHandler _handler;
+        private readonly PermissionsConfig _config;
+        private readonly ICommandHandler _handler;
 
         public PermissionCommands(PermissionsConfig config, ICommandHandler handler)
         {
@@ -102,7 +102,7 @@ namespace OniBot.Commands
         [Command("roles")]
         public async Task GetRoles()
         {
-            var roles = Context.Guild.Roles.Select(a => new { Id = a.Id, Name = a.Name });
+            var roles = Context.Guild.Roles.Select(a => new { a.Id, a.Name });
             var json = JsonConvert.SerializeObject(roles, Formatting.Indented);
             await Context.User.SendMessageAsync($"```{json}```").ConfigureAwait(false);
         }

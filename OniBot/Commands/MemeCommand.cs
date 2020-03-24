@@ -13,13 +13,13 @@ namespace OniBot.Commands
     [ConfigurationPrecondition]
     public class MemeCommand : ModuleBase<SocketCommandContext>, IBotCommand
     {
-        private static Random _random = new Random();
+        private static readonly Random _random = new Random();
         private static readonly Regex galleryRegex = new Regex(@"(/gallery/\w+)", RegexOptions.Compiled);
         private static readonly Regex imageRegex = new Regex(@"//i.imgur.com(?<img>/\w+).(?<ext>png|jpg|gif)"".+alt=""(?<desc>.+)"" \w", RegexOptions.Compiled);
-        private static HttpClient client = new HttpClient();
-        private ILogger _logger;
+        private static readonly HttpClient client = new HttpClient();
+        private readonly ILogger<MemeCommand> _logger;
 
-        public MemeCommand(ILogger logger)
+        public MemeCommand(ILogger<MemeCommand> logger)
         {
             _logger = logger;
         }

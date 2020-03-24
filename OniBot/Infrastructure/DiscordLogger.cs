@@ -9,7 +9,7 @@ namespace OniBot.Infrastructure
 {
     public class DiscordLogger<T>
     {
-        private ILogger<T> _logger;
+        private readonly ILogger<T> _logger;
         public DiscordLogger(ILogger<T> logger)
         {
             _logger = logger;

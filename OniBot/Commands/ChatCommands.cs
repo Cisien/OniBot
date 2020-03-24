@@ -12,7 +12,7 @@ namespace OniBot.Commands
     [ConfigurationPrecondition]
     public class ChatCommands : ModuleBase<SocketCommandContext>, IBotCommand
     {
-        private ChatConfig _config;
+        private readonly ChatConfig _config;
 
         public ChatCommands(ChatConfig config)
         {

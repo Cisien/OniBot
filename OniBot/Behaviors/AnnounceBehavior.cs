@@ -1,4 +1,6 @@
-﻿using Discord.WebSocket;
+﻿using Discord;
+using Discord.Rest;
+using Discord.WebSocket;
 using Microsoft.Extensions.Logging;
 using OniBot.CommandConfigs;
 using OniBot.Interfaces;
@@ -8,9 +10,9 @@ namespace OniBot.Behaviors
 {
     public class AnnounceBehavior : IBotBehavior
     {
-        private DiscordSocketClient _bot;
-        private ILogger<AnnounceBehavior> _logger;
-        private AnnounceConfig _config;
+        private readonly DiscordSocketClient _bot;
+        private readonly ILogger<AnnounceBehavior> _logger;
+        private readonly AnnounceConfig _config;
 
         public AnnounceBehavior(DiscordSocketClient bot, ILogger<AnnounceBehavior> logger, AnnounceConfig config)
         {
@@ -32,10 +34,7 @@ namespace OniBot.Behaviors
 
         private async Task ChannelUpdated(SocketChannel before, SocketChannel after)
         {
-            var beforeChannel = before as SocketTextChannel;
-            var afterChannel = after as SocketTextChannel;
-
-            if (beforeChannel == null || afterChannel == null)
+            if (!(before is SocketTextChannel beforeChannel) || !(after is SocketTextChannel afterChannel))
             {
                 _logger.LogWarning($"before or after channels not vald text channels");
                 return;
@@ -66,7 +65,7 @@ namespace OniBot.Behaviors
         private async Task UserVoiceStateUpdated(SocketUser user, SocketVoiceState before, SocketVoiceState after)
         {
             var guildUser = user as SocketGuildUser;
-
+            RestUserMessage sentMessage = null;
             _logger.LogInformation($"{guildUser?.Guild?.Name}: {guildUser?.VoiceChannel?.Name}: {user.Username}: {user.Status}: {guildUser?.Nickname}: {guildUser?.VoiceState}");
             var name = string.IsNullOrWhiteSpace(guildUser.Nickname) ? user.Username : guildUser.Nickname;
             if (guildUser == null || string.IsNullOrWhiteSpace(name))
@@ -92,12 +91,13 @@ namespace OniBot.Behaviors
 
             if (after.VoiceChannel != null &&_config.VoiceChannels.Contains(after.VoiceChannel.Id))
             {
-                await channel.SendMessageAsync($"{name} joined {after.VoiceChannel.Name}!", true);
+                sentMessage = await channel.SendMessageAsync($"{name} joined {after.VoiceChannel.Name}!", true);
             }
             else if (guildUser.VoiceState == null || _config.VoiceChannels.Contains(before.VoiceChannel.Id))
             {
-                await channel.SendMessageAsync($"{name} left {before.VoiceChannel.Name}", true);
+                sentMessage = await channel.SendMessageAsync($"{name} left {before.VoiceChannel.Name}", true);
             }
+            await sentMessage?.DeleteAsync();
         }
 
 
