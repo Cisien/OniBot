@@ -212,7 +212,7 @@ namespace OniBot.Behaviors
                     var voiceChannel = guild.GetVoiceChannel(audioChannelId);
                     audioState.Channel = voiceChannel;
                     audioState.Client = await voiceChannel.ConnectAsync();
-                    audioState.Stream = audioState.Client.CreatePCMStream(AudioApplication.Music, null, 0, 0);
+                    audioState.Stream = audioState.Client.CreatePCMStream(AudioApplication.Music, null, 1, 0);
 
                     _joinedChannels[guild.Id] = audioState;
 
