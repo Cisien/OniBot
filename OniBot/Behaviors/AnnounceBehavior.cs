@@ -7,7 +7,6 @@ using OniBot.CommandConfigs;
 using OniBot.Interfaces;
 using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -21,7 +20,7 @@ namespace OniBot.Behaviors
         private readonly IVoiceService _voiceService;
         private readonly IHostApplicationLifetime _appLifetime;
         private readonly ConcurrentDictionary<ulong, IAudioClient> _joinedChannels = new ConcurrentDictionary<ulong, IAudioClient>();
-        private readonly SemaphoreSlim _sync = new SemaphoreSlim(1);
+        private readonly SemaphoreSlim _sync = new SemaphoreSlim(1, 1);
         private readonly Timer _keepaliveTimer;
 
 
@@ -42,7 +41,7 @@ namespace OniBot.Behaviors
             _bot.UserVoiceStateUpdated -= UserVoiceStateUpdated;
             _bot.UserVoiceStateUpdated += UserVoiceStateUpdated;
 
-            _keepaliveTimer.Change(TimeSpan.FromSeconds(0), TimeSpan.FromSeconds(30));
+            _keepaliveTimer.Change(TimeSpan.FromSeconds(10), TimeSpan.FromSeconds(30));
             return Task.CompletedTask;
         }
 
@@ -137,19 +136,16 @@ namespace OniBot.Behaviors
             }
             else
             {
-                await _sync.WaitAsync();
-                var audioClient = _joinedChannels[user.Guild.Id];
-                try
+                if(!_joinedChannels.TryGetValue(user.Guild.Id, out var audioClient))
                 {
-                    var audio = await _voiceService.ToVoice(message);
-                    using var audioStream = audioClient.CreatePCMStream(AudioApplication.Music);
-
-                    await audioStream.WriteAsync(audio);
-                    await audioStream.FlushAsync();
+                    return;
                 }
-                finally
+                _logger.LogInformation($"About to speak {message} with latency {audioClient.UdpLatency} and {audioClient.ConnectionState} state");
+                using (var audio = await _voiceService.ToVoice(message))
+                using (var audioStream = audioClient.CreatePCMStream(AudioApplication.Music, null, 10, 0))
                 {
-                    _sync.Release();
+                    await audio.CopyToAsync(audioStream);
+                    await audioStream.FlushAsync();
                 }
             }
         }
@@ -160,9 +156,9 @@ namespace OniBot.Behaviors
             {
                 try
                 {
-                    if(_joinedChannels.TryGetValue(guild.Id, out var audioClient))
+                    if (_joinedChannels.TryGetValue(guild.Id, out var audioClient))
                     {
-                        if(audioClient.ConnectionState == ConnectionState.Connected 
+                        if (audioClient.ConnectionState == ConnectionState.Connected
                         || audioClient.ConnectionState == ConnectionState.Connecting)
                         {
                             return;
@@ -171,7 +167,7 @@ namespace OniBot.Behaviors
 
                     var voiceChannel = guild.GetVoiceChannel(audioChannelId);
                     audioClient = await voiceChannel.ConnectAsync();
-                    
+
                     _joinedChannels[guild.Id] = audioClient;
                 }
                 catch (Exception ex)

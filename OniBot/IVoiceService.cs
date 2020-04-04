@@ -5,6 +5,6 @@ namespace OniBot
 {
     public interface IVoiceService
     {
-        Task<byte[]> ToVoice(string message);
+        Task<Stream> ToVoice(string message);
     }
 }

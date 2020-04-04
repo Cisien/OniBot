@@ -3,6 +3,7 @@ using OniBot.Interfaces;
 using System;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Runtime.InteropServices;
@@ -18,10 +19,11 @@ namespace OniBot
         private const string ServiceEndpoint = "https://westus2.tts.speech.microsoft.com/cognitiveservices/v1";
         private static readonly HttpClient httpClient = new HttpClient();
         private readonly Authentication _auth;
+        private readonly ILogger<AzureRestVoiceService> _logger;
         private const string SpeechTemplate = "<speak version='1.0' xmlns='http://www.w3.org/2001/10/synthesis' xmlns:mstts='https://www.w3.org/2001/mstts' xml:lang='en-US'><voice xml:lang='en-US' xml:gender='Female' name='en-US-JessaNeural'>{0}</voice></speak>";
 
 
-        public AzureRestVoiceService(IBotConfig config)
+        public AzureRestVoiceService(IBotConfig config, ILogger<AzureRestVoiceService> logger)
         {
             _auth = new Authentication(AuthEndpoint, config.AzureVoiceKey);
             httpClient.BaseAddress = new Uri(ServiceEndpoint);
@@ -29,9 +31,10 @@ namespace OniBot
             httpClient.DefaultRequestHeaders.TryAddWithoutValidation("Connection", "Keep-Alive");
             httpClient.DefaultRequestHeaders.TryAddWithoutValidation("User-Agent", "meowbot-speech");
             httpClient.DefaultRequestHeaders.TryAddWithoutValidation("X-Microsoft-OutputFormat", "audio-24khz-48kbitrate-mono-mp3");
+            _logger = logger;
         }
 
-        public async Task<byte[]> ToVoice(string message)
+        public async Task<Stream> ToVoice(string message)
         {
             var speech = string.Format(SpeechTemplate, message);
             var token = _auth.GetAccessToken();
@@ -41,6 +44,8 @@ namespace OniBot
             var content = new StringContent(speech, Encoding.UTF8, "application/ssml+xml");
 
             var response = await httpClient.PostAsync("", content);
+            var headers = string.Join("\n", response.Content.Headers.Select(a => $"{a.Key}: {string.Join(", ", a.Value)}"));
+            _logger.LogInformation($"Azure tts call returned {response.StatusCode} with {headers} headers");
             var tts = await response.Content.ReadAsByteArrayAsync();
             var file = Path.GetTempFileName();
             try
@@ -55,7 +60,7 @@ namespace OniBot
             }
         }
 
-        private byte[] CreateStream(string path)
+        private Stream CreateStream(string path)
         {
             var proc = Process.Start(new ProcessStartInfo
             {
@@ -73,7 +78,7 @@ namespace OniBot
             }
 
             ms.Position = 0;
-            return ms.ToArray();
+            return ms;
         }
 
         public class Authentication
