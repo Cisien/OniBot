@@ -50,11 +50,18 @@ namespace OniBot.Behaviors
         {
             foreach (var guild in _bot.Guilds)
             {
-                var guildConfig = new AnnounceConfig();
-                guildConfig.Reload(guild.Id);
-                if (guildConfig.Enabled && !guildConfig.UseTts)
+                try
                 {
-                    CreateAudioClient(guild, guildConfig.AudioChannel);
+                    var guildConfig = new AnnounceConfig();
+                    guildConfig.Reload(guild.Id);
+                    if (guildConfig.Enabled && !guildConfig.UseTts)
+                    {
+                        CreateAudioClient(guild, guildConfig.AudioChannel);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogCritical(ex, $"Failed to join audio for {guild.Name}: {ex.Message}");
                 }
             }
             return Task.CompletedTask;
@@ -169,7 +176,8 @@ namespace OniBot.Behaviors
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogCritical(ex, ex.Message);
+                    _logger.LogCritical(ex, $"Guild failed to create an audio client: {guild.Name}: {ex.Message}");
+
                 }
             });
         }
