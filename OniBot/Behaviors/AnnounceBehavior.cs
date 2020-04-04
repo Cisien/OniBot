@@ -207,12 +207,12 @@ namespace OniBot.Behaviors
                             return;
                         }
                     }
-
+                    audioState?.Dispose();
                     audioState = new AudioState();
                     var voiceChannel = guild.GetVoiceChannel(audioChannelId);
                     audioState.Channel = voiceChannel;
                     audioState.Client = await voiceChannel.ConnectAsync();
-                    audioState.Stream = audioState.Client.CreatePCMStream(AudioApplication.Music, null, 100, 0);
+                    audioState.Stream = audioState.Client.CreatePCMStream(AudioApplication.Music, null, 0, 0);
 
                     _joinedChannels[guild.Id] = audioState;
 
@@ -225,7 +225,7 @@ namespace OniBot.Behaviors
             });
         }
 
-        public async Task StopAsync()
+        public Task StopAsync()
         {
             _processQueue = false;
             _bot.UserVoiceStateUpdated -= UserVoiceStateUpdated;
@@ -234,12 +234,10 @@ namespace OniBot.Behaviors
             {
                 foreach (var client in _joinedChannels)
                 {
-                    var voiceState = client.Value;
-                    await voiceState.Client.StopAsync();
-                    voiceState.Client.Dispose();
-                    voiceState.Stream.Dispose();
+                    client.Value?.Dispose();
                 }
             }
+            return Task.CompletedTask;
         }
     }
 }
