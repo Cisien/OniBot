@@ -3,6 +3,11 @@
     "OniBot": {
       "commandName": "Project",
       "commandLineArgs": "--environment development"
+    },
+    "Docker": {
+      "commandName": "Docker",
+      "environmentVariables": {
+      }
     }
   }
 }

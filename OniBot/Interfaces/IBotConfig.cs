@@ -9,5 +9,6 @@ namespace OniBot.Interfaces
         int MessageCacheSize { get; set; }
         string Token { get; set; }
         char PrefixChar { get; set; }
+        string AzureVoiceKey { get; set; }
     }
 }

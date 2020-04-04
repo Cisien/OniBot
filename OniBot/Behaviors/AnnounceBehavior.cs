@@ -1,9 +1,14 @@
 ﻿using Discord;
-using Discord.Rest;
+using Discord.Audio;
 using Discord.WebSocket;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using OniBot.CommandConfigs;
 using OniBot.Interfaces;
+using System;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace OniBot.Behaviors
@@ -13,12 +18,21 @@ namespace OniBot.Behaviors
         private readonly DiscordSocketClient _bot;
         private readonly ILogger<AnnounceBehavior> _logger;
         private readonly AnnounceConfig _config;
+        private readonly IVoiceService _voiceService;
+        private readonly IHostApplicationLifetime _appLifetime;
+        private readonly ConcurrentDictionary<ulong, IAudioClient> _joinedChannels = new ConcurrentDictionary<ulong, IAudioClient>();
+        private readonly SemaphoreSlim _sync = new SemaphoreSlim(1);
+        private readonly Timer _keepaliveTimer;
 
-        public AnnounceBehavior(DiscordSocketClient bot, ILogger<AnnounceBehavior> logger, AnnounceConfig config)
+
+        public AnnounceBehavior(DiscordSocketClient bot, ILogger<AnnounceBehavior> logger, AnnounceConfig config, IVoiceService voiceService, IHostApplicationLifetime appLifetime)
         {
             _bot = bot;
             _logger = logger;
             _config = config;
+            _voiceService = voiceService;
+            _appLifetime = appLifetime;
+            _keepaliveTimer = new Timer(async (a) => await KeepAlive(), null, Timeout.Infinite, Timeout.Infinite);
         }
 
         public string Name => nameof(AnnounceBehavior);
@@ -26,86 +40,153 @@ namespace OniBot.Behaviors
         public Task RunAsync()
         {
             _bot.UserVoiceStateUpdated -= UserVoiceStateUpdated;
-            _bot.ChannelUpdated -= ChannelUpdated;
             _bot.UserVoiceStateUpdated += UserVoiceStateUpdated;
-            _bot.ChannelUpdated += ChannelUpdated;
+
+            _keepaliveTimer.Change(TimeSpan.FromSeconds(0), TimeSpan.FromSeconds(30));
             return Task.CompletedTask;
         }
 
-        private async Task ChannelUpdated(SocketChannel before, SocketChannel after)
+        private Task KeepAlive()
         {
-            if (!(before is SocketTextChannel beforeChannel) || !(after is SocketTextChannel afterChannel))
+            foreach (var guild in _bot.Guilds)
             {
-                _logger.LogWarning($"before or after channels not vald text channels");
-                return;
+                var guildConfig = new AnnounceConfig();
+                guildConfig.Reload(guild.Id);
+                if (guildConfig.Enabled && !guildConfig.UseTts)
+                {
+                    CreateAudioClient(guild, guildConfig.AudioChannel);
+                }
             }
-
-            var channel = afterChannel.Guild.DefaultChannel;
-            _config.Reload(channel.Guild.Id);
-            if (!_config.Enabled)
-            {
-                return;
-            }
-
-            if (afterChannel.Topic != beforeChannel.Topic)
-            {
-                _logger.LogInformation($"Topic changed to { afterChannel.Topic}");
-
-                await channel.SendMessageAsync($"Topic changed to { afterChannel.Topic}", true);
-            }
-
-            if (afterChannel.Name != afterChannel.Name)
-            {
-                _logger.LogInformation($"Channel name changed to { afterChannel.Name}");
-                
-                await channel.SendMessageAsync($"Channel name changed to { afterChannel.Name}", true);
-            }
+            return Task.CompletedTask;
         }
 
-        private async Task UserVoiceStateUpdated(SocketUser user, SocketVoiceState before, SocketVoiceState after)
+        private Task UserVoiceStateUpdated(SocketUser user, SocketVoiceState before, SocketVoiceState after)
         {
-            var guildUser = user as SocketGuildUser;
-            RestUserMessage sentMessage = null;
-            _logger.LogInformation($"{guildUser?.Guild?.Name}: {guildUser?.VoiceChannel?.Name}: {user.Username}: {user.Status}: {guildUser?.Nickname}: {guildUser?.VoiceState}");
-            var name = string.IsNullOrWhiteSpace(guildUser.Nickname) ? user.Username : guildUser.Nickname;
-            if (guildUser == null || string.IsNullOrWhiteSpace(name))
+            if (user.IsBot)
             {
-                _logger.LogWarning($"{user.Username} is not a valid guildUser");
-                return;
+                return Task.CompletedTask;
             }
-
-            if (before.VoiceChannel?.Name == after.VoiceChannel?.Name)
-            {
-                _logger.LogInformation($"Previous channel name matches the current channel name, doing nothing!");
-                return;
-            }
-
-            var channel = guildUser.Guild.DefaultChannel;
-
-            _config.Reload(channel.Guild.Id);
+            _config.Reload((user as SocketGuildUser).Guild.Id);
 
             if (!_config.Enabled)
             {
-                return;
+                return Task.CompletedTask;
             }
 
-            if (after.VoiceChannel != null &&_config.VoiceChannels.Contains(after.VoiceChannel.Id))
+            _ = Task.Run(async () =>
             {
-                sentMessage = await channel.SendMessageAsync($"{name} joined {after.VoiceChannel.Name}!", true);
-            }
-            else if (guildUser.VoiceState == null || _config.VoiceChannels.Contains(before.VoiceChannel.Id))
-            {
-                sentMessage = await channel.SendMessageAsync($"{name} left {before.VoiceChannel.Name}", true);
-            }
-            await sentMessage?.DeleteAsync();
+                try
+                {
+                    var guildUser = user as SocketGuildUser;
+                    _logger.LogInformation($"{guildUser?.Guild?.Name}: {guildUser?.VoiceChannel?.Name}: {user.Username}: {user.Status}: {guildUser?.Nickname}: {guildUser?.VoiceState}");
+                    var name = string.IsNullOrWhiteSpace(guildUser.Nickname) ? user.Username : guildUser.Nickname;
+                    if (guildUser == null || string.IsNullOrWhiteSpace(name))
+                    {
+                        _logger.LogWarning($"{user.Username} is not a valid guildUser");
+                        return;
+                    }
+
+                    if (before.VoiceChannel?.Name == after.VoiceChannel?.Name)
+                    {
+                        _logger.LogInformation($"Previous channel name matches the current channel name, doing nothing!");
+                        return;
+                    }
+
+                    var channel = guildUser.Guild.DefaultChannel;
+
+                    _config.Reload(channel.Guild.Id);
+
+                    if (!_config.Enabled)
+                    {
+                        return;
+                    }
+
+                    if (after.VoiceChannel != null && _config.VoiceChannels.Contains(after.VoiceChannel.Id))
+                    {
+                        await SendMessageAsync(guildUser, $"{name} joined {after.VoiceChannel.Name}!");
+                    }
+                    else if (guildUser.VoiceState == null || _config.VoiceChannels.Contains(before.VoiceChannel.Id))
+                    {
+                        await SendMessageAsync(guildUser, $"{name} left {before.VoiceChannel.Name}");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogCritical(ex, ex.Message);
+                }
+            });
+
+            return Task.CompletedTask;
         }
 
+        private async Task SendMessageAsync(SocketGuildUser user, string message)
+        {
 
-        public Task StopAsync()
+            if (_config.UseTts)
+            {
+                var channel = user.Guild.DefaultChannel;
+                var sentMessage = await channel.SendMessageAsync(message, true);
+                await sentMessage?.DeleteAsync();
+            }
+            else
+            {
+                await _sync.WaitAsync(TimeSpan.FromSeconds(30));
+                var audioClient = _joinedChannels[user.Guild.Id];
+                try
+                {
+                    var audio = await _voiceService.ToVoice(message);
+                    using var audioStream = audioClient.CreatePCMStream(AudioApplication.Music);
+
+                    await audioStream.WriteAsync(audio);
+                    await audioStream.FlushAsync();
+                }
+                finally
+                {
+                    _sync.Release();
+                }
+            }
+        }
+
+        private void CreateAudioClient(SocketGuild guild, ulong audioChannelId)
+        {
+            _ = Task.Run(async () =>
+            {
+                try
+                {
+                    if(_joinedChannels.TryGetValue(guild.Id, out var audioClient))
+                    {
+                        if(audioClient.ConnectionState == ConnectionState.Connected 
+                        || audioClient.ConnectionState == ConnectionState.Connecting)
+                        {
+                            return;
+                        }
+                    }
+
+                    var voiceChannel = guild.GetVoiceChannel(audioChannelId);
+                    audioClient = await voiceChannel.ConnectAsync();
+                    
+                    _joinedChannels[guild.Id] = audioClient;
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogCritical(ex, ex.Message);
+                }
+            });
+        }
+
+        public async Task StopAsync()
         {
             _bot.UserVoiceStateUpdated -= UserVoiceStateUpdated;
-            _bot.ChannelUpdated -= ChannelUpdated;
-            return Task.CompletedTask;
+
+            if (_config.Enabled && !_config.UseTts)
+            {
+                foreach (var client in _joinedChannels)
+                {
+                    var voiceClient = client.Value;
+                    await voiceClient.StopAsync();
+                    voiceClient.Dispose();
+                }
+            }
         }
     }
 }

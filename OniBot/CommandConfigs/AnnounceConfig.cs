@@ -9,6 +9,9 @@ namespace OniBot.CommandConfigs
         public bool Enabled { get; set; }
 
         public List<ulong> VoiceChannels { get; set; } = new List<ulong>();
+        public ulong AudioChannel { get; set; }
+
+        public bool UseTts { get; set; }
 
         [JsonIgnore]
         public override string ConfigKey => nameof(AnnounceConfig);

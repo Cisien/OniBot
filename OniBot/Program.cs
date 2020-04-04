@@ -42,11 +42,17 @@ namespace OniBot
             })
             .ConfigureLogging((context, logging) =>
             {
-                logging.AddConsole();
+                logging.AddConsole(o =>
+                {
+                    o.DisableColors = true;
+                    o.Format = Microsoft.Extensions.Logging.Console.ConsoleLoggerFormat.Systemd;
+                    o.TimestampFormat = "o";
+                });
                 if (context.HostingEnvironment.IsDevelopment())
                 {
                     logging.AddDebug();
                 }
+                logging.SetMinimumLevel(LogLevel.Trace);
             })
             .ConfigureServices((context, services) =>
             {
@@ -55,16 +61,18 @@ namespace OniBot
                 var config = new BotConfig();
                 context.Configuration.Bind(config);
                 services.AddSingleton(config);
+                services.AddSingleton<IBotConfig>(config);
 
                 RegisterDiscordClient(services, config);
 
+                services.AddSingleton<IVoiceService, AzureRestVoiceService>();
                 services.AddSingleton<IBehaviorService, BehaviorService>();
                 services.AddSingleton(provider => BuildCommandHandler(provider, config));
 
                 services.AddHostedService<SocketDiscordBot>();
             })
             .UseConsoleLifetime();
-            
+
             await host.RunConsoleAsync();
         }
 
@@ -72,7 +80,7 @@ namespace OniBot
         {
             var client = new DiscordSocketClient(new DiscordSocketConfig
             {
-                LogLevel = config.LogLevel,
+                LogLevel = LogSeverity.Verbose, //config.LogLevel,
                 AlwaysDownloadUsers = config.AlwaysDownloadUsers,
                 MessageCacheSize = config.MessageCacheSize,
                 DefaultRetryMode = RetryMode.AlwaysRetry
