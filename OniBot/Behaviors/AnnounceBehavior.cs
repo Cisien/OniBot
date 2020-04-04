@@ -19,10 +19,13 @@ namespace OniBot.Behaviors
         private readonly AnnounceConfig _config;
         private readonly IVoiceService _voiceService;
         private readonly IHostApplicationLifetime _appLifetime;
-        private readonly ConcurrentDictionary<ulong, IAudioClient> _joinedChannels = new ConcurrentDictionary<ulong, IAudioClient>();
-        private readonly SemaphoreSlim _sync = new SemaphoreSlim(1, 1);
+        private readonly ConcurrentDictionary<ulong, AudioState> _joinedChannels = new ConcurrentDictionary<ulong, AudioState>();
         private readonly Timer _keepaliveTimer;
+        private readonly ConcurrentQueue<Message> _voiceQueue = new ConcurrentQueue<Message>();
+        private Task _queueWorker;
+        private bool _processQueue = true;
 
+        public string Name => nameof(AnnounceBehavior);
 
         public AnnounceBehavior(DiscordSocketClient bot, ILogger<AnnounceBehavior> logger, AnnounceConfig config, IVoiceService voiceService, IHostApplicationLifetime appLifetime)
         {
@@ -32,16 +35,48 @@ namespace OniBot.Behaviors
             _voiceService = voiceService;
             _appLifetime = appLifetime;
             _keepaliveTimer = new Timer(async (a) => await KeepAlive(), null, Timeout.Infinite, Timeout.Infinite);
+            _queueWorker = new Task(async a => await QueueWorker(), CancellationToken.None, TaskCreationOptions.LongRunning);
         }
 
-        public string Name => nameof(AnnounceBehavior);
+        private async Task QueueWorker()
+        {
+            while (_processQueue)
+            {
+                try
+                {
+                    if (!_voiceQueue.TryDequeue(out var message))
+                    {
+                        await Task.Delay(100);
+                        continue;
+                    }
+
+                    if (!_joinedChannels.TryGetValue(message.GuildId, out var audioState))
+                    {
+                        _logger.LogWarning($"No audio state available for {message.GuildId}");
+                        await Task.Delay(100);
+                        continue;
+                    }
+
+                    _logger.LogInformation("Sending message to discord");
+                    await message.Audio.CopyToAsync(audioState.Stream);
+                    await audioState.Stream.FlushAsync();
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, $"Error processing queue: {ex.Message}");
+                }
+
+                await Task.Delay(100);
+            }
+        }
 
         public Task RunAsync()
         {
             _bot.UserVoiceStateUpdated -= UserVoiceStateUpdated;
             _bot.UserVoiceStateUpdated += UserVoiceStateUpdated;
 
-            _keepaliveTimer.Change(TimeSpan.FromSeconds(10), TimeSpan.FromSeconds(30));
+            _keepaliveTimer.Change(TimeSpan.FromSeconds(5), TimeSpan.FromSeconds(30));
+            _queueWorker.Start();
             return Task.CompletedTask;
         }
 
@@ -136,39 +171,51 @@ namespace OniBot.Behaviors
             }
             else
             {
-                if(!_joinedChannels.TryGetValue(user.Guild.Id, out var audioClient))
-                {
-                    return;
-                }
-                _logger.LogInformation($"About to speak {message} with latency {audioClient.UdpLatency} and {audioClient.ConnectionState} state");
-                using (var audio = await _voiceService.ToVoice(message))
-                using (var audioStream = audioClient.CreatePCMStream(AudioApplication.Music, null, 10, 0))
-                {
-                    await audio.CopyToAsync(audioStream);
-                    await audioStream.FlushAsync();
-                }
+                var audio = await _voiceService.ToVoice(message);
+                _voiceQueue.Enqueue(new Message { GuildId = user.Guild.Id, Audio = audio });
             }
         }
 
         private void CreateAudioClient(SocketGuild guild, ulong audioChannelId)
         {
+            if(!guild.IsConnected)
+            {
+                _logger.LogWarning($"bot is not Connected to this guild, trying later");
+                return;
+            }
+            if (_bot.ConnectionState != ConnectionState.Connected)
+            {
+                _logger.LogWarning($"bot is not Connected to discord, trying later");
+                return;
+            }
+
+            if (_bot.LoginState != LoginState.LoggedIn)
+            {
+                _logger.LogWarning($"bot is not logged in, trying later");
+                return;
+            }
+
             _ = Task.Run(async () =>
             {
                 try
                 {
-                    if (_joinedChannels.TryGetValue(guild.Id, out var audioClient))
+                    if (_joinedChannels.TryGetValue(guild.Id, out var audioState))
                     {
-                        if (audioClient.ConnectionState == ConnectionState.Connected
-                        || audioClient.ConnectionState == ConnectionState.Connecting)
+                        if (audioState.Client.ConnectionState == ConnectionState.Connected
+                        || audioState.Client.ConnectionState == ConnectionState.Connecting)
                         {
                             return;
                         }
                     }
 
+                    audioState = new AudioState();
                     var voiceChannel = guild.GetVoiceChannel(audioChannelId);
-                    audioClient = await voiceChannel.ConnectAsync();
+                    audioState.Channel = voiceChannel;
+                    audioState.Client = await voiceChannel.ConnectAsync();
+                    audioState.Stream = audioState.Client.CreatePCMStream(AudioApplication.Music, null, 100, 0);
 
-                    _joinedChannels[guild.Id] = audioClient;
+                    _joinedChannels[guild.Id] = audioState;
+
                 }
                 catch (Exception ex)
                 {
@@ -180,15 +227,17 @@ namespace OniBot.Behaviors
 
         public async Task StopAsync()
         {
+            _processQueue = false;
             _bot.UserVoiceStateUpdated -= UserVoiceStateUpdated;
 
             if (_config.Enabled && !_config.UseTts)
             {
                 foreach (var client in _joinedChannels)
                 {
-                    var voiceClient = client.Value;
-                    await voiceClient.StopAsync();
-                    voiceClient.Dispose();
+                    var voiceState = client.Value;
+                    await voiceState.Client.StopAsync();
+                    voiceState.Client.Dispose();
+                    voiceState.Stream.Dispose();
                 }
             }
         }
