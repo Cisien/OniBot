@@ -18,7 +18,7 @@ namespace OniBot
         private const string ServiceEndpoint = "https://westus2.tts.speech.microsoft.com/cognitiveservices/v1";
         private static readonly HttpClient httpClient = new HttpClient();
         private readonly Authentication _auth;
-        private const string SpeechTemplate = "<speak version='1.0' xmlns='http://www.w3.org/2001/10/synthesis' xmlns:mstts='https://www.w3.org/2001/mstts' xml:lang='en-US'><voice xml:lang='en-US' xml:gender='Female' name='en-US-JessaNeural'>{0}</voice></speak>";
+        private const string SpeechTemplate = "<speak version='1.0' xmlns='http://www.w3.org/2001/10/synthesis' xmlns:mstts='https://www.w3.org/2001/mstts' xml:lang='en-US'><voice xml:lang='en-US' xml:gender='Female' name='en-GB-HazelRUS'>{0}</voice></speak>";
 
 
         public AzureRestVoiceService(IBotConfig config)
