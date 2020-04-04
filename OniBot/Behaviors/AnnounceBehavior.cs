@@ -54,7 +54,7 @@ namespace OniBot.Behaviors
                 {
                     var guildConfig = new AnnounceConfig();
                     guildConfig.Reload(guild.Id);
-                    if (guildConfig.Enabled && !guildConfig.UseTts)
+                    if (guildConfig.Enabled && !guildConfig.UseTts && guildConfig.AudioChannel != default)
                     {
                         CreateAudioClient(guild, guildConfig.AudioChannel);
                     }
@@ -137,7 +137,7 @@ namespace OniBot.Behaviors
             }
             else
             {
-                await _sync.WaitAsync(TimeSpan.FromSeconds(30));
+                await _sync.WaitAsync();
                 var audioClient = _joinedChannels[user.Guild.Id];
                 try
                 {
