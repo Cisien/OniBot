@@ -218,7 +218,6 @@ namespace OniBot.Behaviors
                         _logger.LogInformation("Somehow, we are already in this channel. Unclean shutdown? Trying again later.");
                         await botInChannel.VoiceChannel.ConnectAsync();
                         await botInChannel.VoiceChannel.DisconnectAsync();
-                        return;
                     }
 
                     audioState.Channel = voiceChannel;
