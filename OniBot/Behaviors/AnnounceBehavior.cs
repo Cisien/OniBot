@@ -6,6 +6,7 @@ using Microsoft.Extensions.Logging;
 using OniBot.CommandConfigs;
 using OniBot.Interfaces;
 using System;
+using System.Collections;
 using System.Collections.Concurrent;
 using System.Threading;
 using System.Threading.Tasks;
@@ -210,6 +211,16 @@ namespace OniBot.Behaviors
                     audioState?.Dispose();
                     audioState = new AudioState();
                     var voiceChannel = guild.GetVoiceChannel(audioChannelId);
+
+                    var botInChannel = voiceChannel.GetUser(_bot.CurrentUser.Id);
+                    if (botInChannel != null)
+                    {
+                        _logger.LogInformation("Somehow, we are already in this channel. Unclean shutdown? Trying again later.");
+                        await botInChannel.VoiceChannel.ConnectAsync();
+                        await botInChannel.VoiceChannel.DisconnectAsync();
+                        return;
+                    }
+
                     audioState.Channel = voiceChannel;
                     audioState.Client = await voiceChannel.ConnectAsync();
                     audioState.Stream = audioState.Client.CreatePCMStream(AudioApplication.Music, null, 1, 0);
