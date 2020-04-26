@@ -103,7 +103,7 @@ namespace OniBot.Commands
         [Summary("Gets the current run state of a user")]
         public async Task DumpChat(int count)
         {
-            var messages = await Context.Channel.GetMessagesAsync(limit: count, fromMessageId: Context.Message.Id, dir: Direction.Before).ToList().ConfigureAwait(false);
+            var messages = await Context.Channel.GetMessagesAsync(limit: count, fromMessageId: Context.Message.Id, dir: Direction.Before).ToListAsync().ConfigureAwait(false);
 
             foreach (var messageContainer in messages)
             {
