@@ -1,7 +1,8 @@
 FROM mcr.microsoft.com/dotnet/core/sdk:5.0 as build
 WORKDIR /src
 COPY . .
-RUN dotnet publish OniBot/OniBot.csproj -o /app -r linux-x64
+RUN dotnet restore OniBot/OniBot.csproj --configfile .nuget/nuget.config -r linux-x64
+RUN dotnet publish OniBot/OniBot.csproj -o /app -r linux-x64 --no-restore
 #COPY OniBot/config /app/config/
 
 FROM mcr.microsoft.com/dotnet/core/runtime:5.0
