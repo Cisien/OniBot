@@ -23,7 +23,7 @@ namespace OniBot.Interfaces
             _configuration = config;
             _behaviorService = behaviorService;
             _logger = logger;
-            _client = client as DiscordSocketClient;
+            _client = client;
             _commandHandler = commandHandler;
             _appLifetime = appLifetime;
         }
@@ -63,6 +63,11 @@ namespace OniBot.Interfaces
 
         private Task OnDisconnected(Exception arg)
         {
+            if(arg is GatewayReconnectException)
+            {
+                return Task.CompletedTask;
+            }
+
             _logger.LogError(arg);
             _appLifetime.StopApplication();
             return Task.CompletedTask;
