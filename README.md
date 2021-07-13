@@ -2,3 +2,4 @@
 
 # OniBot
 Simple discord bot that announces when a user joins or leaves designated voice chat channels.
+
