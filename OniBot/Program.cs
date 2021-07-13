@@ -52,6 +52,7 @@ namespace OniBot
                     o.ColorBehavior = context.HostingEnvironment.IsProduction() ? LoggerColorBehavior.Disabled : LoggerColorBehavior.Enabled;
                     o.TimestampFormat = "o";
                     o.UseUtcTimestamp = true;
+                    o.SingleLine = true;
                 });
 
                 if (context.HostingEnvironment.IsDevelopment())
