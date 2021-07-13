@@ -12,6 +12,7 @@ using Discord.WebSocket;
 using Discord;
 using OniBot.Infrastructure;
 using System.Collections.Generic;
+using Microsoft.Extensions.Logging.Console;
 
 namespace OniBot
 {
@@ -39,15 +40,20 @@ namespace OniBot
                 {
                     config.AddUserSecrets("OniBot");
                 }
+                else
+                {
+                    config.AddKeyPerFile("/run/secrets", true);
+                }
             })
             .ConfigureLogging((context, logging) =>
             {
-                logging.AddConsole(o =>
+                logging.AddSimpleConsole(o =>
                 {
-                    o.DisableColors = true;
-                    o.Format = Microsoft.Extensions.Logging.Console.ConsoleLoggerFormat.Systemd;
+                    o.ColorBehavior = context.HostingEnvironment.IsProduction() ? LoggerColorBehavior.Disabled : LoggerColorBehavior.Enabled;
                     o.TimestampFormat = "o";
+                    o.UseUtcTimestamp = true;
                 });
+
                 if (context.HostingEnvironment.IsDevelopment())
                 {
                     logging.AddDebug();
