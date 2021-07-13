@@ -11,7 +11,7 @@ namespace OniBot
     public class BehaviorService: IBehaviorService
     {
         private readonly IServiceProvider _provider;
-        private readonly Dictionary<string, IBotBehavior> _behaviors = new Dictionary<string, IBotBehavior>();
+        private readonly Dictionary<string, IBotBehavior> _behaviors = new();
         private readonly ILogger<BehaviorService> _logger;
 
         public BehaviorService(IServiceProvider provider, ILogger<BehaviorService> logger)
@@ -70,7 +70,7 @@ namespace OniBot
                         continue;
                     }
 
-                    if (!(ActivatorUtilities.CreateInstance(_provider, type) is IBotBehavior instance))
+                    if (ActivatorUtilities.CreateInstance(_provider, type) is not IBotBehavior instance)
                     {
                         _logger.LogError($"Unable to create instance of behavior {type.FullName}");
                         continue;

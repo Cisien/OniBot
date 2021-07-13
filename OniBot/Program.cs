@@ -13,11 +13,13 @@ using Discord;
 using OniBot.Infrastructure;
 using System.Collections.Generic;
 using Microsoft.Extensions.Logging.Console;
+using System.Net.Http.Headers;
 
 namespace OniBot
 {
     class Program
     {
+        private const string ServiceEndpoint = "https://westus2.tts.speech.microsoft.com/cognitiveservices/v1";
         static async Task Main(string[] args)
         {
             var host = new HostBuilder()
@@ -71,6 +73,26 @@ namespace OniBot
                 services.AddSingleton<IBotConfig>(config);
 
                 RegisterDiscordClient(services, config);
+
+
+                services.AddHttpClient(nameof(Authentication), client =>
+                {
+                    client.DefaultRequestHeaders.Add("Ocp-Apim-Subscription-Key", config.AzureVoiceKey);
+                });
+                services.AddSingleton<Authentication>();
+
+                services.AddHttpClient(nameof(AzureRestVoiceService), (provider, client) =>
+                {
+                    client.BaseAddress = new Uri(ServiceEndpoint);
+
+                    var authProvider = provider.GetRequiredService<Authentication>();
+                    var token = authProvider.AccessToken;
+                    client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+
+                    client.DefaultRequestHeaders.TryAddWithoutValidation("Connection", "Keep-Alive");
+                    client.DefaultRequestHeaders.TryAddWithoutValidation("User-Agent", "meowbot-speech");
+                    client.DefaultRequestHeaders.TryAddWithoutValidation("X-Microsoft-OutputFormat", "audio-24khz-48kbitrate-mono-mp3");
+                });
 
                 services.AddSingleton<IVoiceService, AzureRestVoiceService>();
                 services.AddSingleton<IBehaviorService, BehaviorService>();

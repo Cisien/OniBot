@@ -9,7 +9,7 @@ namespace OniBot.Infrastructure
 {
     public class Configuration
     {
-        private static readonly object _fileReadWriteLock = new object();
+        private static readonly object _fileReadWriteLock = new();
         private const string EmptyJson = "{\r\n}";
         public static T Get<T>(string key, ulong? guild = null) where T : CommandConfig
         {
