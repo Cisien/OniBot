@@ -1,3 +1,4 @@
+[![build-csharprepl](https://github.com/Cisien/OniBot/actions/workflows/build-container.yml/badge.svg)](https://github.com/Cisien/OniBot/actions/workflows/build-container.yml)
+
 # OniBot
-[![Build status](https://ci.appveyor.com/api/projects/status/fs9nfy2eumvwu78b?svg=true)](https://ci.appveyor.com/project/Cisien/onibot)
-Oxygen Not Included Discord Bot
+Simple discord bot that announces when a user joins or leaves designated voice chat channels.
