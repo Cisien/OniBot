@@ -208,6 +208,7 @@ namespace OniBot.Behaviors
                             return;
                         }
                     }
+
                     audioState?.Dispose();
                     audioState = new AudioState();
                     var voiceChannel = guild.GetVoiceChannel(audioChannelId);

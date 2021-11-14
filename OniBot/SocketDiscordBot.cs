@@ -88,6 +88,7 @@ namespace OniBot.Interfaces
         {
             var maxAttempts = 10;
             var currentAttempt = 0;
+            Exception lastException = null;
             do
             {
                 currentAttempt++;
@@ -95,15 +96,19 @@ namespace OniBot.Interfaces
                 {
                     await _client.LoginAsync(TokenType.Bot, _configuration.Token);
                     await _client.StartAsync();
-                    break;
+                    return;
                 }
                 catch (Exception ex)
                 {
+                    lastException = ex;
                     _logger.LogError($"Fialed to connect: {ex.Message}");
                     await Task.Delay(currentAttempt * 1000);
                 }
             }
             while (currentAttempt < maxAttempts);
+
+            _logger.LogCritical(lastException, "Unable to connect to discord");
+            _appLifetime.StopApplication();
         }
     }
 }
